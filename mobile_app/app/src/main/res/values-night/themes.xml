@@ -1,0 +1,18 @@
+<resources>
+    <!-- Dark theme overrides -->
+    <style name="Base.Theme.DrowsySyncApp" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorPrimaryContainer">@color/primary_alpha20</item>
+        <item name="colorOnPrimaryContainer">@color/on_background_dark</item>
+        <item name="android:colorBackground">@color/background_dark</item>
+        <item name="colorSurface">@color/card_dark</item>
+        <item name="colorOnSurface">@color/on_background_dark</item>
+        <item name="colorSurfaceVariant">@color/input_bg_dark</item>
+        <item name="colorOnSurfaceVariant">@color/muted_fg_dark</item>
+        <item name="colorOutline">@color/border_dark</item>
+        <item name="colorError">@color/destructive</item>
+        <item name="colorOnError">@color/on_destructive</item>
+        <item name="android:windowBackground">@color/background_dark</item>
+    </style>
+</resources>

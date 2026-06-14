@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DrowsySync</string>
+
+    <!-- ── Registration ── -->
+    <string name="registration_subtitle">Create your driver safety account</string>
+    <string name="full_name">Full Name</string>
+    <string name="full_name_hint">Enter your full name</string>
+    <string name="email_address">Email Address</string>
+    <string name="email_hint">your@email.com</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="phone_hint">+60 12-345 6789</string>
+    <string name="vehicle_plate">Vehicle Plate Number</string>
+    <string name="vehicle_plate_hint">VAA 1234</string>
+    <string name="license_serial">Driver\'s License Serial (No. Siri)</string>
+    <string name="license_serial_hint">e.g., D12345678</string>
+    <string name="password_label">Password</string>
+    <string name="password_hint">Create a strong password</string>
+    <string name="confirm_password_label">Confirm Password</string>
+    <string name="confirm_password_hint">Re-enter your password</string>
+    <string name="emergency_contact_section">Emergency Contact</string>
+    <string name="emergency_name_label">Emergency Contact Name</string>
+    <string name="emergency_name_hint">Emergency contact name</string>
+    <string name="emergency_phone_label">Emergency Contact Phone</string>
+    <string name="btn_verify_email">Verify Email</string>
+    <string name="btn_complete_fields">Complete All Fields</string>
+
+    <!-- Validation errors -->
+    <string name="err_name_required">Name is required</string>
+    <string name="err_name_min">Name must be at least 3 characters</string>
+    <string name="err_email_required">Email is required</string>
+    <string name="err_email_invalid">Invalid email format</string>
+    <string name="err_phone_required">Phone number is required</string>
+    <string name="err_phone_invalid">Invalid Malaysian phone number (e.g. +60123456789)</string>
+    <string name="err_plate_required">Plate number is required</string>
+    <string name="err_plate_invalid">Invalid Malaysian plate format (e.g. VAA 1234)</string>
+    <string name="err_license_required">License serial is required</string>
+    <string name="err_license_min">License serial must be at least 6 characters</string>
+    <string name="err_password_required">Password is required</string>
+    <string name="err_password_min">Password must be at least 8 characters</string>
+    <string name="err_password_complexity">Password must contain uppercase, lowercase and number</string>
+    <string name="err_confirm_required">Please confirm your password</string>
+    <string name="err_confirm_mismatch">Passwords must match</string>
+
+    <!-- ── Email Verification ── -->
+    <string name="check_email_title">Check your Email</string>
+    <string name="check_email_subtitle">We\'ve sent a 6-digit verification code to your email</string>
+    <string name="enter_code_label">Enter Verification Code</string>
+    <string name="resend_code">Resend Code</string>
+    <string name="resend_in">Resend code in %ds</string>
+    <string name="verified_title">Verified!</string>
+    <string name="verified_subtitle">Your account has been verified successfully</string>
+
+    <!-- ── Dashboard ── -->
+    <string name="monitoring_active">Monitoring Active</string>
+    <string name="monitoring_inactive">Inactive</string>
+    <string name="display_mode_label">Display Mode</string>
+    <string name="mode_auto">Auto</string>
+    <string name="mode_light">Light</string>
+    <string name="mode_dark">Dark</string>
+    <string name="hardware_connection">Hardware Connection</string>
+    <string name="vision_sensor_latency">Vision sensor latency</string>
+    <string name="btn_start_monitoring">Start Monitoring</string>
+    <string name="btn_stop_monitoring">Stop Monitoring</string>
+
+    <!-- ── Symptom Alert ── -->
+    <string name="early_fatigue_title">Early Fatigue Detected</string>
+    <string name="early_fatigue_body">Signs of drowsiness detected. Please take action.</string>
+    <string name="escalating_in">Escalating to emergency in %ds</string>
+    <string name="btn_im_awake">I\'m Awake</string>
+
+    <!-- ── Microsleep Alert ── -->
+    <string name="wake_up">WAKE UP!</string>
+    <string name="btn_dismiss_alarm">Dismiss Alarm</string>
+
+    <!-- ── History ── -->
+    <string name="history_analytics_title">History &amp; Analytics</string>
+    <string name="ai_insight_label">AI Insight</string>
+    <string name="ai_insight_text">You are 40% more drowsy on Tuesdays at 3PM. Consider scheduling breaks during this time.</string>
+    <string name="fatigue_events_title">Fatigue Events</string>
+    <string name="recent_detections">Recent detections and alerts</string>
+    <string name="microsleep_alert_label">Microsleep Alert</string>
+    <string name="symptom_warning_label">Symptom Warning</string>
+    <string name="badge_critical">Critical</string>
+    <string name="badge_warning">Warning</string>
+    <string name="btn_download_report">Download Full Analysis Report</string>
+    <string name="downloading_report">Downloading full analysis report…</string>
+
+    <!-- ── Change Ownership ── -->
+    <string name="change_ownership_title">Change Ownership</string>
+    <string name="danger_zone_title">Danger Zone</string>
+    <string name="danger_zone_body">Changing ownership will permanently reset this account. All monitoring history, analytics, and settings will be deleted. This action cannot be undone.</string>
+    <string name="verify_identity_title">Verify Your Identity</string>
+    <string name="confirm_understanding">I understand that this will permanently delete all data and reset the account to registration state.</string>
+    <string name="btn_confirm_transfer">Confirm Ownership Transfer</string>
+</resources>

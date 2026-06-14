@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Brand Primary -->
+    <color name="primary">#2E5BFF</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="primary_alpha10">#1A2E5BFF</color>
+    <color name="primary_alpha20">#332E5BFF</color>
+
+    <!-- Status: Warning -->
+    <color name="warning">#FFA500</color>
+    <color name="on_warning">#FFFFFF</color>
+    <color name="warning_alpha10">#1AFFA500</color>
+    <color name="warning_alpha20">#33FFA500</color>
+
+    <!-- Status: Emergency / Microsleep -->
+    <color name="emergency">#FF0000</color>
+    <color name="on_emergency">#FFFFFF</color>
+
+    <!-- Status: Destructive / Danger -->
+    <color name="destructive">#D4183D</color>
+    <color name="on_destructive">#FFFFFF</color>
+    <color name="destructive_alpha10">#1AD4183D</color>
+    <color name="destructive_alpha20">#33D4183D</color>
+
+    <!-- Light Theme Surfaces -->
+    <color name="background_light">#FFFFFF</color>
+    <color name="on_background_light">#1A1B1E</color>
+    <color name="card_light">#FFFFFF</color>
+    <color name="muted_light">#ECECF0</color>
+    <color name="muted_fg_light">#717182</color>
+    <color name="accent_light">#E9EBEF</color>
+    <color name="input_bg_light">#F3F3F5</color>
+    <color name="border_light">#1A000000</color>
+    <color name="ring_border_light">#E9EBEF</color>
+
+    <!-- Dark Theme Surfaces -->
+    <color name="background_dark">#0A0B0F</color>
+    <color name="on_background_dark">#E5E6EC</color>
+    <color name="card_dark">#16171D</color>
+    <color name="muted_dark">#2D2E38</color>
+    <color name="muted_fg_dark">#B5B5C3</color>
+    <color name="accent_dark">#2D2E38</color>
+    <color name="input_bg_dark">#0D0E14</color>
+    <color name="border_dark">#1AFFFFFF</color>
+    <color name="ring_border_dark">#2DFFFFFF</color>
+
+    <!-- Overlay for semi-transparent backgrounds -->
+    <color name="overlay_dark">#CC000000</color>
+</resources>

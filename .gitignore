@@ -1,0 +1,31 @@
+# ── Python ──
+vision_client/venv/
+vision_client/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# ── Large binary assets (tracked separately or via Git LFS) ──
+assets/shape_predictor_68_face_landmarks.dat
+assets/alarm.wav
+
+# ── Android / Gradle ──
+mobile_app/.gradle/
+mobile_app/build/
+mobile_app/app/build/
+mobile_app/local.properties
+mobile_app/.idea/
+mobile_app/**/*.iml
+mobile_app/.kotlin/
+
+# ── Android secrets ──
+mobile_app/app/google-services.json
+
+# ── Firebase ──
+cloud_backend/serviceAccountKey.json
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+desktop.ini
