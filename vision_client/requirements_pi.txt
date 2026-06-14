@@ -1,0 +1,49 @@
+# =============================================================================
+# requirements_pi.txt — Raspberry Pi Edition Dependencies
+# DrowsySync Vision Client
+# =============================================================================
+#
+# Installation on Raspberry Pi:
+#   pip install -r requirements_pi.txt
+#
+# IMPORTANT COMPATIBILITY NOTES
+# ─────────────────────────────
+# MediaPipe officially supports:
+#   • Raspberry Pi 4 / Pi 5  with  64-bit Raspberry Pi OS (aarch64)
+#     → mediapipe >= 0.10.14 installs via pip with no extra steps.
+#
+#   • Raspberry Pi 3 (32-bit armv7l / armhf)
+#     → pip wheel NOT available from PyPI. Options:
+#       a) Switch to 64-bit OS on a Pi 3B+ (recommended).
+#       b) Use the unofficial wheel: https://github.com/prepkg/mediapipe-raspberrypi
+#       c) Build from source (advanced, ~2 hr build time).
+#
+# Audio:
+#   aplay (alsa-utils) is used instead of pygame to save RAM.
+#   Install with:  sudo apt install -y alsa-utils
+#   No pip package needed for audio.
+# =============================================================================
+
+# ── Core detection stack ──────────────────────────────────────────────────────
+# Use the headless OpenCV build — no Qt / GTK overhead (saves ~40 MB installed)
+# NOTE: If you need cv2.imshow() (which we do), use opencv-python, NOT headless.
+#       On Pi OS with desktop, imshow works fine.
+#       For headless/SSH-only use, replace with opencv-python-headless and
+#       remove the imshow call in main().
+opencv-python>=4.8.0,<5.0.0
+
+# MediaPipe (aarch64 wheel from PyPI for Pi 4 / Pi 5 64-bit OS)
+mediapipe>=0.10.14,<1.0.0
+
+# NumPy — required by MediaPipe and our metric formulas
+numpy>=1.24.0,<2.0.0
+
+# =============================================================================
+# Optional — only needed if you enable the API event hook in on_status_change()
+# =============================================================================
+# requests>=2.31.0
+
+# =============================================================================
+# Development / testing on Windows or macOS (NOT installed on Pi)
+# =============================================================================
+# pygame>=2.5.0      ← Windows audio fallback (not used on Pi)
