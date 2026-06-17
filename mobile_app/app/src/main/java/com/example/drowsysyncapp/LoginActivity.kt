@@ -21,8 +21,8 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Pre-fill default Car Plate Number 
-        binding.etVehicleId.setText("MKA 862B")
+        // Pre-fill default Car Plate Number to make testing easy
+        binding.etVehicleId.setText("DDH 4321")
 
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()

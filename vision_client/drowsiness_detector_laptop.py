@@ -52,8 +52,10 @@ except ImportError:
 # All tuneable parameters live here.  No other section needs editing.
 # =============================================================================
 
+import sys
+
 # ── Camera & Network ──────────────────────────────────────────────────────────
-CAR_PLATE_NUMBER = "DFH4321"  # <-- Edit this to match your Android app's Car Plate!
+CAR_PLATE_NUMBER = "DDH4321"  # <-- Edit this to match your Android app's Car Plate!
 CAMERA_INDEX = 0
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
