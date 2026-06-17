@@ -13,6 +13,10 @@ const bcrypt = require('bcryptjs');
 // Load environment variables
 dotenv.config();
 
+// Fix for Render IPv6 ENETUNREACH errors (Forces IPv4 first)
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
