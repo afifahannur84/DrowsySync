@@ -14,7 +14,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitClient {
 
     // TODO: Change to your actual laptop IPv4 address (e.g. http://192.168.x.x:3000/)
-    private const val BASE_URL = "http://192.168.0.25:3000/"
+    private const val BASE_URL = "https://drowsysync.onrender.com/"
 
     val instance: DrowsySyncApiService by lazy {
         Retrofit.Builder()

@@ -21,7 +21,7 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Pre-fill default vehicle ID 
+        // Pre-fill default Car Plate Number 
         binding.etVehicleId.setText("MKA 862B")
 
         binding.btnLogin.setOnClickListener {

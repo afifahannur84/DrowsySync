@@ -29,13 +29,24 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// 🟢 ADD THIS LINE RIGHT HERE TO DEBUG:
-console.log("🔍 Current MONGO_URI from .env is:", process.env.MONGO_URI);
 
 // Connect to MongoDB Atlas
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB connected successfully'))
   .catch((err) => console.error('❌ MongoDB connection error:', err));
+
+// ==========================================
+// HEALTH CHECK ENDPOINT
+// ==========================================
+
+// [GET /api/health]
+// Lightweight route to keep Render free-tier server awake without querying MongoDB
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: "UP", 
+    message: "DrowsySync Engine is warm and awake!" 
+  });
+});
 
 // ==========================================
 // AUTHENTICATION API ENDPOINTS
@@ -164,7 +175,7 @@ app.post('/api/auth/login', async (req, res) => {
         isGuestModeActive: false
       });
       await matchedUser.save();
-      console.log(`Cloned new user record for vehicleId: ${vId}`);
+      console.log(`Cloned new user record for Car Plate Number: ${vId}`);
     }
 
     const safeUser = matchedUser.toObject();
@@ -210,7 +221,7 @@ app.put('/api/users/claim-vehicle/:userId', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Unclaim vehicle for all other users sharing this vehicleId
+    // Unclaim vehicle for all other users sharing this Car Plate Number
     await User.updateMany(
       { vehicleId: user.vehicleId },
       { $set: { isCurrentlyDriving: false } }
@@ -355,7 +366,7 @@ const handleLogIngestion = async (req, res) => {
       return res.status(400).json({ error: 'vehicleId is required' });
     }
     
-    // First, try to find the user who actively claimed the vehicle
+    // First, try to find the user who actively claimed the Car Plate Number
     let matchedUser = await User.findOne({ vehicleId, isCurrentlyDriving: true });
     
     // If no one is actively driving, fallback to the first registered owner
@@ -364,7 +375,7 @@ const handleLogIngestion = async (req, res) => {
     }
     
     if (!matchedUser) {
-      return res.status(404).json({ error: 'No user found for this vehicleId.' });
+      return res.status(404).json({ error: 'No user found for this Car Plate Number.' });
     }
 
     if (matchedUser.isGuestModeActive) {
@@ -376,7 +387,7 @@ const handleLogIngestion = async (req, res) => {
     const logEntry = new FatigueLog(fatigueData);
     await logEntry.save();
     
-    console.log('📥 Received and logged fatigue event for vehicle', vehicleId, ':', fatigueData.status);
+    console.log('📥 Received and logged fatigue event for Car Plate Number', vehicleId, ':', fatigueData.status);
     res.status(201).json({ message: 'Event successfully logged', data: logEntry });
   } catch (error) {
     console.error('Error logging event:', error);
@@ -387,17 +398,7 @@ const handleLogIngestion = async (req, res) => {
 // Route for the new /api/logs endpoint
 app.post('/api/logs', handleLogIngestion);
 
-// Keep the old /api/events endpoint working just in case the Python script or Android app hasn't been updated yet
-app.post('/api/events', handleLogIngestion);
-app.get('/api/events', async (req, res) => {
-  try {
-    const events = await FatigueLog.find().sort({ createdAt: -1 }).limit(50);
-    res.status(200).json(events);
-  } catch (error) {
-    console.error('Error fetching events:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
+
 
 // Start the server
 app.listen(PORT, '0.0.0.0', () => {

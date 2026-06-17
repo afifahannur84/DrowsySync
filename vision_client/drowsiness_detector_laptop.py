@@ -36,8 +36,6 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import requests
-import requests
-
 try:
     import pygame
 
@@ -55,7 +53,7 @@ except ImportError:
 # =============================================================================
 
 # ── Camera & Network ──────────────────────────────────────────────────────────
-VEHICLE_ID = "DFH4321"  # <-- Edit this to match your Android app's Car Plate!
+CAR_PLATE_NUMBER = "DFH4321"  # <-- Edit this to match your Android app's Car Plate!
 CAMERA_INDEX = 0
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
@@ -465,7 +463,7 @@ class DetectionState:
     def to_dict(self) -> dict:
         """JSON-serialisable payload for Firebase / REST API."""
         return {
-            "vehicleId": VEHICLE_ID,
+            "vehicleId": CAR_PLATE_NUMBER,
             "stage": self.stage,
             "status": self.status,
             "perclos": round(self.perclos, 2),
@@ -653,8 +651,8 @@ def draw_no_face(frame: np.ndarray, fps: float, h: int) -> None:
 def _send_log_async(payload: dict) -> None:
     """Background task to send the event payload to the Node.js server."""
     try:
-        # Note: Your server.js is configured for /api/events! 
-        url = "http://127.0.0.1:3000/api/events"
+        # Note: Your server.js is configured for /api/logs! 
+        url = "https://drowsysync.onrender.com/api/logs"
         response = requests.post(url, json=payload, timeout=3.0)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
