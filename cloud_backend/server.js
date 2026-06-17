@@ -26,7 +26,9 @@ app.use(express.json());
 
 // Configure Nodemailer Transport
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
@@ -50,9 +52,9 @@ mongoose.connect(process.env.MONGO_URI)
 // [GET /api/health]
 // Lightweight route to keep Render free-tier server awake without querying MongoDB
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
-    status: "UP", 
-    message: "DrowsySync Engine is warm and awake!" 
+  res.status(200).json({
+    status: "UP",
+    message: "DrowsySync Engine is warm and awake!"
   });
 });
 
@@ -70,10 +72,10 @@ app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password, vehicleId } = req.body;
     const vId = vehicleId || "UTEM_LOG_862B";
-    
+
     const verificationCode = generateVerificationCode();
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     const tempUser = new Verification({
       name,
       email,
@@ -83,7 +85,7 @@ app.post('/api/auth/register', async (req, res) => {
     });
 
     await tempUser.save();
-    
+
     // Send Real Email
     if (process.env.EMAIL_USER && process.env.EMAIL_USER !== 'your_gmail@gmail.com') {
       try {
@@ -114,9 +116,9 @@ app.post('/api/auth/register', async (req, res) => {
       console.log(`⚠️ Email skipped: Please fill EMAIL_USER and EMAIL_PASS in .env. Code is: ${verificationCode}`);
     }
 
-    res.status(201).json({ 
-      message: 'Registration staging complete. Please verify email.', 
-      verificationCode: verificationCode 
+    res.status(201).json({
+      message: 'Registration staging complete. Please verify email.',
+      verificationCode: verificationCode
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -128,7 +130,7 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/verify', async (req, res) => {
   try {
     const { email, code } = req.body;
-    
+
     const tempUser = await Verification.findOne({ email, code });
     if (!tempUser) {
       return res.status(400).json({ error: 'Invalid or expired verification code' });
@@ -144,12 +146,12 @@ app.post('/api/auth/verify', async (req, res) => {
     });
 
     await newUser.save();
-    
+
     await Verification.deleteOne({ _id: tempUser._id });
-      
+
     const safeUser = newUser.toObject();
     delete safeUser.password;
-    
+
     res.status(200).json({ message: 'Email verified successfully', user: safeUser });
   } catch (error) {
     console.error('Verification error:', error);
@@ -162,7 +164,7 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password, vehicleId } = req.body;
     const vId = vehicleId || "UTEM_LOG_862B";
-    
+
     const userRecords = await User.find({ email }).select('+password');
     if (userRecords.length === 0) {
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -174,7 +176,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     let matchedUser = userRecords.find(u => u.vehicleId === vId);
-    
+
     if (!matchedUser) {
       matchedUser = new User({
         name: userRecords[0].name,
@@ -190,7 +192,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     const safeUser = matchedUser.toObject();
     delete safeUser.password;
-      
+
     res.status(200).json({ message: 'Login successful', user: safeUser });
   } catch (error) {
     console.error('Login error:', error);
@@ -205,8 +207,8 @@ app.put('/api/users/guest-mode/:userId', async (req, res) => {
     const { isGuestModeActive } = req.body;
 
     const user = await User.findByIdAndUpdate(
-      userId, 
-      { $set: { isGuestModeActive } }, 
+      userId,
+      { $set: { isGuestModeActive } },
       { new: true, runValidators: true }
     );
 
@@ -226,7 +228,7 @@ app.put('/api/users/claim-vehicle/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const user = await User.findById(userId);
-    
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -257,7 +259,7 @@ app.get('/api/logs/report/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const { days } = req.query;
-    
+
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -282,10 +284,10 @@ app.get('/api/logs/report/:userId', async (req, res) => {
     const doc = new PDFDocument();
     const buffers = [];
     doc.on('data', buffers.push.bind(buffers));
-    
+
     doc.on('end', async () => {
       const pdfData = Buffer.concat(buffers);
-      
+
       if (process.env.EMAIL_USER && process.env.EMAIL_USER !== 'your_gmail@gmail.com') {
         try {
           await transporter.sendMail({
@@ -317,12 +319,12 @@ app.get('/api/logs/report/:userId', async (req, res) => {
     doc.text(`Total Events: ${events.length}`);
     if (days) doc.text(`Timeframe: Last ${days} days`);
     doc.moveDown();
-    
+
     events.slice(0, 50).forEach((event, index) => {
       const date = new Date(event.createdAt).toLocaleString();
       doc.fontSize(12).text(`${index + 1}. ${date} - ${event.status} (PERCLOS: ${event.perclos.toFixed(1)}%)`);
     });
-    
+
     if (events.length > 50) {
       doc.moveDown().text(`...and ${events.length - 50} more events.`);
     }
@@ -339,7 +341,7 @@ app.get('/api/logs/report/:userId', async (req, res) => {
 app.get('/api/logs/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    
+
     // Fetch latest 50 events for this specific user, sorted by createdAt descending
     const events = await FatigueLog.find({ userId }).sort({ createdAt: -1 }).limit(50);
     res.status(200).json(events);
@@ -354,11 +356,11 @@ app.get('/api/logs/latest/vehicle/:vehicleId', async (req, res) => {
   try {
     const { vehicleId } = req.params;
     const log = await FatigueLog.findOne({ vehicleId }).sort({ createdAt: -1 });
-    
+
     if (!log) {
       return res.status(404).json({ error: 'No logs found for this vehicle' });
     }
-    
+
     res.status(200).json(log);
   } catch (error) {
     console.error('Error fetching latest log:', error);
@@ -371,19 +373,19 @@ const handleLogIngestion = async (req, res) => {
   try {
     const fatigueData = req.body;
     const { vehicleId } = fatigueData;
-    
+
     if (!vehicleId) {
       return res.status(400).json({ error: 'vehicleId is required' });
     }
-    
+
     // First, try to find the user who actively claimed the Car Plate Number
     let matchedUser = await User.findOne({ vehicleId, isCurrentlyDriving: true });
-    
+
     // If no one is actively driving, fallback to the first registered owner
     if (!matchedUser) {
       matchedUser = await User.findOne({ vehicleId });
     }
-    
+
     if (!matchedUser) {
       return res.status(404).json({ error: 'No user found for this Car Plate Number.' });
     }
@@ -393,10 +395,10 @@ const handleLogIngestion = async (req, res) => {
     } else {
       fatigueData.userId = matchedUser._id;
     }
-    
+
     const logEntry = new FatigueLog(fatigueData);
     await logEntry.save();
-    
+
     console.log('📥 Received and logged fatigue event for Car Plate Number', vehicleId, ':', fatigueData.status);
     res.status(201).json({ message: 'Event successfully logged', data: logEntry });
   } catch (error) {
