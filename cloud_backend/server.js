@@ -20,13 +20,16 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Nodemailer Transport Setup
+// Configure Nodemailer Transport
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
-  }
+  },
+  connectionTimeout: 5000, // 5 seconds
+  greetingTimeout: 5000,
+  socketTimeout: 5000
 });
 
 
@@ -98,7 +101,9 @@ app.post('/api/auth/register', async (req, res) => {
         });
         console.log(`✉️ Verification email sent to ${email}`);
       } catch (mailError) {
-        console.error('❌ Failed to send email:', mailError);
+        console.error('❌ Failed to send verification email:', mailError);
+        console.log(`⚠️ FALLBACK VERIFICATION CODE FOR ${email}: ${verificationCode}`);
+        // Even if email fails, we return success so the user can be manually verified or use a fallback
       }
     } else {
       console.log(`⚠️ Email skipped: Please fill EMAIL_USER and EMAIL_PASS in .env. Code is: ${verificationCode}`);
