@@ -31,9 +31,10 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   },
-  connectionTimeout: 5000, // 5 seconds
-  greetingTimeout: 5000,
-  socketTimeout: 5000
+  family: 4, // 👈 CRITICAL: Forces IPv4 to bypass the Render ENETUNREACH IPv6 error
+  connectionTimeout: 10000, // 👈 Increased to 10 seconds to give Render more breathing room
+  greetingTimeout: 10000,
+  socketTimeout: 10000
 });
 
 
