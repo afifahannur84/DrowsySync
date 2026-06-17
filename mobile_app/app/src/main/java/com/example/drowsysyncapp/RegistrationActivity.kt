@@ -7,6 +7,12 @@ import android.text.TextWatcher
 import androidx.appcompat.app.AppCompatActivity
 import com.example.drowsysyncapp.databinding.ActivityRegistrationBinding
 import com.google.android.material.textfield.TextInputLayout
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
+import com.example.drowsysyncapp.network.RetrofitClient
+import com.example.drowsysyncapp.network.UserRequest
+import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 class RegistrationActivity : AppCompatActivity() {
 
@@ -34,7 +40,42 @@ class RegistrationActivity : AppCompatActivity() {
 
         binding.btnSubmit.setOnClickListener {
             if (validity.values.all { it }) {
-                startActivity(Intent(this, EmailVerificationActivity::class.java))
+                val name = binding.etFullName.text.toString()
+                val email = binding.etEmail.text.toString()
+                val password = binding.etPassword.text.toString()
+                val vehiclePlate = binding.etVehiclePlate.text.toString().replace("\\s+".toRegex(), "").uppercase()
+
+                binding.btnSubmit.isEnabled = false
+                binding.btnSubmit.text = "Registering..."
+
+                lifecycleScope.launch {
+                    try {
+                        val request = UserRequest(name, email, password, vehiclePlate)
+                        val response = RetrofitClient.instance.registerUser(request)
+                        
+                        if (response.isSuccessful && response.body() != null) {
+                            val code = response.body()!!.verificationCode
+                            val intent = Intent(this@RegistrationActivity, EmailVerificationActivity::class.java)
+                            intent.putExtra("email", email)
+                            intent.putExtra("verificationCode", code)
+                            startActivity(intent)
+                        } else {
+                            val errorMsg = try {
+                                val errorJson = JSONObject(response.errorBody()?.string() ?: "")
+                                errorJson.optString("error", response.message())
+                            } catch (e: Exception) {
+                                response.message()
+                            }
+                            Toast.makeText(this@RegistrationActivity, "Registration failed: $errorMsg", Toast.LENGTH_LONG).show()
+                            binding.btnSubmit.isEnabled = true
+                            binding.btnSubmit.text = getString(R.string.btn_verify_email)
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(this@RegistrationActivity, "Network Error: ${e.message}", Toast.LENGTH_LONG).show()
+                        binding.btnSubmit.isEnabled = true
+                        binding.btnSubmit.text = getString(R.string.btn_verify_email)
+                    }
+                }
             }
         }
     }

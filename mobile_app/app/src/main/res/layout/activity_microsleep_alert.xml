@@ -23,10 +23,19 @@
         android:layout_height="wrap_content"
         android:text="@string/wake_up"
         android:textColor="@android:color/white"
-        android:textSize="56sp"
+        android:textSize="36sp"
         android:textStyle="bold"
         android:fontFamily="sans-serif-black"
-        android:letterSpacing="0.05"
+        android:letterSpacing="0.02"
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Microsleep or severe fatigue detected!\nPull over immediately."
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
         android:gravity="center"
         android:layout_marginBottom="40dp" />
 

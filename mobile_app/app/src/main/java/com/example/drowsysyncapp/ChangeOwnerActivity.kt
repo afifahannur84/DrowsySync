@@ -1,11 +1,15 @@
 package com.example.drowsysyncapp
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.drowsysyncapp.databinding.ActivityChangeOwnerBinding
+import com.example.drowsysyncapp.network.RetrofitClient
+import com.example.drowsysyncapp.network.VehicleUpdateRequest
+import kotlinx.coroutines.launch
 
 class ChangeOwnerActivity : AppCompatActivity() {
 
@@ -24,22 +28,50 @@ class ChangeOwnerActivity : AppCompatActivity() {
         }
 
         binding.btnConfirmTransfer.setOnClickListener {
-            val email = binding.etEmail.text?.toString().orEmpty()
-            val password = binding.etPassword.text?.toString().orEmpty()
+            val carModel = binding.etCarModel.text?.toString()?.trim() ?: ""
+            val carPlate = binding.etCarPlate.text?.toString()?.trim() ?: ""
 
-            if (email.isBlank() || password.isBlank()) {
-                Toast.makeText(this, "Please fill in your credentials", Toast.LENGTH_SHORT).show()
+            if (carModel.isEmpty() || carPlate.isEmpty()) {
+                Toast.makeText(this, "Please fill in both Car Model and Car Plate", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Clear login state → back to Registration
-            getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
-                .edit().putBoolean(MainActivity.KEY_LOGGED_IN, false).apply()
+            val prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
+            val userId = prefs.getString("user_id", null)
 
-            val intent = Intent(this, RegistrationActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            if (userId == null) {
+                Toast.makeText(this, "User ID not found. Please log in again.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
-            startActivity(intent)
+
+            // UI loading state
+            binding.btnConfirmTransfer.isEnabled = false
+            binding.progressBar.visibility = View.VISIBLE
+
+            lifecycleScope.launch {
+                try {
+                    val request = VehicleUpdateRequest(carModel, carPlate)
+                    val response = RetrofitClient.instance.updateVehicleDetails(userId, request)
+
+                    if (response.isSuccessful) {
+                        prefs.edit()
+                            .putString("car_model", carModel)
+                            .putString("car_plate", carPlate)
+                            .apply()
+
+                        Toast.makeText(this@ChangeOwnerActivity, "Vehicle details updated successfully!", Toast.LENGTH_LONG).show()
+                        finish()
+                    } else {
+                        Toast.makeText(this@ChangeOwnerActivity, "Failed to update: ${response.message()}", Toast.LENGTH_LONG).show()
+                        binding.btnConfirmTransfer.isEnabled = true
+                        binding.progressBar.visibility = View.GONE
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(this@ChangeOwnerActivity, "Network error: ${e.message}", Toast.LENGTH_LONG).show()
+                    binding.btnConfirmTransfer.isEnabled = true
+                    binding.progressBar.visibility = View.GONE
+                }
+            }
         }
     }
 }

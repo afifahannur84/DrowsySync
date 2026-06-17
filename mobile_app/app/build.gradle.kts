@@ -50,6 +50,14 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.recyclerview)
+
+    // ── Retrofit + Gson (HTTP client for Node.js backend) ────────────────────
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+
+    // ── Kotlin Coroutines (non-blocking network calls in the service) ─────────
+    implementation(libs.kotlinx.coroutines.android)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -35,6 +35,8 @@ from typing import Deque, List, Optional, Tuple
 import cv2
 import mediapipe as mp
 import numpy as np
+import requests
+import requests
 
 try:
     import pygame
@@ -52,16 +54,17 @@ except ImportError:
 # All tuneable parameters live here.  No other section needs editing.
 # =============================================================================
 
-# ── Camera ────────────────────────────────────────────────────────────────────
+# ── Camera & Network ──────────────────────────────────────────────────────────
+VEHICLE_ID = "DFH4321"  # <-- Edit this to match your Android app's Car Plate!
 CAMERA_INDEX = 0
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 
 # ── EAR — Eye Aspect Ratio ────────────────────────────────────────────────────
-EAR_THRESHOLD = 0.22  # Balanced threshold (0.26 was too high, 0.18 was too low)
+EAR_THRESHOLD = 0.18  # LOWERED: so normal blinks don't accidentally trigger closure.
 
 # ── MAR — Mouth Aspect Ratio ──────────────────────────────────────────────────
-MAR_THRESHOLD = 0.65
+MAR_THRESHOLD = 0.50  # LOWERED: so you don't have to open your mouth extremely wide to trigger a yawn.
 
 # ── PERCLOS — Sliding Window ──────────────────────────────────────────────────
 PERCLOS_WINDOW_SECS = 60.0  # rolling window duration (seconds)
@@ -79,7 +82,7 @@ PERCLOS_STAGE2_HI = 12.0  # Stage 2→3 boundary (was 15.0)
 MICROSLEEP_SECS = 1.2  # continuous eye closure → microsleep event
 
 # ── Yawn Events ───────────────────────────────────────────────────────────────
-YAWN_MIN_DURATION_SECS = 3.0  # MAR must exceed threshold for this long → 1 event
+YAWN_MIN_DURATION_SECS = 1.5  # LOWERED: MAR must exceed threshold for 1.5s (instead of 3.0s) to count as 1 event.
 YAWN_WINDOW_SECS = 180.0  # rolling window for counting yawn events (3 min)
 YAWN_STAGE1_COUNT = 1  # yawns in window → Stage 1 (was 2)
 YAWN_STAGE2_COUNT = 2  # yawns in window → Stage 2 (was 3)
@@ -462,6 +465,7 @@ class DetectionState:
     def to_dict(self) -> dict:
         """JSON-serialisable payload for Firebase / REST API."""
         return {
+            "vehicleId": VEHICLE_ID,
             "stage": self.stage,
             "status": self.status,
             "perclos": round(self.perclos, 2),
@@ -470,7 +474,7 @@ class DetectionState:
             "recent_yawn_count": self.recent_yawn_count,
             "microsleep_active": self.microsleep_active,
             "stage3_latched": self.stage3_latched,
-            "timestamp": time.time(),
+            "clientTimestamp": int(time.time() * 1000),
         }
 
 
@@ -646,16 +650,21 @@ def draw_no_face(frame: np.ndarray, fps: float, h: int) -> None:
 # =============================================================================
 
 
+def _send_log_async(payload: dict) -> None:
+    """Background task to send the event payload to the Node.js server."""
+    try:
+        # Note: Your server.js is configured for /api/events! 
+        url = "http://127.0.0.1:3000/api/events"
+        response = requests.post(url, json=payload, timeout=3.0)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        # Graceful failure: print a warning without crashing or blocking the script
+        print(f"\n[WARNING] Failed to sync event to cloud backend: {e}")
+
 def on_status_change(state: DetectionState) -> None:
     """
     Called whenever the detected stage changes.
-    Replace the print() body with an HTTP POST or Firebase write
-    when your cloud backend is ready.
-
-    Example:
-        import requests
-        requests.post("https://your-backend.com/api/events",
-                      json=state.to_dict(), timeout=2)
+    Dispatches the network request in a daemon thread to prevent frame drops.
     """
     payload = state.to_dict()
     tag = ["[--]", "[!] ", "[!!]", "[!!!!!]"][state.stage]
@@ -666,6 +675,9 @@ def on_status_change(state: DetectionState) -> None:
         f"EAR={payload['ear']}  "
         f"Microsleep={payload['microsleep_active']}"
     )
+
+    # Spawn a non-blocking background thread for the network request
+    threading.Thread(target=_send_log_async, args=(payload,), daemon=True).start()
 
 
 # =============================================================================

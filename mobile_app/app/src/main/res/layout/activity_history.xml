@@ -105,6 +105,7 @@
                             android:layout_marginBottom="4dp" />
 
                         <TextView
+                            android:id="@+id/tvAiInsightText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/ai_insight_text"
@@ -161,6 +162,15 @@
                         android:layout_height="wrap_content"
                         android:nestedScrollingEnabled="false"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                    <ProgressBar
+                        android:id="@+id/progressBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:visibility="gone"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

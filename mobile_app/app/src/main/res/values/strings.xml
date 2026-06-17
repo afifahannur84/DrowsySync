@@ -64,13 +64,13 @@
     <string name="btn_stop_monitoring">Stop Monitoring</string>
 
     <!-- ── Symptom Alert ── -->
-    <string name="early_fatigue_title">Early Fatigue Detected</string>
-    <string name="early_fatigue_body">Signs of drowsiness detected. Please take action.</string>
-    <string name="escalating_in">Escalating to emergency in %ds</string>
-    <string name="btn_im_awake">I\'m Awake</string>
+    <string name="early_fatigue_title">STAGE 2: ACTIVE DROWSINESS</string>
+    <string name="early_fatigue_body">Frequent yawning or heavy blinking detected.</string>
+    <string name="escalating_in">Escalating to Critical Alarm in %ds</string>
+    <string name="btn_im_awake">I\'m Awake!</string>
 
     <!-- ── Microsleep Alert ── -->
-    <string name="wake_up">WAKE UP!</string>
+    <string name="wake_up">STAGE 3: CRITICAL ALARM</string>
     <string name="btn_dismiss_alarm">Dismiss Alarm</string>
 
     <!-- ── History ── -->

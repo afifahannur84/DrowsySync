@@ -1,19 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ── Network ── -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- ── Foreground Service (required to call startForegroundService) ── -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- ── Foreground Service Type: DATA_SYNC (required on API 34+) ── -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
+    <!-- ── Full-Screen Intent (pop over other apps / lock screen) ── -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
+    <!-- ── Post Notifications (required on Android 13 / API 33+) ── -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- ── Wake lock (keeps CPU alive while service polls) ── -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/drowsysync_app_icon"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/drowsysync_app_icon"
         android:supportsRtl="true"
-        android:theme="@style/Theme.DrowsySyncApp">
+        android:theme="@style/Theme.DrowsySyncApp"
+        android:usesCleartextTraffic="true">
 
-        <!-- ── Launcher: Dashboard (routes to Registration if not logged in) ── -->
+        <!-- ── Launcher: Dashboard (routes to Login if not logged in) ── -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -23,6 +41,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- ── Login ── -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- ── Registration ── -->
         <activity
@@ -54,11 +78,20 @@
             android:theme="@style/Theme.DrowsySyncApp.Transparent" />
 
         <!-- ── Microsleep Emergency ── -->
+        <!--     showWhenLocked + turnScreenOn = pops over lock screen         -->
+        <!--     exported="true" required so the foreground service can launch it -->
         <activity
             android:name=".MicrosleepAlertActivity"
-            android:exported="false"
+            android:exported="true"
             android:showWhenLocked="true"
             android:turnScreenOn="true" />
+
+        <!-- ── DrowsySync Background Polling Service ── -->
+        <!--     foregroundServiceType="dataSync" required on API 34+           -->
+        <service
+            android:name=".DrowsySyncBackgroundService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
     </application>
 </manifest>

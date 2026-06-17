@@ -12,6 +12,8 @@ import android.view.KeyEvent
 import android.view.View
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import com.example.drowsysyncapp.databinding.ActivityEmailVerificationBinding
 
 class EmailVerificationActivity : AppCompatActivity() {
@@ -73,26 +75,52 @@ class EmailVerificationActivity : AppCompatActivity() {
     }
 
     private fun onOtpComplete() {
-        // Show verified state after a short delay
-        Handler(Looper.getMainLooper()).postDelayed({
-            binding.layoutUnverified.visibility = View.GONE
-            binding.layoutVerified.visibility = View.VISIBLE
-            // Animate the check icon
-            binding.ivVerifiedIcon.animate().scaleX(1.2f).scaleY(1.2f).setDuration(300)
-                .withEndAction {
-                    binding.ivVerifiedIcon.animate().scaleX(1f).scaleY(1f).setDuration(200).start()
-                }.start()
+        val email = intent.getStringExtra("email") ?: return
+        val enteredCode = otpFields.joinToString("") { it.text.toString() }
 
-            // Save login state and navigate to Dashboard
-            Handler(Looper.getMainLooper()).postDelayed({
-                getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
-                    .edit().putBoolean(MainActivity.KEY_LOGGED_IN, true).apply()
-                val intent = Intent(this, MainActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        // Disable fields during network check
+        otpFields.forEach { it.isEnabled = false }
+
+        lifecycleScope.launch {
+            try {
+                val request = com.example.drowsysyncapp.network.VerifyRequest(email, enteredCode)
+                val response = com.example.drowsysyncapp.network.RetrofitClient.instance.verifyEmail(request)
+
+                if (response.isSuccessful && response.body() != null) {
+                    val user = response.body()?.user
+                    if (user != null) {
+                        getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
+                            .edit()
+                            .putBoolean(MainActivity.KEY_LOGGED_IN, true)
+                            .putString("user_id", user.id)
+                            .apply()
+                    }
+
+                    binding.layoutUnverified.visibility = View.GONE
+                    binding.layoutVerified.visibility = View.VISIBLE
+                    // Animate the check icon
+                    binding.ivVerifiedIcon.animate().scaleX(1.2f).scaleY(1.2f).setDuration(300)
+                        .withEndAction {
+                            binding.ivVerifiedIcon.animate().scaleX(1f).scaleY(1f).setDuration(200).start()
+                        }.start()
+
+                    // Save login state and navigate to Dashboard
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        val intent = Intent(this@EmailVerificationActivity, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        }
+                        startActivity(intent)
+                    }, 2000)
+                } else {
+                    android.widget.Toast.makeText(this@EmailVerificationActivity, "Invalid code. Please try again.", android.widget.Toast.LENGTH_SHORT).show()
+                    otpFields.forEach { it.isEnabled = true; it.setText("") }
+                    otpFields[0].requestFocus()
                 }
-                startActivity(intent)
-            }, 2000)
-        }, 500)
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(this@EmailVerificationActivity, "Network Error: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                otpFields.forEach { it.isEnabled = true }
+            }
+        }
     }
 
     // ── 60-second resend countdown ─────────────────────────────────────────────
