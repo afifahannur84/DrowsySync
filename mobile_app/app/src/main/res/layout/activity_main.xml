@@ -26,6 +26,7 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <TextView
+            android:id="@+id/tvHeaderTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -43,6 +44,16 @@
             android:padding="10dp"
             app:tint="?attr/colorOnSurface"
             android:contentDescription="History" />
+
+        <ImageButton
+            android:id="@+id/btnEditProfile"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_edit_icon"
+            android:padding="10dp"
+            app:tint="?attr/colorOnSurface"
+            android:contentDescription="Edit Profile" />
 
         <ImageButton
             android:id="@+id/btnSettings"
@@ -235,76 +246,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ── Hardware Connection Card ── -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/colorOutline"
-                app:cardBackgroundColor="?attr/colorSurface"
-                android:layout_marginTop="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="16dp">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/hardware_connection"
-                            android:textAppearance="?attr/textAppearanceTitleMedium"
-                            android:textColor="?attr/colorOnSurface" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/vision_sensor_latency"
-                            android:textAppearance="?attr/textAppearanceBodySmall"
-                            android:textColor="?attr/colorOnSurfaceVariant"
-                            android:layout_marginTop="2dp" />
-                    </LinearLayout>
-
-                    <!-- Latency Badge -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:background="@color/primary_alpha10"
-                        android:paddingStart="10dp"
-                        android:paddingEnd="10dp"
-                        android:paddingTop="4dp"
-                        android:paddingBottom="4dp">
-
-                        <View
-                            android:id="@+id/latencyDot"
-                            android:layout_width="8dp"
-                            android:layout_height="8dp"
-                            android:background="@drawable/dot_primary"
-                            android:layout_marginEnd="6dp" />
-
-                        <TextView
-                            android:id="@+id/tvLatency"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="12ms"
-                            android:textColor="@color/primary"
-                            android:textAppearance="?attr/textAppearanceLabelMedium"
-                            android:fontFamily="sans-serif-medium" />
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
             <!-- ── Live Fatigue Metrics Card ── -->
             <com.google.android.material.card.MaterialCardView

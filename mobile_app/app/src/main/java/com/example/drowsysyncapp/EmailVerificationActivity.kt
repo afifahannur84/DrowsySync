@@ -89,10 +89,13 @@ class EmailVerificationActivity : AppCompatActivity() {
                 if (response.isSuccessful && response.body() != null) {
                     val user = response.body()?.user
                     if (user != null) {
-                        getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
-                            .edit()
+                        val prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
+                        prefs.edit()
                             .putBoolean(MainActivity.KEY_LOGGED_IN, true)
                             .putString("user_id", user.id)
+                            .putString("user_name", user.name)
+                            .putString("user_email", user.email)
+                            .putString("user_phone", user.phone ?: "")
                             .apply()
                     }
 

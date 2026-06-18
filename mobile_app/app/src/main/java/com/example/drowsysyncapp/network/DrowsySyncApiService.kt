@@ -50,6 +50,12 @@ interface DrowsySyncApiService {
     suspend fun claimVehicle(
         @Path("userId") userId: String
     ): Response<okhttp3.ResponseBody>
+
+    @PUT("api/users/profile/{userId}")
+    suspend fun updateProfile(
+        @Path("userId") userId: String,
+        @Body request: ProfileUpdateRequest
+    ): Response<ProfileUpdateResponse>
     
     // Kept for backward compatibility with the existing background service
     @GET("api/events")

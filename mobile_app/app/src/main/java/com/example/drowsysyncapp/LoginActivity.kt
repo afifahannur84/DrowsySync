@@ -57,6 +57,9 @@ class LoginActivity : AppCompatActivity() {
                                 .putBoolean(MainActivity.KEY_LOGGED_IN, true)
                                 .putString("user_id", user.id)
                                 .putString("vehicle_id", vehicleId)
+                                .putString("user_name", user.name)
+                                .putString("user_email", user.email)
+                                .putString("user_phone", user.phone ?: "")
                                 .apply()
 
                             Toast.makeText(this@LoginActivity, "Login Successful!", Toast.LENGTH_SHORT).show()

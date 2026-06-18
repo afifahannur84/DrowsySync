@@ -25,9 +25,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var isMonitoring = false
-    private val latencyHandler = Handler(Looper.getMainLooper())
     private var pulseAnimator: ObjectAnimator? = null
-    private var dotAnimator: ObjectAnimator? = null
 
     // ── Live Data Broadcast Receiver ──────────────────────────────────────────
     private val liveDataReceiver = object : BroadcastReceiver() {
@@ -40,20 +38,7 @@ class MainActivity : AppCompatActivity() {
                 // Dynamically update your UI with real data from MongoDB Atlas!
                 binding.tvPerclos.text = String.format("%.1f%%", perclos)
                 binding.tvYawns.text = yawns.toString()
-                
-                // Real Hardware Connection Check
-                if (context != null && timestamp > 0L) {
-                    val diff = System.currentTimeMillis() - timestamp
-                    if (diff < 15000) {
-                        // Alive
-                        binding.tvLatency.text = "${diff}ms"
-                        binding.tvLatency.setTextColor(ContextCompat.getColor(context, R.color.primary))
-                    } else {
-                        // Offline
-                        binding.tvLatency.text = "Offline"
-                        binding.tvLatency.setTextColor(ContextCompat.getColor(context, R.color.destructive))
-                    }
-                }
+
             }
         }
     }
@@ -87,8 +72,6 @@ class MainActivity : AppCompatActivity() {
         setupDisplayModeToggle()
         setupGuestModeToggle()
         setupMonitoringButton()
-        startLatencyUpdater()
-        startLatencyDotPulse()
 
         // Restore monitoring state
         if (prefs.getBoolean(KEY_IS_MONITORING, false)) {
@@ -98,8 +81,17 @@ class MainActivity : AppCompatActivity() {
 
     // ── Header navigation ──────────────────────────────────────────────────────
     private fun setupHeader() {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val userName = prefs.getString("user_name", "")
+        if (!userName.isNullOrEmpty()) {
+            binding.tvHeaderTitle.text = "DrowsySync - $userName"
+        }
+
         binding.btnHistory.setOnClickListener {
             startActivity(Intent(this, HistoryActivity::class.java))
+        }
+        binding.btnEditProfile.setOnClickListener {
+            startActivity(Intent(this, EditProfileActivity::class.java))
         }
         binding.btnSettings.setOnClickListener {
             startActivity(Intent(this, ChangeOwnerActivity::class.java))
@@ -239,19 +231,6 @@ class MainActivity : AppCompatActivity() {
         stopService(serviceIntent)
     }
 
-    // ── Latency updater ───────────────────────────────────────────────────────
-    private fun startLatencyUpdater() {
-        // Now using real latency from liveDataReceiver instead of fake randomizer
-    }
-
-    private fun startLatencyDotPulse() {
-        dotAnimator = ObjectAnimator.ofFloat(binding.latencyDot, "alpha", 1f, 0.2f, 1f).apply {
-            duration = 1500
-            repeatCount = ObjectAnimator.INFINITE
-            start()
-        }
-    }
-
     // ── Register/Unregister the Receiver with the Activity Lifecycle ──────────
     override fun onStart() {
         super.onStart()
@@ -275,8 +254,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        latencyHandler.removeCallbacksAndMessages(null)
         pulseAnimator?.cancel()
-        dotAnimator?.cancel()
     }
 }
