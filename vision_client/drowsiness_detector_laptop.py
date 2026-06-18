@@ -79,7 +79,7 @@ PERCLOS_STAGE1_HI = 8.0  # Stage 1→2 boundary (was 12.0)
 PERCLOS_STAGE2_HI = 12.0  # Stage 2→3 boundary (was 15.0)
 
 # ── Microsleep ────────────────────────────────────────────────────────────────
-MICROSLEEP_SECS = 1.2  # continuous eye closure → microsleep event
+MICROSLEEP_SECS = 5.0  # continuous eye closure → microsleep event
 
 # ── Yawn Events ───────────────────────────────────────────────────────────────
 YAWN_MIN_DURATION_SECS = 1.5  # LOWERED: MAR must exceed threshold for 1.5s (instead of 3.0s) to count as 1 event.

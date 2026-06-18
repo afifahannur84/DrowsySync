@@ -127,6 +127,7 @@ class DrowsySyncBackgroundService : Service() {
                     
                     // Broadcast to update UI in MainActivity
                     val updateIntent = Intent("com.example.drowsysyncapp.UPDATE_METRICS")
+                    updateIntent.setPackage(packageName)
                     updateIntent.putExtra("PERCLOS", latest.perclos)
                     updateIntent.putExtra("YAWNS", latest.recentYawnCount)
                     updateIntent.putExtra("TIMESTAMP", latest.timestamp)
