@@ -243,6 +243,12 @@ app.put('/api/users/claim-vehicle/:userId', async (req, res) => {
     user.isCurrentlyDriving = true;
     await user.save();
 
+    // Adopt any orphaned logs (userId: null) for this vehicle
+    await FatigueLog.updateMany(
+      { vehicleId: user.vehicleId, userId: null },
+      { $set: { userId: user._id } }
+    );
+
     res.status(200).json({ message: 'Vehicle claimed successfully' });
   } catch (error) {
     console.error('Claim vehicle error:', error);
@@ -410,7 +416,30 @@ const handleLogIngestion = async (req, res) => {
 // Route for the new /api/logs endpoint
 app.post('/api/logs', handleLogIngestion);
 
+// [PUT /api/users/profile/:userId]
+app.put('/api/users/profile/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { email, phone } = req.body;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
+    if (email) user.email = email;
+    if (phone !== undefined) user.phone = phone; // allow empty phone
+    
+    await user.save();
+    res.status(200).json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+    console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 // Start the server
 app.listen(PORT, '0.0.0.0', () => {
