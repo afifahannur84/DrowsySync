@@ -55,7 +55,7 @@ except ImportError:
 # =============================================================================
 
 # ── Camera & Network ──────────────────────────────────────────────────────────
-VEHICLE_ID = "DFH4321"  # <-- Edit this to match your Android app's Car Plate!
+VEHICLE_ID = "DDH4321"  # <-- Edit this to match your Android app's Car Plate!
 CAMERA_INDEX = 0
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
@@ -474,7 +474,7 @@ class DetectionState:
             "recent_yawn_count": self.recent_yawn_count,
             "microsleep_active": self.microsleep_active,
             "stage3_latched": self.stage3_latched,
-            "clientTimestamp": int(time.time() * 1000),
+            "timestamp": int(time.time() * 1000),
         }
 
 
@@ -771,11 +771,8 @@ def main() -> None:
                 if state.stage3_latched or state.stage == 3:
                     # Stage 3: aggressive continuous siren
                     alarm.set_mode(AlarmMode.CONTINUOUS)
-                elif state.stage == 2:
-                    # Stage 2: gentle intermittent pulse
-                    alarm.set_mode(AlarmMode.PULSE)
                 else:
-                    # Stage 0 or 1: silence (Stage 1 is a silent early warning)
+                    # Stage 0, 1, or 2: silence
                     alarm.set_mode(AlarmMode.OFF)
 
                 # ── Draw ──────────────────────────────────────────────────────

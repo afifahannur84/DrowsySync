@@ -124,6 +124,13 @@ class DrowsySyncBackgroundService : Service() {
                 val latest = response.body()
                 if (latest != null) {
                     handleStageChange(latest)
+                    
+                    // Broadcast to update UI in MainActivity
+                    val updateIntent = Intent("com.example.drowsysyncapp.UPDATE_METRICS")
+                    updateIntent.putExtra("PERCLOS", latest.perclos)
+                    updateIntent.putExtra("YAWNS", latest.recentYawnCount)
+                    updateIntent.putExtra("TIMESTAMP", latest.timestamp)
+                    sendBroadcast(updateIntent)
                 }
             } else {
                 Log.w(TAG, "Poll failed — HTTP ${response.code()}")

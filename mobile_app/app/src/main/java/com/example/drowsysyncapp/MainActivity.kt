@@ -35,10 +35,25 @@ class MainActivity : AppCompatActivity() {
             if (intent?.action == "com.example.drowsysyncapp.UPDATE_METRICS") {
                 val perclos = intent.getDoubleExtra("PERCLOS", 0.0)
                 val yawns = intent.getIntExtra("YAWNS", 0)
+                val timestamp = intent.getLongExtra("TIMESTAMP", 0L)
 
                 // Dynamically update your UI with real data from MongoDB Atlas!
                 binding.tvPerclos.text = String.format("%.1f%%", perclos)
                 binding.tvYawns.text = yawns.toString()
+                
+                // Real Hardware Connection Check
+                if (context != null && timestamp > 0L) {
+                    val diff = System.currentTimeMillis() - timestamp
+                    if (diff < 15000) {
+                        // Alive
+                        binding.tvLatency.text = "${diff}ms"
+                        binding.tvLatency.setTextColor(ContextCompat.getColor(context, R.color.primary))
+                    } else {
+                        // Offline
+                        binding.tvLatency.text = "Offline"
+                        binding.tvLatency.setTextColor(ContextCompat.getColor(context, R.color.destructive))
+                    }
+                }
             }
         }
     }
@@ -226,14 +241,7 @@ class MainActivity : AppCompatActivity() {
 
     // ── Latency updater ───────────────────────────────────────────────────────
     private fun startLatencyUpdater() {
-        val runnable = object : Runnable {
-            override fun run() {
-                val latency = (8..28).random()
-                binding.tvLatency.text = "${latency}ms"
-                latencyHandler.postDelayed(this, 2000)
-            }
-        }
-        latencyHandler.post(runnable)
+        // Now using real latency from liveDataReceiver instead of fake randomizer
     }
 
     private fun startLatencyDotPulse() {
