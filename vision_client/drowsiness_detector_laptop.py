@@ -763,9 +763,11 @@ def main() -> None:
 
                 state.update(lm_px)
 
-                # Fire API hook only on stage transitions
-                if state.changed:
+                # Fire API hook on stage transitions OR every 2 seconds for LIVE updates
+                current_time = time.time()
+                if state.changed or (current_time - getattr(state, '_last_pushed_time', 0) >= 2.0):
                     on_status_change(state)
+                    state._last_pushed_time = current_time
 
                 # ── Set alarm mode based on effective stage ────────────────────
                 if state.stage3_latched or state.stage == 3:

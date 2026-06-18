@@ -239,7 +239,7 @@ class MainActivity : AppCompatActivity() {
             this,
             liveDataReceiver,
             filter,
-            ContextCompat.RECEIVER_NOT_EXPORTED
+            ContextCompat.RECEIVER_NOT_EXPORTED 
         )
     }
 

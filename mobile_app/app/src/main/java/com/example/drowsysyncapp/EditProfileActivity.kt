@@ -65,6 +65,7 @@ class EditProfileActivity : AppCompatActivity() {
                     // Save new values to SharedPreferences
                     val prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
                     prefs.edit()
+                        .putString("user_name", updatedUser.name)
                         .putString("user_email", updatedUser.email)
                         .putString("user_phone", updatedUser.phone ?: "")
                         .apply()
