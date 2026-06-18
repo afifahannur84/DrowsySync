@@ -41,7 +41,7 @@ data class VehicleUpdateRequest(
 
 data class FatigueLogResponse(
     @SerializedName("_id") val id: String,
-    @SerializedName("userId") val userId: String,
+    @SerializedName("userId") val userId: String?,
     @SerializedName("stage") val stage: Int,
     @SerializedName("status") val status: String,
     @SerializedName("perclos") val perclos: Double,
@@ -51,7 +51,7 @@ data class FatigueLogResponse(
     @SerializedName("microsleep_active") val microsleepActive: Boolean,
     @SerializedName("stage3_latched") val stage3Latched: Boolean,
     @SerializedName("timestamp") val timestamp: Long,
-    @SerializedName("createdAt") val createdAt: String
+    @SerializedName("createdAt") val createdAt: String?
 )
 
 data class ReportResponse(
