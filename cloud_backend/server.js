@@ -70,7 +70,7 @@ const generateVerificationCode = () => {
 // [POST /api/auth/register]
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { name, email, password, vehicleId } = req.body;
+    const { name, email, password, vehicleId, phone, licenseSerial, emergencyName, emergencyPhone } = req.body;
     const vId = vehicleId || "UTEM_LOG_862B";
 
     const verificationCode = generateVerificationCode();
@@ -81,7 +81,11 @@ app.post('/api/auth/register', async (req, res) => {
       email,
       password: hashedPassword,
       code: verificationCode,
-      vehicleId: vId
+      vehicleId: vId,
+      phone: phone || "",
+      licenseSerial: licenseSerial || "",
+      emergencyName: emergencyName || "",
+      emergencyPhone: emergencyPhone || ""
     });
 
     await tempUser.save();
@@ -139,6 +143,10 @@ app.post('/api/auth/verify', async (req, res) => {
     const newUser = new User({
       name: tempUser.name,
       email: tempUser.email,
+      phone: tempUser.phone,
+      licenseSerial: tempUser.licenseSerial,
+      emergencyName: tempUser.emergencyName,
+      emergencyPhone: tempUser.emergencyPhone,
       password: tempUser.password,
       isEmailVerified: true,
       vehicleId: tempUser.vehicleId,
@@ -262,6 +270,46 @@ app.put('/api/users/claim-vehicle/:userId', async (req, res) => {
     res.status(200).json({ message: 'Vehicle claimed successfully' });
   } catch (error) {
     console.error('Claim vehicle error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// [PUT /api/users/unclaim-vehicle/:userId]
+app.put('/api/users/unclaim-vehicle/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.isCurrentlyDriving = false;
+    await user.save();
+
+    res.status(200).json({ message: 'Vehicle unclaimed successfully' });
+  } catch (error) {
+    console.error('Unclaim vehicle error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// [PUT /api/users/dismiss-alarm/:userId]
+app.put('/api/users/dismiss-alarm/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.alarmDismissed = true;
+    await user.save();
+
+    res.status(200).json({ message: 'Alarm dismiss signal set successfully' });
+  } catch (error) {
+    console.error('Dismiss alarm error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -417,8 +465,17 @@ const handleLogIngestion = async (req, res) => {
     const logEntry = new FatigueLog(fatigueData);
     await logEntry.save();
 
+    // Check if the user dismissed the alarm
+    let dismissAlarm = false;
+    if (matchedUser && matchedUser.alarmDismissed) {
+      dismissAlarm = true;
+      matchedUser.alarmDismissed = false;
+      await matchedUser.save();
+      console.log('🔔 Remote alarm dismissal triggered for user:', matchedUser.email);
+    }
+
     console.log('📥 Received and logged fatigue event for Car Plate Number', vehicleId, ':', fatigueData.status);
-    res.status(201).json({ message: 'Event successfully logged', data: logEntry });
+    res.status(201).json({ message: 'Event successfully logged', data: logEntry, dismissAlarm });
   } catch (error) {
     console.error('Error logging event:', error);
     res.status(500).json({ error: 'Internal Server Error' });

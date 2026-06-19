@@ -77,6 +77,17 @@ class MainActivity : AppCompatActivity() {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100)
         }
 
+        // Request display overlay permission if not granted
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!android.provider.Settings.canDrawOverlays(this)) {
+                val intent = Intent(
+                    android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    android.net.Uri.parse("package:$packageName")
+                )
+                startActivityForResult(intent, 101)
+            }
+        }
+
         setupHeader()
         setupDisplayModeToggle()
         setupGuestModeToggle()
@@ -288,6 +299,19 @@ class MainActivity : AppCompatActivity() {
         // 🛑 STOP BACKGROUND SERVICE
         val serviceIntent = Intent(this, DrowsySyncBackgroundService::class.java)
         stopService(serviceIntent)
+
+        // 🚗 Unclaim the vehicle on the backend so isCurrentlyDriving is set to false
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val userId = prefs.getString("user_id", null)
+        if (userId != null) {
+            lifecycleScope.launch {
+                try {
+                    RetrofitClient.instance.unclaimVehicle(userId)
+                } catch (e: Exception) {
+                    android.util.Log.e("MainActivity", "Failed to unclaim vehicle: ${e.message}")
+                }
+            }
+        }
     }
 
     // ── Register/Unregister the Receiver with the Activity Lifecycle ──────────

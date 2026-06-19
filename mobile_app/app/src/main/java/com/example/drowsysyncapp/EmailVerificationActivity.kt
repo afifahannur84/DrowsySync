@@ -93,9 +93,13 @@ class EmailVerificationActivity : AppCompatActivity() {
                         prefs.edit()
                             .putBoolean(MainActivity.KEY_LOGGED_IN, true)
                             .putString("user_id", user.id)
+                            .putString("vehicle_id", user.vehicleId ?: "")
                             .putString("user_name", user.name)
                             .putString("user_email", user.email)
                             .putString("user_phone", user.phone ?: "")
+                            .putString("license_serial", user.licenseSerial ?: "")
+                            .putString("emergency_name", user.emergencyName ?: "")
+                            .putString("emergency_phone", user.emergencyPhone ?: "")
                             .apply()
                     }
 

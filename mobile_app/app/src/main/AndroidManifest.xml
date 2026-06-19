@@ -14,6 +14,9 @@
     <!-- ── Full-Screen Intent (pop over other apps / lock screen) ── -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
+    <!-- ── System Alert Window (draw over other apps overlay) ── -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
     <!-- ── Post Notifications (required on Android 13 / API 33+) ── -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 

@@ -6,7 +6,11 @@ data class UserRequest(
     @SerializedName("name") val name: String? = null,
     @SerializedName("email") val email: String,
     @SerializedName("password") val password: String,
-    @SerializedName("vehicleId") val vehicleId: String
+    @SerializedName("vehicleId") val vehicleId: String,
+    @SerializedName("phone") val phone: String? = null,
+    @SerializedName("licenseSerial") val licenseSerial: String? = null,
+    @SerializedName("emergencyName") val emergencyName: String? = null,
+    @SerializedName("emergencyPhone") val emergencyPhone: String? = null
 )
 
 data class LoginRequest(
@@ -28,7 +32,10 @@ data class UserDto(
     @SerializedName("phone") val phone: String?,
     @SerializedName("vehicleId") val vehicleId: String?,
     @SerializedName("isEmailVerified") val isEmailVerified: Boolean,
-    @SerializedName("isCurrentlyDriving") val isCurrentlyDriving: Boolean?
+    @SerializedName("isCurrentlyDriving") val isCurrentlyDriving: Boolean?,
+    @SerializedName("licenseSerial") val licenseSerial: String?,
+    @SerializedName("emergencyName") val emergencyName: String?,
+    @SerializedName("emergencyPhone") val emergencyPhone: String?
 )
 
 data class ProfileUpdateRequest(

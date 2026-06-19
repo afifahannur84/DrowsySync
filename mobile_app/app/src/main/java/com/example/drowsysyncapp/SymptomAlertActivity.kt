@@ -6,6 +6,9 @@ import android.os.CountDownTimer
 import androidx.appcompat.app.AppCompatActivity
 import com.example.drowsysyncapp.databinding.ActivitySymptomAlertBinding
 
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+
 class SymptomAlertActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySymptomAlertBinding
@@ -21,6 +24,19 @@ class SymptomAlertActivity : AppCompatActivity() {
 
         binding.btnImAwake.setOnClickListener {
             countDownTimer?.cancel()
+
+            val prefs = getSharedPreferences(MainActivity.PREFS_NAME, MODE_PRIVATE)
+            val userId = prefs.getString("user_id", null)
+            if (userId != null) {
+                lifecycleScope.launch {
+                    try {
+                        com.example.drowsysyncapp.network.RetrofitClient.instance.dismissAlarm(userId)
+                    } catch (e: Exception) {
+                        android.util.Log.e("SymptomAlert", "Failed to dismiss alarm: ${e.message}")
+                    }
+                }
+            }
+
             finish() // returns to Dashboard (onResume will reset monitoring state)
         }
     }

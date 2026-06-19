@@ -650,14 +650,20 @@ def draw_no_face(frame: np.ndarray, fps: float, h: int) -> None:
 # =============================================================================
 
 
-def _send_log_async(payload: dict) -> None:
+def _send_log_async(payload: dict, state: DetectionState) -> None:
     """Background task to send the event payload to the Node.js server."""
     try:
         # CORRECTION: Changed /api/events to /api/logs to match server.js
         url = "https://drowsysync.onrender.com/api/logs"
         response = requests.post(url, json=payload, timeout=3.0)
         response.raise_for_status()
-    except requests.exceptions.RequestException as e:
+        
+        # Read the JSON response to see if a remote alarm dismissal signal was received
+        res_data = response.json()
+        if res_data.get("dismissAlarm"):
+            state.stage3_latched = False
+            print("\n[INFO] Alarm dismissed remotely from mobile app.")
+    except Exception as e:
         # Graceful failure: print a warning without crashing or blocking the script
         print(f"\n[WARNING] Failed to sync event to cloud backend: {e}")
 
@@ -677,7 +683,7 @@ def on_status_change(state: DetectionState) -> None:
     )
 
     # Spawn a non-blocking background thread for the network request
-    threading.Thread(target=_send_log_async, args=(payload,), daemon=True).start()
+    threading.Thread(target=_send_log_async, args=(payload, state), daemon=True).start()
 
 
 # =============================================================================

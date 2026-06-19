@@ -51,6 +51,16 @@ interface DrowsySyncApiService {
         @Path("userId") userId: String
     ): Response<okhttp3.ResponseBody>
 
+    @PUT("api/users/unclaim-vehicle/{userId}")
+    suspend fun unclaimVehicle(
+        @Path("userId") userId: String
+    ): Response<okhttp3.ResponseBody>
+
+    @PUT("api/users/dismiss-alarm/{userId}")
+    suspend fun dismissAlarm(
+        @Path("userId") userId: String
+    ): Response<okhttp3.ResponseBody>
+
     @PUT("api/users/profile/{userId}")
     suspend fun updateProfile(
         @Path("userId") userId: String,

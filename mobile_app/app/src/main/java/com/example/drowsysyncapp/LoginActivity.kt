@@ -63,6 +63,9 @@ class LoginActivity : AppCompatActivity() {
                                 .putString("user_name", nameToSave)
                                 .putString("user_email", user.email)
                                 .putString("user_phone", user.phone ?: "")
+                                .putString("license_serial", user.licenseSerial ?: "")
+                                .putString("emergency_name", user.emergencyName ?: "")
+                                .putString("emergency_phone", user.emergencyPhone ?: "")
                                 .apply()
 
                             android.util.Log.d("LoginActivity", "Saved user_name='$nameToSave' to SharedPreferences")

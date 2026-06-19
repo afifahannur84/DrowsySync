@@ -44,13 +44,26 @@ class RegistrationActivity : AppCompatActivity() {
                 val email = binding.etEmail.text.toString()
                 val password = binding.etPassword.text.toString()
                 val vehiclePlate = binding.etVehiclePlate.text.toString().replace("\\s+".toRegex(), "").uppercase()
+                val phone = binding.etPhone.text.toString()
+                val licenseSerial = binding.etLicenseSerial.text.toString()
+                val emergencyName = binding.etEmergencyName.text.toString()
+                val emergencyPhone = binding.etEmergencyPhone.text.toString()
 
                 binding.btnSubmit.isEnabled = false
                 binding.btnSubmit.text = "Registering..."
 
                 lifecycleScope.launch {
                     try {
-                        val request = UserRequest(name, email, password, vehiclePlate)
+                        val request = UserRequest(
+                            name = name,
+                            email = email,
+                            password = password,
+                            vehicleId = vehiclePlate,
+                            phone = phone,
+                            licenseSerial = licenseSerial,
+                            emergencyName = emergencyName,
+                            emergencyPhone = emergencyPhone
+                        )
                         val response = RetrofitClient.instance.registerUser(request)
                         
                         if (response.isSuccessful && response.body() != null) {
