@@ -49,6 +49,9 @@ class MainActivity : AppCompatActivity() {
         const val KEY_IS_MONITORING = "is_monitoring"
     }
 
+    /** True when startMonitoring() was triggered by the user this session (not a restore). */
+    private var isUserInitiatedStart = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -73,9 +76,13 @@ class MainActivity : AppCompatActivity() {
         setupGuestModeToggle()
         setupMonitoringButton()
 
-        // Restore monitoring state
+        // Restore monitoring state after recreate (e.g. display mode switch)
+        // Do NOT call startMonitoring() here — it resets metrics to 0.
+        // Instead, only restore UI visuals so the user doesn't see a flash.
         if (prefs.getBoolean(KEY_IS_MONITORING, false)) {
-            startMonitoring()
+            isMonitoring = true
+            isUserInitiatedStart = false // This is a restore, not a fresh start
+            restoreMonitoringVisuals()
         }
     }
 
@@ -167,8 +174,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun startMonitoring() {
         isMonitoring = true
+        isUserInitiatedStart = true
         getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putBoolean(KEY_IS_MONITORING, true).apply()
-        
+
         val primaryColor = ContextCompat.getColor(this, R.color.primary)
 
         // Ring → active
@@ -183,18 +191,19 @@ class MainActivity : AppCompatActivity() {
             ColorStateList.valueOf(ContextCompat.getColor(this, R.color.destructive))
 
         // Pulse animation on the ring
+        pulseAnimator?.cancel()
         pulseAnimator = ObjectAnimator.ofFloat(binding.monitoringRing, "alpha", 1f, 0.45f, 1f).apply {
             duration = 1000
             repeatCount = ObjectAnimator.INFINITE
             start()
         }
 
-        // Show metrics card
+        // Show metrics card — reset to 0 because user started a new trip
         binding.cardMetrics.visibility = android.view.View.VISIBLE
         binding.tvPerclos.text = "0.0%"
         binding.tvYawns.text = "0"
 
-        // 🚀 IGNITE REAL LIVE SYSTEM BACKGROUND SERVICE
+        // 🚀 Start the background polling service
         val serviceIntent = Intent(this, DrowsySyncBackgroundService::class.java)
         startForegroundService(serviceIntent)
 
@@ -210,6 +219,36 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    /**
+     * Restores monitoring UI visuals after activity recreate (display mode switch etc.).
+     * Does NOT reset metrics to 0 — the BroadcastReceiver will repopulate them.
+     * Does NOT restart the service — it's already running.
+     */
+    private fun restoreMonitoringVisuals() {
+        val primaryColor = ContextCompat.getColor(this, R.color.primary)
+
+        binding.monitoringRing.setImageResource(R.drawable.circle_monitor_active)
+        binding.monitoringStatusText.setText(R.string.monitoring_active)
+        binding.monitoringStatusText.setTextColor(primaryColor)
+        binding.monitoringIcon.imageTintList = ColorStateList.valueOf(primaryColor)
+
+        binding.btnMonitoring.text = getString(R.string.btn_stop_monitoring)
+        binding.btnMonitoring.backgroundTintList =
+            ColorStateList.valueOf(ContextCompat.getColor(this, R.color.destructive))
+
+        pulseAnimator?.cancel()
+        pulseAnimator = ObjectAnimator.ofFloat(binding.monitoringRing, "alpha", 1f, 0.45f, 1f).apply {
+            duration = 1000
+            repeatCount = ObjectAnimator.INFINITE
+            start()
+        }
+
+        // Show metrics card but show — to indicate data is loading, not 0
+        binding.cardMetrics.visibility = android.view.View.VISIBLE
+        binding.tvPerclos.text = "—"
+        binding.tvYawns.text = "—"
     }
 
     private fun stopMonitoring() {

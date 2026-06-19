@@ -188,18 +188,24 @@ class DrowsySyncBackgroundService : Service() {
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Stage 2: Fires a high-priority notification that launches SymptomAlertActivity.
-     * No full-screen intent — this shows as a heads-up banner over other apps.
+     * Stage 2: Directly launches SymptomAlertActivity over whatever is on screen.
+     * FLAG_ACTIVITY_NEW_TASK is mandatory for a Service to start an Activity on Android.
+     * A companion notification is also posted so the alert survives lock-screen scenarios.
      */
     private fun fireStage2Warning(manager: NotificationManager, log: FatigueLogResponse) {
+        // ── Primary: launch activity directly over the current app ─────────────
         val activityIntent = Intent(this, SymptomAlertActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
-        val pendingIntent = PendingIntent.getActivity(
+        startActivity(activityIntent)
+
+        // ── Fallback notification (for lock screen / screen-off scenarios) ─────
+        val tapPendingIntent = PendingIntent.getActivity(
             this, 0, activityIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-
         val notification = NotificationCompat.Builder(this, CHANNEL_ALERT)
             .setSmallIcon(R.drawable.ic_warning_notification)
             .setContentTitle("⚠️ Early Drowsiness Detected")
@@ -207,43 +213,29 @@ class DrowsySyncBackgroundService : Service() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
+            .setContentIntent(tapPendingIntent)
             .build()
-
         manager.notify(NOTIF_ID_ALERT, notification)
     }
 
     /**
-     * Stage 3: Fires a CRITICAL full-screen intent notification.
-     *
-     * On Android 10+, setFullScreenIntent() will:
-     *   • Pop up over lock screen (requires showWhenLocked + turnScreenOn in manifest)
-     *   • Pop up over any running app (requires USE_FULL_SCREEN_INTENT permission)
-     *   • Launch MicrosleepAlertActivity directly if the device is actively in-use
-     *
-     * The driver should see the emergency alert within ~1 second of Stage 3 being detected.
+     * Stage 3: Directly launches MicrosleepAlertActivity over whatever is on screen.
+     * Also fires a full-screen-intent notification so it works over the lock screen.
      */
     private fun fireStage3CriticalAlarm(manager: NotificationManager, log: FatigueLogResponse) {
-        // Full-screen activity intent — opens MicrosleepAlertActivity directly
-        val fullScreenIntent = Intent(this, MicrosleepAlertActivity::class.java).apply {
+        // ── Primary: launch activity directly over the current app ─────────────
+        val activityIntent = Intent(this, MicrosleepAlertActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
                     Intent.FLAG_ACTIVITY_NO_HISTORY
         }
+        startActivity(activityIntent)
+
+        // ── Fallback: full-screen-intent notification for lock screen ──────────
         val fullScreenPendingIntent = PendingIntent.getActivity(
-            this, 1, fullScreenIntent,
+            this, 1, activityIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-
-        // Also build a tap-on-notification intent for when the alert is shown as banner
-        val tapIntent = Intent(this, MicrosleepAlertActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-        val tapPendingIntent = PendingIntent.getActivity(
-            this, 2, tapIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
         val microsleepFlag = if (log.microsleepActive) " | MICROSLEEP" else ""
         val notification = NotificationCompat.Builder(this, CHANNEL_ALERT)
             .setSmallIcon(R.drawable.ic_warning_notification)
@@ -255,13 +247,12 @@ class DrowsySyncBackgroundService : Service() {
             )
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // Show on lock screen
-            .setFullScreenIntent(fullScreenPendingIntent, true)   // ← THE KEY LINE
-            .setContentIntent(tapPendingIntent)
-            .setOngoing(true)     // Cannot be dismissed by the driver while active
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setFullScreenIntent(fullScreenPendingIntent, true)
+            .setContentIntent(fullScreenPendingIntent)
+            .setOngoing(true)
             .setAutoCancel(false)
             .build()
-
         manager.notify(NOTIF_ID_ALERT, notification)
     }
 

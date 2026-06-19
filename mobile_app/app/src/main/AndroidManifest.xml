@@ -76,10 +76,13 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- ── Symptom Alert Overlay (transparent) ── -->
+        <!-- ── Symptom Alert Overlay (semi-transparent) ── -->
+        <!-- showWhenLocked + turnScreenOn = pops over other apps and lock screen -->
         <activity
             android:name=".SymptomAlertActivity"
-            android:exported="false"
+            android:exported="true"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
             android:theme="@style/Theme.DrowsySyncApp.Transparent" />
 
         <!-- ── Microsleep Emergency ── -->
