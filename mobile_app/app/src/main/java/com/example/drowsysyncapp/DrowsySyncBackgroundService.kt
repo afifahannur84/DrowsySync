@@ -66,6 +66,10 @@ class DrowsySyncBackgroundService : Service() {
     // ── State tracking — prevents firing duplicate notifications every second ─
     private var lastAlertedStage: Int = -1
 
+    // ── State tracking — ignore stale logs from previous sessions ─────────────
+    private var initialLogId: String? = null
+    private var hasCapturedInitialLog = false
+
     // ─────────────────────────────────────────────────────────────────────────
     // Service lifecycle
     // ─────────────────────────────────────────────────────────────────────────
@@ -126,6 +130,19 @@ class DrowsySyncBackgroundService : Service() {
                 val latest = response.body()
                 if (latest != null) {
                     Log.d(TAG, "Got log: PERCLOS=${latest.perclos}% yawns=${latest.recentYawnCount} stage=${latest.stage} ts=${latest.timestamp}")
+
+                    // Ignore stale data from previous sessions or before start
+                    if (!hasCapturedInitialLog) {
+                        initialLogId = latest.id
+                        hasCapturedInitialLog = true
+                        Log.d(TAG, "Captured initial log ID: $initialLogId. Ignoring this log as it is from a previous session.")
+                        return
+                    }
+
+                    if (latest.id == initialLogId) {
+                        Log.d(TAG, "Fetched log matches initial log ID ($initialLogId). Ignoring stale data.")
+                        return
+                    }
 
                     // ── 1. ALWAYS broadcast metrics to refresh the UI every poll cycle ──────
                     // This must be UNCONDITIONAL so the dashboard never freezes while the

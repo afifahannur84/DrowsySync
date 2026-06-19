@@ -35,6 +35,12 @@ class MainActivity : AppCompatActivity() {
                 val yawns = intent.getIntExtra("YAWNS", 0)
                 val timestamp = intent.getLongExtra("TIMESTAMP", 0L)
 
+                // Save to prefs so they survive recreation
+                getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
+                    .putFloat("last_perclos", perclos.toFloat())
+                    .putInt("last_yawns", yawns)
+                    .apply()
+
                 // Dynamically update your UI with real data from MongoDB Atlas!
                 binding.tvPerclos.text = String.format("%.1f%%", perclos)
                 binding.tvYawns.text = yawns.toString()
@@ -175,7 +181,11 @@ class MainActivity : AppCompatActivity() {
     private fun startMonitoring() {
         isMonitoring = true
         isUserInitiatedStart = true
-        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putBoolean(KEY_IS_MONITORING, true).apply()
+        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
+            .putBoolean(KEY_IS_MONITORING, true)
+            .putFloat("last_perclos", 0.0f)
+            .putInt("last_yawns", 0)
+            .apply()
 
         val primaryColor = ContextCompat.getColor(this, R.color.primary)
 
@@ -245,10 +255,13 @@ class MainActivity : AppCompatActivity() {
             start()
         }
 
-        // Show metrics card but show — to indicate data is loading, not 0
+        // Show metrics card and restore the last saved metrics
         binding.cardMetrics.visibility = android.view.View.VISIBLE
-        binding.tvPerclos.text = "—"
-        binding.tvYawns.text = "—"
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val lastPerclos = prefs.getFloat("last_perclos", 0.0f)
+        val lastYawns = prefs.getInt("last_yawns", 0)
+        binding.tvPerclos.text = String.format("%.1f%%", lastPerclos.toDouble())
+        binding.tvYawns.text = lastYawns.toString()
     }
 
     private fun stopMonitoring() {
