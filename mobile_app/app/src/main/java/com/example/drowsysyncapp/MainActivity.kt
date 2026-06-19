@@ -232,23 +232,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ── Register/Unregister the Receiver with the Activity Lifecycle ──────────
-    override fun onStart() {
-        super.onStart()
+    // Using onResume/onPause (NOT onStart/onStop) because onStop fires the instant
+    // our own alert overlay (MicrosleepAlertActivity / SymptomAlertActivity) launches,
+    // which would kill the receiver mid-session and freeze the metrics display.
+    override fun onResume() {
+        super.onResume()
         val filter = IntentFilter("com.example.drowsysyncapp.UPDATE_METRICS")
         ContextCompat.registerReceiver(
             this,
             liveDataReceiver,
             filter,
-            ContextCompat.RECEIVER_NOT_EXPORTED 
+            ContextCompat.RECEIVER_NOT_EXPORTED
         )
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onPause() {
+        super.onPause()
         try {
             unregisterReceiver(liveDataReceiver)
         } catch (e: IllegalArgumentException) {
-            // Already unregistered
+            // Already unregistered — safe to ignore
         }
     }
 

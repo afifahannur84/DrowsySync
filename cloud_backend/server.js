@@ -361,7 +361,9 @@ app.get('/api/logs/:userId', async (req, res) => {
 app.get('/api/logs/latest/vehicle/:vehicleId', async (req, res) => {
   try {
     const { vehicleId } = req.params;
-    const log = await FatigueLog.findOne({ vehicleId }).sort({ createdAt: -1 });
+    // Sort by `timestamp` (ms epoch set by Python script) — ground truth for recency.
+    // createdAt can lag by seconds on Render's free tier due to cold-start overhead.
+    const log = await FatigueLog.findOne({ vehicleId }).sort({ timestamp: -1 });
 
     if (!log) {
       return res.status(404).json({ error: 'No logs found for this vehicle' });

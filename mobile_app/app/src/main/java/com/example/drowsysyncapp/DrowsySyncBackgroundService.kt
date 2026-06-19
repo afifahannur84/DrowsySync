@@ -123,15 +123,20 @@ class DrowsySyncBackgroundService : Service() {
             if (response.isSuccessful) {
                 val latest = response.body()
                 if (latest != null) {
-                    handleStageChange(latest)
-                    
-                    // Broadcast to update UI in MainActivity
+                    // ── 1. ALWAYS broadcast metrics to refresh the UI every poll cycle ──────
+                    // This must be UNCONDITIONAL so the dashboard never freezes while the
+                    // driver stays in Stage 0 or Stage 1 (the early return in handleStageChange
+                    // was silently swallowing these updates before).
                     val updateIntent = Intent("com.example.drowsysyncapp.UPDATE_METRICS")
                     updateIntent.setPackage(packageName)
                     updateIntent.putExtra("PERCLOS", latest.perclos)
                     updateIntent.putExtra("YAWNS", latest.recentYawnCount)
+                    updateIntent.putExtra("STAGE", latest.stage)
                     updateIntent.putExtra("TIMESTAMP", latest.timestamp)
                     sendBroadcast(updateIntent)
+
+                    // ── 2. CONDITIONALLY fire alert notifications only on stage transitions ─
+                    handleStageChange(latest)
                 }
             } else {
                 Log.w(TAG, "Poll failed — HTTP ${response.code()}")
