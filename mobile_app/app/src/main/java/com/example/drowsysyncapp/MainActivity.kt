@@ -81,11 +81,7 @@ class MainActivity : AppCompatActivity() {
 
     // ── Header navigation ──────────────────────────────────────────────────────
     private fun setupHeader() {
-        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val userName = prefs.getString("user_name", "")
-        if (!userName.isNullOrEmpty()) {
-            binding.tvHeaderTitle.text = "DrowsySync - $userName"
-        }
+        refreshHeaderName()
 
         binding.btnHistory.setOnClickListener {
             startActivity(Intent(this, HistoryActivity::class.java))
@@ -95,6 +91,17 @@ class MainActivity : AppCompatActivity() {
         }
         binding.btnSettings.setOnClickListener {
             startActivity(Intent(this, ChangeOwnerActivity::class.java))
+        }
+    }
+
+    /** Called from both setupHeader() and onResume() so the name is always fresh. */
+    private fun refreshHeaderName() {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val userName = prefs.getString("user_name", "")
+        if (!userName.isNullOrEmpty()) {
+            binding.tvHeaderTitle.text = "DrowsySync - $userName"
+        } else {
+            binding.tvHeaderTitle.text = "DrowsySync"
         }
     }
 
@@ -237,6 +244,11 @@ class MainActivity : AppCompatActivity() {
     // which would kill the receiver mid-session and freeze the metrics display.
     override fun onResume() {
         super.onResume()
+        // Refresh the header name every time the activity comes to foreground.
+        // This covers: first launch after login, returning from EditProfile, etc.
+        if (::binding.isInitialized) {
+            refreshHeaderName()
+        }
         val filter = IntentFilter("com.example.drowsysyncapp.UPDATE_METRICS")
         ContextCompat.registerReceiver(
             this,

@@ -190,6 +190,16 @@ app.post('/api/auth/login', async (req, res) => {
       console.log(`Cloned new user record for Car Plate Number: ${vId}`);
     }
 
+    // ── Atomically claim vehicle at login time (no race condition) ───────────
+    // Unclaim all other drivers of this vehicle first, then claim for this user.
+    await User.updateMany(
+      { vehicleId: vId, _id: { $ne: matchedUser._id } },
+      { $set: { isCurrentlyDriving: false } }
+    );
+    matchedUser.isCurrentlyDriving = true;
+    await matchedUser.save();
+    // ─────────────────────────────────────────────────────────────────────────
+
     const safeUser = matchedUser.toObject();
     delete safeUser.password;
 

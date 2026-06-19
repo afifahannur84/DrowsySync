@@ -117,12 +117,16 @@ class DrowsySyncBackgroundService : Service() {
     private suspend fun fetchAndHandleLatestLog() {
         try {
             val prefs = getSharedPreferences(MainActivity.PREFS_NAME, MODE_PRIVATE)
-            val vehicleId = prefs.getString("vehicle_id", "UTEM_LOG_862B") ?: "UTEM_LOG_862B"
+            // Use "DDH4321" as fallback — must match VEHICLE_ID in the Python script exactly
+            val vehicleId = prefs.getString("vehicle_id", "DDH4321") ?: "DDH4321"
+            Log.d(TAG, "Polling latest log for vehicleId='$vehicleId'")
 
             val response = RetrofitClient.instance.getLatestVehicleLog(vehicleId)
             if (response.isSuccessful) {
                 val latest = response.body()
                 if (latest != null) {
+                    Log.d(TAG, "Got log: PERCLOS=${latest.perclos}% yawns=${latest.recentYawnCount} stage=${latest.stage} ts=${latest.timestamp}")
+
                     // ── 1. ALWAYS broadcast metrics to refresh the UI every poll cycle ──────
                     // This must be UNCONDITIONAL so the dashboard never freezes while the
                     // driver stays in Stage 0 or Stage 1 (the early return in handleStageChange
@@ -137,9 +141,11 @@ class DrowsySyncBackgroundService : Service() {
 
                     // ── 2. CONDITIONALLY fire alert notifications only on stage transitions ─
                     handleStageChange(latest)
+                } else {
+                    Log.w(TAG, "Got HTTP 200 but body was null — check server response format")
                 }
             } else {
-                Log.w(TAG, "Poll failed — HTTP ${response.code()}")
+                Log.w(TAG, "Poll failed — HTTP ${response.code()} for vehicleId='$vehicleId'")
             }
         } catch (e: Exception) {
             // Network is offline, server not reachable — fail silently

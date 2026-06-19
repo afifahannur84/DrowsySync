@@ -53,15 +53,19 @@ class LoginActivity : AppCompatActivity() {
 
                         if (user != null) {
                             val prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
+                            // Use vehicleId from server response as the canonical source of truth
+                            val serverVehicleId = user.vehicleId ?: vehicleId
+                            val nameToSave = user.name.trim().ifEmpty { "Driver" }
                             prefs.edit()
                                 .putBoolean(MainActivity.KEY_LOGGED_IN, true)
                                 .putString("user_id", user.id)
-                                .putString("vehicle_id", vehicleId)
-                                .putString("user_name", user.name)
+                                .putString("vehicle_id", serverVehicleId)
+                                .putString("user_name", nameToSave)
                                 .putString("user_email", user.email)
                                 .putString("user_phone", user.phone ?: "")
                                 .apply()
 
+                            android.util.Log.d("LoginActivity", "Saved user_name='$nameToSave' to SharedPreferences")
                             Toast.makeText(this@LoginActivity, "Login Successful!", Toast.LENGTH_SHORT).show()
                             startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                             finish()

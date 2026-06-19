@@ -26,8 +26,9 @@ data class UserDto(
     @SerializedName("name") val name: String,
     @SerializedName("email") val email: String,
     @SerializedName("phone") val phone: String?,
+    @SerializedName("vehicleId") val vehicleId: String?,
     @SerializedName("isEmailVerified") val isEmailVerified: Boolean,
-    @SerializedName("deviceOwnerName") val deviceOwnerName: String
+    @SerializedName("isCurrentlyDriving") val isCurrentlyDriving: Boolean?
 )
 
 data class ProfileUpdateRequest(
