@@ -299,11 +299,14 @@ app.put('/api/users/claim-vehicle/:userId', async (req, res) => {
     // Unclaim vehicle for all other users sharing this Car Plate Number
     await User.updateMany(
       { vehicleId: user.vehicleId },
-      { $set: { isCurrentlyDriving: false } }
+      { $set: { isCurrentlyDriving: false, sessionActive: false } }
     );
 
-    // Claim it for the current user
+    // Claim it for the current user — activate session, clear any pending reset
     user.isCurrentlyDriving = true;
+    user.sessionActive = true;
+    user.sessionResetPending = false;
+    user.alarmDismissed = false;
     await user.save();
 
     // Adopt any orphaned logs (userId: null) for this vehicle
@@ -329,7 +332,10 @@ app.put('/api/users/unclaim-vehicle/:userId', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Stop session and signal Python to reset all counters
     user.isCurrentlyDriving = false;
+    user.sessionActive = false;
+    user.sessionResetPending = true;
     await user.save();
 
     res.status(200).json({ message: 'Vehicle unclaimed successfully' });
@@ -349,12 +355,46 @@ app.put('/api/users/dismiss-alarm/:userId', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Dismiss alarm AND signal Python to reset all counters to 0
     user.alarmDismissed = true;
+    user.sessionResetPending = true;
     await user.save();
 
     res.status(200).json({ message: 'Alarm dismiss signal set successfully' });
   } catch (error) {
     console.error('Dismiss alarm error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// [GET /api/session/:vehicleId] — Polled by Python every 1.5s for start/stop/reset signals
+app.get('/api/session/:vehicleId', async (req, res) => {
+  try {
+    const { vehicleId } = req.params;
+
+    // Find the active owner of this vehicle
+    const user = await User.findOne({ vehicleId, isCurrentlyDriving: true })
+      || await User.findOne({ vehicleId }).sort({ updatedAt: -1 });
+
+    if (!user) {
+      // No user configured for this vehicle — stay in standby
+      return res.status(200).json({ sessionActive: false, resetCounters: false });
+    }
+
+    const resetCounters = user.sessionResetPending;
+
+    // Consume the reset flag immediately so Python only resets once
+    if (resetCounters) {
+      user.sessionResetPending = false;
+      await user.save();
+    }
+
+    res.status(200).json({
+      sessionActive: user.sessionActive,
+      resetCounters
+    });
+  } catch (error) {
+    console.error('Session poll error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });

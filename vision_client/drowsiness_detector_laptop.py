@@ -56,6 +56,7 @@ except ImportError:
 
 # ── Camera & Network ──────────────────────────────────────────────────────────
 VEHICLE_ID = "DDH4321"  # <-- Edit this to match your Android app's Car Plate!
+SERVER_BASE_URL = "https://drowsysync.onrender.com"
 CAMERA_INDEX = 0
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
@@ -462,6 +463,32 @@ class DetectionState:
         self.changed = self.stage != prev
         self._prev_stage = self.stage
 
+    def full_reset(self) -> None:
+        """
+        Full session reset — clears ALL behavioural history and counters.
+        Called when: Stop Monitoring or Dismiss Alarm received from app.
+        """
+        self._eye_history.clear()
+        self._eye_closed_sum = 0
+        self._eye_closed_since = None
+        self.microsleep_active = False
+        self._yawn_started_at = None
+        self._yawn_counted = False
+        self._yawn_timestamps.clear()
+        self.stage3_latched = False
+        self._recovery_started_at = None
+        self.perclos = 0.0
+        self.recent_yawn_count = 0
+        self.ear = 0.0
+        self.mar = 0.0
+        self.stage = 0
+        self.status = STAGE_LABELS[0]
+        self.changed = False
+        self.recovery_progress = 0.0
+        self.recovery_remaining = RECOVERY_SECS
+        self._prev_stage = 0
+        print("\n[INFO] Full session reset — all counters cleared to 0.")
+
     def to_dict(self) -> dict:
         """JSON-serialisable payload for Firebase / REST API."""
         return {
@@ -649,12 +676,13 @@ def draw_no_face(frame: np.ndarray, fps: float, h: int) -> None:
 # Fires only on stage transitions (not every frame) to avoid network spam.
 # =============================================================================
 
+SESSION_URL = f"{SERVER_BASE_URL}/api/session/{VEHICLE_ID}"
 
 def _send_log_async(payload: dict, state: DetectionState) -> None:
     """Background task to send the event payload to the Node.js server."""
     try:
         # CORRECTION: Changed /api/events to /api/logs to match server.js
-        url = "https://drowsysync.onrender.com/api/logs"
+        url = f"{SERVER_BASE_URL}/api/logs"
         response = requests.post(url, json=payload, timeout=3.0)
         response.raise_for_status()
         
@@ -666,6 +694,20 @@ def _send_log_async(payload: dict, state: DetectionState) -> None:
     except Exception as e:
         # Graceful failure: print a warning without crashing or blocking the script
         print(f"\n[WARNING] Failed to sync event to cloud backend: {e}")
+
+
+def poll_session_status() -> dict:
+    """
+    Polls GET /api/session/:vehicleId and returns the parsed JSON response.
+    Returns { sessionActive: False, resetCounters: False } on any network error.
+    """
+    try:
+        response = requests.get(SESSION_URL, timeout=3.0)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        print(f"\n[WARNING] Session poll failed: {e}")
+        return {"sessionActive": False, "resetCounters": False}
 
 def on_status_change(state: DetectionState) -> None:
     """
@@ -738,7 +780,12 @@ def main() -> None:
     fps_t0 = time.perf_counter()
     fps_cnt = 0
 
-    print("[INFO] Camera open. Starting detection...\n")
+    # ── Session state machine ─────────────────────────────────────────────────────────────
+    is_monitoring = False          # True → MONITORING, False → STANDBY
+    last_session_poll = 0.0        # timestamp of last GET /api/session poll
+    SESSION_POLL_INTERVAL = 1.5    # seconds between session polls
+
+    print("[STANDBY] Waiting for mobile app to start monitoring...\n")
 
     try:
         while True:
@@ -747,7 +794,54 @@ def main() -> None:
                 print("[ERROR] Frame grab failed — is the webcam connected?")
                 break
 
-            # ── FPS measurement ───────────────────────────────────────────────
+            # ── Poll session status from backend every 1.5 seconds ──────────────────
+            now = time.time()
+            if now - last_session_poll >= SESSION_POLL_INTERVAL:
+                last_session_poll = now
+                session = poll_session_status()
+
+                # Handle full counter reset (Stop Monitoring or Dismiss Alarm)
+                if session.get("resetCounters"):
+                    state.full_reset()
+                    alarm.set_mode(AlarmMode.OFF)
+
+                # Handle STANDBY ↔ MONITORING transitions
+                new_monitoring = session.get("sessionActive", False)
+                if new_monitoring != is_monitoring:
+                    is_monitoring = new_monitoring
+                    if is_monitoring:
+                        print("\n[MONITORING] Session started — detection active.")
+                    else:
+                        print("\n[STANDBY] Session ended — detection paused.")
+                        state.full_reset()
+                        alarm.set_mode(AlarmMode.OFF)
+
+            # ── STANDBY mode: show a simple waiting screen ───────────────────────────
+            if not is_monitoring:
+                standby_frame = frame.copy()
+                cv2.putText(
+                    standby_frame,
+                    "STANDBY",
+                    (10, 40), _FONT_BOLD, 1.0, CLR_GREY, 2, cv2.LINE_AA
+                )
+                cv2.putText(
+                    standby_frame,
+                    "Waiting for mobile app to start monitoring...",
+                    (10, 80), _FONT, 0.55, CLR_GREY, 1, cv2.LINE_AA
+                )
+                cv2.putText(
+                    standby_frame,
+                    "Press 'q' to quit",
+                    (10, FRAME_HEIGHT - 10), _FONT, 0.45, CLR_GREY, 1, cv2.LINE_AA
+                )
+                cv2.imshow("DrowsySync — Laptop", standby_frame)
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+                continue
+
+            # ── MONITORING mode: full detection ───────────────────────────────────
+
+            # ── FPS measurement ─────────────────────────────────────────────────────────────
             fps_cnt += 1
             if fps_cnt == 30:
                 elapsed = time.perf_counter() - fps_t0
@@ -755,7 +849,7 @@ def main() -> None:
                 fps_t0 = time.perf_counter()
                 fps_cnt = 0
 
-            # ── MediaPipe inference ───────────────────────────────────────────
+            # ── MediaPipe inference ──────────────────────────────────────────────────────────────
             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = face_mesh.process(rgb)
 
@@ -775,7 +869,7 @@ def main() -> None:
                     on_status_change(state)
                     state._last_pushed_time = current_time
 
-                # ── Set alarm mode based on effective stage ────────────────────
+                # ── Set alarm mode based on effective stage ────────────────────────────
                 if state.stage3_latched or state.stage == 3:
                     # Stage 3: aggressive continuous siren
                     alarm.set_mode(AlarmMode.CONTINUOUS)

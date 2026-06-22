@@ -210,15 +210,14 @@ class DrowsySyncBackgroundService : Service() {
      * A companion notification is also posted so the alert survives lock-screen scenarios.
      */
     private fun fireStage2Warning(manager: NotificationManager, log: FatigueLogResponse) {
-        // ── Primary: launch activity directly over the current app ─────────────
+        // ── Launch SymptomAlertActivity only when user taps the notification ──
         val activityIntent = Intent(this, SymptomAlertActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_SINGLE_TOP or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
-        startActivity(activityIntent)
 
-        // ── Fallback notification (for lock screen / screen-off scenarios) ─────
+        // ── Heads-up notification (shows over Waze/Maps without opening app) ──
         val tapPendingIntent = PendingIntent.getActivity(
             this, 0, activityIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -240,15 +239,14 @@ class DrowsySyncBackgroundService : Service() {
      * Also fires a full-screen-intent notification so it works over the lock screen.
      */
     private fun fireStage3CriticalAlarm(manager: NotificationManager, log: FatigueLogResponse) {
-        // ── Primary: launch activity directly over the current app ─────────────
+        // ── MicrosleepAlertActivity opens only when notification is tapped ──────
         val activityIntent = Intent(this, MicrosleepAlertActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
                     Intent.FLAG_ACTIVITY_NO_HISTORY
         }
-        startActivity(activityIntent)
 
-        // ── Fallback: full-screen-intent notification for lock screen ──────────
+        // ── Full-screen-intent notification (activates over lock screen) ────────
         val fullScreenPendingIntent = PendingIntent.getActivity(
             this, 1, activityIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE

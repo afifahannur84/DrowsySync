@@ -37,6 +37,11 @@ class MicrosleepAlertActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     try {
                         com.example.drowsysyncapp.network.RetrofitClient.instance.dismissAlarm(userId)
+                        // Clear locally cached metrics so dashboard shows 0 on return
+                        prefs.edit()
+                            .putFloat("last_perclos", 0.0f)
+                            .putInt("last_yawns", 0)
+                            .apply()
                     } catch (e: Exception) {
                         android.util.Log.e("MicrosleepAlert", "Failed to dismiss alarm: ${e.message}")
                     }
