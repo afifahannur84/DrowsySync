@@ -25,6 +25,11 @@ mobile_app/app/google-services.json
 # ── Firebase ──
 cloud_backend/serviceAccountKey.json
 
+# ── Environment secrets (never commit credentials) ──
+.env
+*.env
+cloud_backend/.env
+
 # ── OS ──
 .DS_Store
 Thumbs.db

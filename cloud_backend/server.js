@@ -2,12 +2,13 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const nodemailer = require('nodemailer');
+// Brevo Web API is used for all email dispatch (HTTPS port 443 — no SMTP firewall issues on Render)
 const PDFDocument = require('pdfkit');
 // Import Models
 const User = require('./models/User');
 const FatigueLog = require('./models/FatigueLog');
 const Verification = require('./models/Verification');
+const VehicleOwnership = require('./models/VehicleOwnership');
 const bcrypt = require('bcryptjs');
 
 // Load environment variables
@@ -24,20 +25,36 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Configure Nodemailer Transport
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  family: 4, // 👈 CRITICAL: Forces IPv4 to bypass the Render ENETUNREACH IPv6 error
-  connectionTimeout: 10000, // 👈 Increased to 10 seconds to give Render more breathing room
-  greetingTimeout: 10000,
-  socketTimeout: 10000
-});
+// ── Brevo API email helper ────────────────────────────────────────────────────
+// Sends a single transactional email via the Brevo Web API (HTTPS/443).
+// @param {string} toEmail   - Recipient email address
+// @param {string} subject   - Email subject line
+// @param {string} htmlBody  - HTML content of the email body
+// @param {Array}  [attachments] - Optional Brevo attachment array objects
+const sendBrevoEmail = async (toEmail, subject, htmlBody, attachments = []) => {
+  const payload = {
+    sender: { name: 'DrowsySync', email: process.env.BREVO_SENDER_EMAIL },
+    to: [{ email: toEmail }],
+    subject,
+    htmlContent: htmlBody
+  };
+  if (attachments.length > 0) payload.attachment = attachments;
+
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'api-key': process.env.BREVO_API_KEY
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errBody = await response.text();
+    throw new Error(`Brevo API error ${response.status}: ${errBody}`);
+  }
+  return response.json();
+};
 
 
 // Connect to MongoDB Atlas
@@ -90,14 +107,13 @@ app.post('/api/auth/register', async (req, res) => {
 
     await tempUser.save();
 
-    // Send Real Email
-    if (process.env.EMAIL_USER && process.env.EMAIL_USER !== 'your_gmail@gmail.com') {
+    // ── Send OTP via Brevo Web API ─────────────────────────────────────────────
+    if (process.env.BREVO_API_KEY) {
       try {
-        await transporter.sendMail({
-          from: `"DrowsySync" <${process.env.EMAIL_USER}>`,
-          to: email,
-          subject: 'Your DrowsySync Verification Code',
-          html: `
+        await sendBrevoEmail(
+          email,
+          'Your DrowsySync Verification Code',
+          `
             <div style="font-family: 'Times New Roman', Times, serif; padding: 20px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; max-width: 600px; margin: 0 auto;">
               <h2 style="color: #000000; font-weight: normal; border-bottom: 1px solid #eeeeee; padding-bottom: 10px;">DrowsySync Account Verification</h2>
               <p style="color: #333333; line-height: 1.6;">Dear User,</p>
@@ -109,15 +125,15 @@ app.post('/api/auth/register', async (req, res) => {
               <p style="color: #333333; line-height: 1.6; margin-top: 30px;">Sincerely,<br>The DrowsySync Administration Team</p>
             </div>
           `
-        });
-        console.log(`✉️ Verification email sent to ${email}`);
+        );
+        console.log(`✉️ [Brevo] Verification OTP dispatched successfully to ${email}`);
       } catch (mailError) {
-        console.error('❌ Failed to send verification email:', mailError);
+        console.error('❌ [Brevo] Failed to dispatch verification OTP:', mailError);
         console.log(`⚠️ FALLBACK VERIFICATION CODE FOR ${email}: ${verificationCode}`);
         // Even if email fails, we return success so the user can be manually verified or use a fallback
       }
     } else {
-      console.log(`⚠️ Email skipped: Please fill EMAIL_USER and EMAIL_PASS in .env. Code is: ${verificationCode}`);
+      console.log(`⚠️ [Brevo] BREVO_API_KEY not set. Email skipped. Code is: ${verificationCode}`);
     }
 
     res.status(201).json({
@@ -140,6 +156,15 @@ app.post('/api/auth/verify', async (req, res) => {
       return res.status(400).json({ error: 'Invalid or expired verification code' });
     }
 
+    // Check if the plate is currently claimed by another user
+    const existingOwnership = await VehicleOwnership.findOne({
+      vehicleId: tempUser.vehicleId,
+      isActive: true
+    });
+    if (existingOwnership) {
+      return res.status(409).json({ error: 'This vehicle plate is currently registered to another owner. Ask them to release it first.' });
+    }
+
     const newUser = new User({
       name: tempUser.name,
       email: tempUser.email,
@@ -154,6 +179,15 @@ app.post('/api/auth/verify', async (req, res) => {
     });
 
     await newUser.save();
+
+    // Create VehicleOwnership record
+    await new VehicleOwnership({
+      userId: newUser._id,
+      vehicleId: tempUser.vehicleId,
+      isActive: true,
+      activatedAt: new Date()
+    }).save();
+    console.log(`🔑 VehicleOwnership created: ${newUser.email} → ${tempUser.vehicleId}`);
 
     await Verification.deleteOne({ _id: tempUser._id });
 
@@ -173,42 +207,53 @@ app.post('/api/auth/login', async (req, res) => {
     const { email, password, vehicleId } = req.body;
     const vId = vehicleId || "UTEM_LOG_862B";
 
-    const userRecords = await User.find({ email }).select('+password');
-    if (userRecords.length === 0) {
+    // Find the user by email (one User document per email)
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const validPassword = await bcrypt.compare(password, userRecords[0].password);
+    const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    let matchedUser = userRecords.find(u => u.vehicleId === vId);
-
-    if (!matchedUser) {
-      matchedUser = new User({
-        name: userRecords[0].name,
-        email: userRecords[0].email,
-        password: userRecords[0].password,
-        isEmailVerified: true,
-        vehicleId: vId,
-        isGuestModeActive: false
-      });
-      await matchedUser.save();
-      console.log(`Cloned new user record for Car Plate Number: ${vId}`);
+    // ── Enforce email verification ──────────────────────────────────────────
+    if (!user.isEmailVerified) {
+      return res.status(401).json({ error: 'Please verify your email before logging in.' });
     }
 
-    // ── Atomically claim vehicle at login time (no race condition) ───────────
-    // Unclaim all other drivers of this vehicle first, then claim for this user.
+    // ── Vehicle plate ownership check ───────────────────────────────────────
+    const activeOwnership = await VehicleOwnership.findOne({ vehicleId: vId, isActive: true });
+
+    if (activeOwnership && activeOwnership.userId.toString() !== user._id.toString()) {
+      // Plate is claimed by someone else
+      return res.status(409).json({ error: 'This vehicle plate is currently registered to another owner. Ask them to release it first.' });
+    }
+
+    if (!activeOwnership) {
+      // Plate is unclaimed — auto-claim for this user
+      await new VehicleOwnership({
+        userId: user._id,
+        vehicleId: vId,
+        isActive: true,
+        activatedAt: new Date()
+      }).save();
+      console.log(`🔑 Auto-claimed plate ${vId} for user ${user.email}`);
+    }
+
+    // Update user's vehicleId cache and driving state
+    user.vehicleId = vId;
+    user.isCurrentlyDriving = true;
+    await user.save();
+
+    // Unclaim all other drivers of this vehicle
     await User.updateMany(
-      { vehicleId: vId, _id: { $ne: matchedUser._id } },
+      { vehicleId: vId, _id: { $ne: user._id } },
       { $set: { isCurrentlyDriving: false } }
     );
-    matchedUser.isCurrentlyDriving = true;
-    await matchedUser.save();
-    // ─────────────────────────────────────────────────────────────────────────
 
-    const safeUser = matchedUser.toObject();
+    const safeUser = user.toObject();
     delete safeUser.password;
 
     res.status(200).json({ message: 'Login successful', user: safeUser });
@@ -314,6 +359,51 @@ app.put('/api/users/dismiss-alarm/:userId', async (req, res) => {
   }
 });
 
+// [POST /api/users/release-vehicle]
+app.post('/api/users/release-vehicle', async (req, res) => {
+  try {
+    const { userId, password } = req.body;
+
+    if (!userId || !password) {
+      return res.status(400).json({ error: 'userId and password are required' });
+    }
+
+    const user = await User.findById(userId).select('+password');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Verify password
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Incorrect password' });
+    }
+
+    if (!user.vehicleId || user.vehicleId === '') {
+      return res.status(400).json({ error: 'No vehicle is currently assigned to this account' });
+    }
+
+    const releasedPlate = user.vehicleId;
+
+    // Deactivate the VehicleOwnership record
+    await VehicleOwnership.updateMany(
+      { userId: user._id, vehicleId: releasedPlate, isActive: true },
+      { $set: { isActive: false, deactivatedAt: new Date() } }
+    );
+
+    // Clear user's vehicle assignment
+    user.vehicleId = '';
+    user.isCurrentlyDriving = false;
+    await user.save();
+
+    console.log(`🔓 User ${user.email} released vehicle plate: ${releasedPlate}`);
+    res.status(200).json({ message: `Vehicle plate ${releasedPlate} released successfully. A new owner can now register with this plate.` });
+  } catch (error) {
+    console.error('Release vehicle error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // ==========================================
 // FATIGUE LOG API ENDPOINTS
 // ==========================================
@@ -352,27 +442,38 @@ app.get('/api/logs/report/:userId', async (req, res) => {
     doc.on('end', async () => {
       const pdfData = Buffer.concat(buffers);
 
-      if (process.env.EMAIL_USER && process.env.EMAIL_USER !== 'your_gmail@gmail.com') {
+      // ── Send PDF report via Brevo Web API ──────────────────────────────────
+      if (process.env.BREVO_API_KEY) {
         try {
-          await transporter.sendMail({
-            from: `"DrowsySync Analytics" <${process.env.EMAIL_USER}>`,
-            to: user.email,
-            subject: 'Your DrowsySync Fatigue Report',
-            text: 'Attached is your requested driver fatigue summary report.',
-            attachments: [
+          const pdfBase64 = pdfData.toString('base64');
+
+          await sendBrevoEmail(
+            user.email,
+            'Your DrowsySync Fatigue Report',
+            `
+              <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px;">
+                <h2 style="color: #2E5BFF;">DrowsySync — Driver Fatigue Report</h2>
+                <p style="color: #333333; line-height: 1.6;">Dear ${user.name},</p>
+                <p style="color: #333333; line-height: 1.6;">Please find your requested driver fatigue summary report attached to this email as a PDF document.</p>
+                <p style="color: #333333; line-height: 1.6;">Review the enclosed data to monitor your alertness trends and promote safer driving habits.</p>
+                <p style="color: #333333; line-height: 1.6; margin-top: 30px;">Sincerely,<br>The DrowsySync Analytics Team</p>
+              </div>
+            `,
+            [
               {
-                filename: 'FatigueReport.pdf',
-                content: pdfData
+                name: 'DrowsySync_Fatigue_Report.pdf',
+                content: pdfBase64
               }
             ]
-          });
-          res.status(200).json({ message: 'Report emailed successfully' });
+          );
+          console.log(`✉️ [Brevo] Fatigue report PDF dispatched successfully to ${user.email}`);
+          res.status(200).json({ message: 'Report emailed successfully via Brevo' });
         } catch (mailError) {
-          console.error('❌ Failed to send report email:', mailError);
-          res.status(500).json({ error: 'Failed to send report email' });
+          console.error('❌ [Brevo] Failed to dispatch fatigue report PDF:', mailError);
+          res.status(500).json({ error: 'Failed to send report email via Brevo API' });
         }
       } else {
-        res.status(200).json({ message: 'Email config missing. PDF generated but not sent.' });
+        res.status(200).json({ message: 'BREVO_API_KEY not set. PDF generated but not sent.' });
       }
     });
 
@@ -444,10 +545,19 @@ const handleLogIngestion = async (req, res) => {
       return res.status(400).json({ error: 'vehicleId is required' });
     }
 
-    // First, try to find the user who actively claimed the Car Plate Number
-    let matchedUser = await User.findOne({ vehicleId, isCurrentlyDriving: true });
+    // Look up the active owner via VehicleOwnership table first
+    let matchedUser = null;
+    const activeOwnership = await VehicleOwnership.findOne({ vehicleId, isActive: true });
+    if (activeOwnership) {
+      matchedUser = await User.findById(activeOwnership.userId);
+    }
 
-    // If no one is actively driving, fallback to the first registered owner
+    // Fallback: try to find the user who actively claimed the Car Plate Number (backward compat)
+    if (!matchedUser) {
+      matchedUser = await User.findOne({ vehicleId, isCurrentlyDriving: true });
+    }
+
+    // Final fallback: first registered owner
     if (!matchedUser) {
       matchedUser = await User.findOne({ vehicleId });
     }
