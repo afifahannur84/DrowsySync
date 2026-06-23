@@ -86,11 +86,16 @@
     <string name="btn_download_report">Download Full Analysis Report</string>
     <string name="downloading_report">Downloading full analysis report…</string>
 
-    <!-- ── Change Ownership ── -->
-    <string name="change_ownership_title">Change Ownership</string>
+    <!-- ── Release Vehicle ── -->
+    <string name="change_ownership_title">Release Vehicle</string>
     <string name="danger_zone_title">Danger Zone</string>
-    <string name="danger_zone_body">Changing ownership will permanently reset this account. All monitoring history, analytics, and settings will be deleted. This action cannot be undone.</string>
+    <string name="danger_zone_body">Releasing your vehicle will remove your ownership of this plate number. A new owner will be able to register or log in with this plate. Your historical data will be preserved and remain accessible under your account.</string>
     <string name="verify_identity_title">Verify Your Identity</string>
-    <string name="confirm_understanding">I understand that this will permanently delete all data and reset the account to registration state.</string>
-    <string name="btn_confirm_transfer">Confirm Ownership Transfer</string>
+    <string name="release_current_plate_label">Current Vehicle Plate</string>
+    <string name="release_password_label">Enter Your Password</string>
+    <string name="release_password_hint">Password to confirm release</string>
+    <string name="confirm_understanding">I understand that this will release my vehicle plate and allow a new owner to register with it.</string>
+    <string name="btn_confirm_transfer">Release Vehicle</string>
+    <string name="release_success">Vehicle released successfully! A new owner can now register with this plate.</string>
+    <string name="release_no_vehicle">No vehicle is currently assigned to your account.</string>
 </resources>

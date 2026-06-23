@@ -53,9 +53,9 @@ data class VerifyRequest(
     @SerializedName("code") val code: String
 )
 
-data class VehicleUpdateRequest(
-    @SerializedName("carModel") val carModel: String,
-    @SerializedName("carPlate") val carPlate: String
+data class ReleaseVehicleRequest(
+    @SerializedName("userId") val userId: String,
+    @SerializedName("password") val password: String
 )
 
 data class FatigueLogResponse(
@@ -79,4 +79,15 @@ data class ReportResponse(
 
 data class GuestModeRequest(
     @SerializedName("isGuestModeActive") val isGuestModeActive: Boolean
+)
+
+data class SummaryResponse(
+    @SerializedName("today") val today: PeriodSummary,
+    @SerializedName("weekly") val weekly: PeriodSummary
+)
+
+data class PeriodSummary(
+    @SerializedName("warning") val warning: Int,
+    @SerializedName("critical") val critical: Int,
+    @SerializedName("total") val total: Int
 )

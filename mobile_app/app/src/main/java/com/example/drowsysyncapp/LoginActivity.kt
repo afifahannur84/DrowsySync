@@ -82,7 +82,16 @@ class LoginActivity : AppCompatActivity() {
                         } catch (e: Exception) {
                             response.message()
                         }
-                        showError(errorMsg)
+
+                        // Show user-friendly messages for specific server errors
+                        val displayMsg = when {
+                            errorMsg.contains("verify your email", ignoreCase = true) ->
+                                "Please verify your email before logging in. Check your inbox for the verification code."
+                            errorMsg.contains("currently registered to another owner", ignoreCase = true) ->
+                                "This vehicle plate is currently owned by another user. Ask them to release it from the app first."
+                            else -> errorMsg
+                        }
+                        showError(displayMsg)
                     }
                 } catch (e: Exception) {
                     showError("Network Error: ${e.message}")

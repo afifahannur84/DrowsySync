@@ -7,9 +7,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.drowsysyncapp.databinding.ActivityChangeOwnerBinding
+import com.example.drowsysyncapp.network.ReleaseVehicleRequest
 import com.example.drowsysyncapp.network.RetrofitClient
-import com.example.drowsysyncapp.network.VehicleUpdateRequest
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 class ChangeOwnerActivity : AppCompatActivity() {
 
@@ -20,24 +21,36 @@ class ChangeOwnerActivity : AppCompatActivity() {
         binding = ActivityChangeOwnerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
+        val userId = prefs.getString("user_id", null)
+        val currentPlate = prefs.getString("vehicle_id", null)
+
+        // Pre-fill the read-only car plate field
+        if (!currentPlate.isNullOrEmpty()) {
+            binding.etCarPlate.setText(currentPlate)
+        } else {
+            // No vehicle assigned — disable the form
+            binding.etCarPlate.setText(getString(R.string.release_no_vehicle))
+            binding.etPassword.isEnabled = false
+            binding.cbConfirm.isEnabled = false
+            binding.btnConfirmTransfer.isEnabled = false
+        }
+
         binding.btnBack.setOnClickListener { finish() }
 
         // Confirmation checkbox gates the submit button
         binding.cbConfirm.setOnCheckedChangeListener { _, isChecked ->
-            binding.btnConfirmTransfer.isEnabled = isChecked
+            binding.btnConfirmTransfer.isEnabled = isChecked && !currentPlate.isNullOrEmpty()
         }
 
         binding.btnConfirmTransfer.setOnClickListener {
-            val carModel = binding.etCarModel.text?.toString()?.trim() ?: ""
-            val carPlate = binding.etCarPlate.text?.toString()?.trim() ?: ""
+            val password = binding.etPassword.text?.toString()?.trim() ?: ""
 
-            if (carModel.isEmpty() || carPlate.isEmpty()) {
-                Toast.makeText(this, "Please fill in both Car Model and Car Plate", Toast.LENGTH_SHORT).show()
+            if (password.isEmpty()) {
+                binding.tilPassword.error = "Password is required"
                 return@setOnClickListener
             }
-
-            val prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
-            val userId = prefs.getString("user_id", null)
+            binding.tilPassword.error = null
 
             if (userId == null) {
                 Toast.makeText(this, "User ID not found. Please log in again.", Toast.LENGTH_SHORT).show()
@@ -50,19 +63,30 @@ class ChangeOwnerActivity : AppCompatActivity() {
 
             lifecycleScope.launch {
                 try {
-                    val request = VehicleUpdateRequest(carModel, carPlate)
-                    val response = RetrofitClient.instance.updateVehicleDetails(userId, request)
+                    val request = ReleaseVehicleRequest(userId, password)
+                    val response = RetrofitClient.instance.releaseVehicle(request)
 
                     if (response.isSuccessful) {
+                        // Clear vehicle from SharedPreferences
                         prefs.edit()
-                            .putString("car_model", carModel)
-                            .putString("car_plate", carPlate)
+                            .putString("vehicle_id", "")
+                            .putBoolean("is_monitoring", false)
                             .apply()
 
-                        Toast.makeText(this@ChangeOwnerActivity, "Vehicle details updated successfully!", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            this@ChangeOwnerActivity,
+                            getString(R.string.release_success),
+                            Toast.LENGTH_LONG
+                        ).show()
                         finish()
                     } else {
-                        Toast.makeText(this@ChangeOwnerActivity, "Failed to update: ${response.message()}", Toast.LENGTH_LONG).show()
+                        val errorMsg = try {
+                            val errorJson = JSONObject(response.errorBody()?.string() ?: "")
+                            errorJson.optString("error", response.message())
+                        } catch (e: Exception) {
+                            response.message()
+                        }
+                        Toast.makeText(this@ChangeOwnerActivity, "Release failed: $errorMsg", Toast.LENGTH_LONG).show()
                         binding.btnConfirmTransfer.isEnabled = true
                         binding.progressBar.visibility = View.GONE
                     }

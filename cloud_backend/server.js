@@ -449,33 +449,113 @@ app.post('/api/users/release-vehicle', async (req, res) => {
 // ==========================================
 
 // [GET /api/logs/report/:userId]
-app.get('/api/logs/report/:userId', async (req, res) => {
+// [GET /api/logs/summary/:userId]
+app.get('/api/logs/summary/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { days } = req.query;
 
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    let query = { userId };
-    if (days) {
-      const daysInt = parseInt(days);
-      if (!isNaN(daysInt)) {
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - daysInt);
-        query.createdAt = { $gte: cutoffDate };
+    // Get client's current time and define the boundaries
+    const now = new Date();
+    // Start of "today" in local time (GMT+8 Malaysia Time)
+    const myTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+    const startOfTodayMy = new Date(myTime);
+    startOfTodayMy.setUTCHours(0, 0, 0, 0);
+    // Shift back to UTC
+    const startOfTodayUtc = new Date(startOfTodayMy.getTime() - 8 * 60 * 60 * 1000);
+
+    // Last 7 days UTC
+    const sevenDaysAgoUtc = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    // Run queries in parallel
+    const [todayLogs, weeklyLogs] = await Promise.all([
+      FatigueLog.find({ userId, createdAt: { $gte: startOfTodayUtc } }),
+      FatigueLog.find({ userId, createdAt: { $gte: sevenDaysAgoUtc } })
+    ]);
+
+    const getStats = (logs) => {
+      let warning = 0;
+      let critical = 0;
+      logs.forEach(log => {
+        if (log.stage === 3) {
+          critical++;
+        } else if (log.stage === 1 || log.stage === 2) {
+          warning++;
+        }
+      });
+      return { warning, critical, total: warning + critical };
+    };
+
+    res.status(200).json({
+      today: getStats(todayLogs),
+      weekly: getStats(weeklyLogs)
+    });
+  } catch (error) {
+    console.error('Summary generation error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// [GET /api/logs/report/:userId]
+app.get('/api/logs/report/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { year, month } = req.query;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const now = new Date();
+    const yearInt = parseInt(year) || now.getFullYear();
+    const monthInt = parseInt(month) || (now.getMonth() + 1);
+
+    // Define the UTC start and end bounds for the selected month in GMT+8 terms
+    const startDate = new Date(Date.UTC(yearInt, monthInt - 1, 1, 0, 0, 0));
+    startDate.setTime(startDate.getTime() - 8 * 60 * 60 * 1000); // Shift start to UTC
+
+    const endDate = new Date(Date.UTC(yearInt, monthInt, 1, 0, 0, 0));
+    endDate.setTime(endDate.getTime() - 1); // Last millisecond of month
+    endDate.setTime(endDate.getTime() - 8 * 60 * 60 * 1000); // Shift end to UTC
+
+    const events = await FatigueLog.find({
+      userId,
+      createdAt: { $gte: startDate, $lte: endDate }
+    }).sort({ createdAt: 1 }); // Sort chronologically for calculation/charting
+
+    // Pre-calculate weekly aggregates for the vector bar chart
+    // Weeks: 1-7, 8-14, 15-21, 22-31
+    const weeklyData = [
+      { warning: 0, critical: 0 },
+      { warning: 0, critical: 0 },
+      { warning: 0, critical: 0 },
+      { warning: 0, critical: 0 }
+    ];
+
+    let totalWarnings = 0;
+    let totalCritical = 0;
+
+    events.forEach(event => {
+      // Find local day (GMT+8) of the log
+      const eventLocalTime = new Date(new Date(event.createdAt).getTime() + 8 * 60 * 60 * 1000);
+      const day = eventLocalTime.getUTCDate();
+      const weekIndex = Math.min(3, Math.floor((day - 1) / 7));
+
+      if (event.stage === 3) {
+        weeklyData[weekIndex].critical++;
+        totalCritical++;
+      } else if (event.stage === 1 || event.stage === 2) {
+        weeklyData[weekIndex].warning++;
+        totalWarnings++;
       }
-    }
+    });
 
-    const events = await FatigueLog.find(query).sort({ createdAt: -1 });
-
-    if (events.length === 0) {
-      return res.status(404).json({ error: 'No fatigue logs found to generate a report.' });
-    }
-
-    const doc = new PDFDocument();
+    const doc = new PDFDocument({ size: 'LETTER', margin: 50 });
     const buffers = [];
     doc.on('data', buffers.push.bind(buffers));
 
@@ -486,22 +566,32 @@ app.get('/api/logs/report/:userId', async (req, res) => {
       if (process.env.BREVO_API_KEY) {
         try {
           const pdfBase64 = pdfData.toString('base64');
+          const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+          const monthName = months[monthInt - 1] || "Selected Month";
 
           await sendBrevoEmail(
             user.email,
-            'Your DrowsySync Fatigue Report',
+            `Your DrowsySync Fatigue Report - ${monthName} ${yearInt}`,
             `
-              <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px;">
-                <h2 style="color: #2E5BFF;">DrowsySync — Driver Fatigue Report</h2>
-                <p style="color: #333333; line-height: 1.6;">Dear ${user.name},</p>
-                <p style="color: #333333; line-height: 1.6;">Please find your requested driver fatigue summary report attached to this email as a PDF document.</p>
-                <p style="color: #333333; line-height: 1.6;">Review the enclosed data to monitor your alertness trends and promote safer driving habits.</p>
-                <p style="color: #333333; line-height: 1.6; margin-top: 30px;">Sincerely,<br>The DrowsySync Analytics Team</p>
+              <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px;">
+                <h2 style="color: #2E5BFF; margin-bottom: 20px;">DrowsySync Driver Safety Summary</h2>
+                <p style="color: #333333; line-height: 1.6; font-size: 14px;">Dear ${user.name},</p>
+                <p style="color: #333333; line-height: 1.6; font-size: 14px;">Please find attached your visual driver fatigue report for the month of <strong>${monthName} ${yearInt}</strong>.</p>
+                <p style="color: #333333; line-height: 1.6; font-size: 14px;">This PDF report contains visual weekly charts, key fatigue indicators, and log details. Review these statistics to analyze driving patterns and secure safer travel habits.</p>
+                <div style="background-color: #f7f9fd; border-left: 4px solid #2E5BFF; padding: 12px; margin: 20px 0; border-radius: 4px;">
+                  <strong style="color: #1A1B1E; font-size: 13px;">Month Overview:</strong>
+                  <ul style="color: #555555; font-size: 13px; margin: 8px 0 0 0; padding-left: 20px;">
+                    <li>Total Driving Events Logged: <strong>${events.length}</strong></li>
+                    <li>Warning Alert Detections (Stage 1/2): <strong>${totalWarnings}</strong></li>
+                    <li>Critical Alarms (Stage 3): <strong>${totalCritical}</strong></li>
+                  </ul>
+                </div>
+                <p style="color: #888888; font-size: 12px; margin-top: 30px;">Sincerely,<br>The DrowsySync Analytics Team</p>
               </div>
             `,
             [
               {
-                name: 'DrowsySync_Fatigue_Report.pdf',
+                name: `DrowsySync_Report_${monthName}_${yearInt}.pdf`,
                 content: pdfBase64
               }
             ]
@@ -517,21 +607,169 @@ app.get('/api/logs/report/:userId', async (req, res) => {
       }
     });
 
-    doc.fontSize(24).fillColor('#2E5BFF').text('DrowsySync Fatigue Report', { align: 'center' });
-    doc.moveDown();
-    doc.fontSize(14).fillColor('#333333').text(`Driver: ${user.name}`);
-    doc.text(`Vehicle: ${user.carModel || 'N/A'} - ${user.carPlate || 'N/A'}`);
-    doc.text(`Total Events: ${events.length}`);
-    if (days) doc.text(`Timeframe: Last ${days} days`);
-    doc.moveDown();
+    // —— 1. Header block
+    doc.rect(0, 0, 612, 100).fillColor('#2E5BFF').fill();
+    doc.fillColor('#FFFFFF').fontSize(24).font('Helvetica-Bold').text('DrowsySync Analytics', 50, 30);
+    doc.fontSize(12).font('Helvetica').text('Driver Fatigue Summary Report', 50, 62);
 
-    events.slice(0, 50).forEach((event, index) => {
-      const date = new Date(event.createdAt).toLocaleString();
-      doc.fontSize(12).text(`${index + 1}. ${date} - ${event.status} (PERCLOS: ${event.perclos.toFixed(1)}%)`);
+    // —— 2. Metadata details
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const monthName = months[monthInt - 1] || "Selected Month";
+
+    doc.fillColor('#1A1B1E').fontSize(10).font('Helvetica-Bold').text('DRIVER PROFILE', 50, 120);
+    doc.font('Helvetica').text(`Driver Name: ${user.name}`, 50, 135);
+    doc.text(`Vehicle Plate: ${user.vehicleId || 'N/A'}`, 50, 150);
+
+    doc.font('Helvetica-Bold').text('REPORT DETAILS', 350, 120);
+    doc.font('Helvetica').text(`Report Period: ${monthName} ${yearInt}`, 350, 135);
+    doc.text(`Generated On: ${new Date().toLocaleDateString('en-MY', { timeZone: 'Asia/Kuala_Lumpur' })}`, 350, 150);
+
+    // Separator line
+    doc.moveTo(50, 170).lineTo(562, 170).strokeColor('#E9EBEF').strokeWidth(1).stroke();
+
+    // —— 3. KPI Blocks
+    // Left Box (Total logs)
+    doc.rect(50, 185, 150, 65).fillColor('#F4F6FA').fill();
+    doc.fillColor('#1A1B1E').fontSize(20).font('Helvetica-Bold').text(`${events.length}`, 65, 198);
+    doc.fillColor('#717182').fontSize(8.5).font('Helvetica').text('Logs Recorded', 65, 226);
+
+    // Middle Box (Warnings)
+    doc.rect(220, 185, 150, 65).fillColor('#FFF4E5').fill();
+    doc.fillColor('#FFA500').fontSize(20).font('Helvetica-Bold').text(`${totalWarnings}`, 235, 198);
+    doc.fillColor('#717182').fontSize(8.5).font('Helvetica').text('Warning Alerts (S1/S2)', 235, 226);
+
+    // Right Box (Critical)
+    doc.rect(390, 185, 172, 65).fillColor('#FFEAEA').fill();
+    doc.fillColor('#FF0000').fontSize(20).font('Helvetica-Bold').text(`${totalCritical}`, 405, 198);
+    doc.fillColor('#717182').fontSize(8.5).font('Helvetica').text('Critical Alarms (S3)', 405, 226);
+
+    // —— 4. Section Title: Weekly Distribution
+    doc.fillColor('#2E5BFF').fontSize(14).font('Helvetica-Bold').text('Weekly Alert Distribution', 50, 275);
+
+    // Vector Chart Area
+    const axisX = 90;
+    const axisY = 410;
+    const chartHeight = 110;
+    const chartWidth = 280;
+
+    // Y Axis
+    doc.moveTo(axisX, axisY).lineTo(axisX, axisY - chartHeight).strokeColor('#D2D2D6').strokeWidth(1.5).stroke();
+    // X Axis
+    doc.moveTo(axisX, axisY).lineTo(axisX + chartWidth, axisY).stroke();
+
+    // Find max value in weekly data to scale chart
+    let maxVal = 1;
+    weeklyData.forEach(w => {
+      if (w.warning > maxVal) maxVal = w.warning;
+      if (w.critical > maxVal) maxVal = w.critical;
     });
 
-    if (events.length > 50) {
-      doc.moveDown().text(`...and ${events.length - 50} more events.`);
+    // Horizontal grid lines
+    const gridLines = 4;
+    for (let i = 1; i <= gridLines; i++) {
+      const gVal = Math.round((maxVal / gridLines) * i * 10) / 10;
+      const gY = axisY - (chartHeight / gridLines) * i;
+      // Grid line
+      doc.moveTo(axisX, gY).lineTo(axisX + chartWidth, gY).strokeColor('#E9EBEF').strokeWidth(1).stroke();
+      // Y-axis label
+      doc.fillColor('#717182').fontSize(8).font('Helvetica').text(`${gVal}`, axisX - 25, gY - 4, { width: 20, align: 'right' });
+    }
+    // Label "0"
+    doc.fillColor('#717182').fontSize(8).font('Helvetica').text('0', axisX - 25, axisY - 4, { width: 20, align: 'right' });
+
+    // Draw weekly bars
+    for (let w = 0; w < 4; w++) {
+      const warnCount = weeklyData[w].warning;
+      const critCount = weeklyData[w].critical;
+
+      const scaleWarn = (warnCount / maxVal) * chartHeight;
+      const scaleCrit = (critCount / maxVal) * chartHeight;
+
+      const groupStartX = axisX + 30 + w * 60;
+
+      // Warning bar (Orange)
+      if (warnCount > 0) {
+        doc.rect(groupStartX, axisY - scaleWarn, 18, scaleWarn).fillColor('#FFA500').fill();
+        // Count above bar
+        doc.fillColor('#1A1B1E').fontSize(7).font('Helvetica-Bold').text(`${warnCount}`, groupStartX, axisY - scaleWarn - 8, { width: 18, align: 'center' });
+      }
+
+      // Critical bar (Red)
+      if (critCount > 0) {
+        doc.rect(groupStartX + 20, axisY - scaleCrit, 18, scaleCrit).fillColor('#FF0000').fill();
+        // Count above bar
+        doc.fillColor('#1A1B1E').fontSize(7).font('Helvetica-Bold').text(`${critCount}`, groupStartX + 20, axisY - scaleCrit - 8, { width: 18, align: 'center' });
+      }
+
+      // Week label
+      doc.fillColor('#1A1B1E').fontSize(8).font('Helvetica').text(`Week ${w+1}`, groupStartX - 2, axisY + 6, { width: 44, align: 'center' });
+    }
+
+    // Chart Legend
+    const legendX = 405;
+    const legendY = 320;
+    // Warning box
+    doc.rect(legendX, legendY, 10, 10).fillColor('#FFA500').fill();
+    doc.fillColor('#1A1B1E').fontSize(8.5).font('Helvetica').text('Warning Alert (Stage 1/2)', legendX + 15, legendY + 1);
+    // Critical box
+    doc.rect(legendX, legendY + 18, 10, 10).fillColor('#FF0000').fill();
+    doc.text('Critical Alarm (Stage 3)', legendX + 15, legendY + 19);
+
+    // Week Info box below legend
+    doc.rect(legendX, legendY + 40, 155, 45).fillColor('#F4F6FA').fill();
+    doc.fillColor('#717182').fontSize(7.5).font('Helvetica')
+      .text('W1: Days 1–7\nW2: Days 8–14\nW3: Days 15–21\nW4: Days 22–End', legendX + 10, legendY + 45);
+
+    // Separator line
+    doc.moveTo(50, 445).lineTo(562, 445).strokeColor('#E9EBEF').strokeWidth(1).stroke();
+
+    // —— 5. Alert log details (Table)
+    doc.fillColor('#2E5BFF').fontSize(14).font('Helvetica-Bold').text('Detailed Alarm Log', 50, 460);
+
+    // Table Header
+    const tableTop = 485;
+    doc.rect(50, tableTop, 512, 18).fillColor('#2E5BFF').fill();
+    doc.fillColor('#FFFFFF').fontSize(8.5).font('Helvetica-Bold');
+    doc.text('No.', 55, tableTop + 5);
+    doc.text('Date & Time (GMT+8)', 80, tableTop + 5);
+    doc.text('Status/Level', 260, tableTop + 5);
+    doc.text('PERCLOS', 390, tableTop + 5);
+    doc.text('Avg EAR', 450, tableTop + 5);
+    doc.text('Yawn Count', 510, tableTop + 5);
+
+    let currentY = tableTop + 18;
+    const maxLogsToDraw = events.slice(0, 12); // Fit up to 12 logs on page 1
+
+    maxLogsToDraw.forEach((event, index) => {
+      const isEven = index % 2 === 0;
+      if (isEven) {
+        doc.rect(50, currentY, 512, 16).fillColor('#F9FAFC').fill();
+      }
+
+      doc.fillColor('#1A1B1E').fontSize(8).font('Helvetica');
+      doc.text(`${index + 1}`, 55, currentY + 4);
+      
+      const eventTimeStr = new Date(new Date(event.createdAt).getTime() + 8 * 60 * 60 * 1000).toISOString()
+        .replace('T', ' ').substring(0, 19);
+      doc.text(eventTimeStr, 80, currentY + 4);
+
+      // Highlight status by stage
+      let statusColor = '#1A1B1E';
+      if (event.stage === 3) statusColor = '#FF0000';
+      else if (event.stage === 2) statusColor = '#FFA500';
+
+      doc.fillColor(statusColor).font('Helvetica-Bold').text(`${event.status}`, 260, currentY + 4);
+      doc.fillColor('#1A1B1E').font('Helvetica');
+
+      doc.text(`${event.perclos.toFixed(1)}%`, 390, currentY + 4);
+      doc.text(`${event.ear.toFixed(3)}`, 450, currentY + 4);
+      doc.text(`${event.recent_yawn_count}`, 510, currentY + 4);
+
+      currentY += 16;
+    });
+
+    if (events.length > 12) {
+      doc.fillColor('#717182').fontSize(8.5).font('Helvetica-Oblique').text(`* Note: Showing the first 12 logs. There are ${events.length - 12} other logs recorded in this period.`, 50, currentY + 8);
     }
 
     doc.end();

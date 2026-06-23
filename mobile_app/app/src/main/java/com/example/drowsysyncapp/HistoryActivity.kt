@@ -3,6 +3,8 @@ package com.example.drowsysyncapp
 import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -10,7 +12,9 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.drowsysyncapp.databinding.ActivityHistoryBinding
 import com.example.drowsysyncapp.network.RetrofitClient
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class HistoryActivity : AppCompatActivity() {
 
@@ -35,29 +39,80 @@ class HistoryActivity : AppCompatActivity() {
 
         binding.btnDownloadReport.setOnClickListener {
             val userId = prefs.getString("user_id", null) ?: return@setOnClickListener
-            
-            // Loading State UI
-            binding.btnDownloadReport.isEnabled = false
-            binding.btnDownloadReport.text = "Generating Report..."
-            
-            lifecycleScope.launch {
-                try {
-                    val response = RetrofitClient.instance.generateReport(userId, 7) // Last 7 days
-                    if (response.isSuccessful) {
-                        Toast.makeText(this@HistoryActivity, "Report emailed successfully!", Toast.LENGTH_LONG).show()
-                    } else {
-                        Toast.makeText(this@HistoryActivity, "Failed to send report.", Toast.LENGTH_SHORT).show()
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(this@HistoryActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                } finally {
-                    binding.btnDownloadReport.isEnabled = true
-                    binding.btnDownloadReport.text = getString(R.string.btn_download_report)
+
+            // Inflate custom picker view
+            val dialogView = layoutInflater.inflate(R.layout.dialog_month_year_picker, null)
+            val spinnerMonth = dialogView.findViewById<Spinner>(R.id.spinnerMonth)
+            val spinnerYear = dialogView.findViewById<Spinner>(R.id.spinnerYear)
+
+            val months = arrayOf(
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            )
+            val calendar = Calendar.getInstance()
+            val currentYear = calendar.get(Calendar.YEAR)
+            val currentMonth = calendar.get(Calendar.MONTH) // 0..11
+            val years = arrayOf(currentYear.toString(), (currentYear - 1).toString(), (currentYear - 2).toString())
+
+            spinnerMonth.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, months)
+            spinnerMonth.setSelection(currentMonth)
+
+            spinnerYear.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, years)
+            spinnerYear.setSelection(0)
+
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Select Report Period")
+                .setView(dialogView)
+                .setPositiveButton("Email PDF Report") { dialog, _ ->
+                    val selectedMonth = spinnerMonth.selectedItemPosition + 1 // 1-indexed
+                    val selectedYear = years[spinnerYear.selectedItemPosition].toInt()
+
+                    dialog.dismiss()
+                    triggerReportGeneration(userId, selectedYear, selectedMonth)
                 }
-            }
+                .setNegativeButton("Cancel", null)
+                .show()
         }
 
         fetchHistory()
+    }
+
+    private fun triggerReportGeneration(userId: String, year: Int, month: Int) {
+        binding.btnDownloadReport.isEnabled = false
+        binding.btnDownloadReport.text = "Generating Report..."
+
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.instance.generateReport(userId, year, month)
+                if (response.isSuccessful) {
+                    Toast.makeText(this@HistoryActivity, "Monthly report requested! Check your email.", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this@HistoryActivity, "Failed to send report. Check backend settings.", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@HistoryActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            } finally {
+                binding.btnDownloadReport.isEnabled = true
+                binding.btnDownloadReport.text = getString(R.string.btn_download_report)
+            }
+        }
+    }
+
+    private fun fetchSummary(userId: String) {
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.instance.getDriverSummary(userId)
+                if (response.isSuccessful && response.body() != null) {
+                    val summary = response.body()!!
+                    binding.tvTodayWarning.text = "Warnings: ${summary.today.warning}"
+                    binding.tvTodayCritical.text = "Critical: ${summary.today.critical}"
+                    binding.tvWeeklyWarning.text = "Warnings: ${summary.weekly.warning}"
+                    binding.tvWeeklyCritical.text = "Critical: ${summary.weekly.critical}"
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("HistoryActivity", "Failed to fetch summary: ${e.message}")
+            }
+        }
     }
 
     private fun fetchHistory() {
@@ -68,6 +123,8 @@ class HistoryActivity : AppCompatActivity() {
             Toast.makeText(this, "User ID not found. Please log in again.", Toast.LENGTH_SHORT).show()
             return
         }
+
+        fetchSummary(userId)
 
         // Show progress bar, hide recycler view
         binding.progressBar.visibility = View.VISIBLE
@@ -109,4 +166,3 @@ class HistoryActivity : AppCompatActivity() {
             }
         }
     }
-}

@@ -18,10 +18,9 @@ interface DrowsySyncApiService {
     @POST("api/auth/login")
     suspend fun loginUser(@Body request: LoginRequest): Response<AuthResponse>
 
-    @PUT("api/users/vehicle/{userId}")
-    suspend fun updateVehicleDetails(
-        @Path("userId") userId: String,
-        @Body request: VehicleUpdateRequest
+    @POST("api/users/release-vehicle")
+    suspend fun releaseVehicle(
+        @Body request: ReleaseVehicleRequest
     ): retrofit2.Response<okhttp3.ResponseBody>
 
     @GET("api/logs/{userId}")
@@ -29,10 +28,16 @@ interface DrowsySyncApiService {
         @Path("userId") userId: String
     ): Response<List<FatigueLogResponse>>
 
+    @GET("api/logs/summary/{userId}")
+    suspend fun getDriverSummary(
+        @Path("userId") userId: String
+    ): Response<SummaryResponse>
+
     @GET("api/logs/report/{userId}")
     suspend fun generateReport(
         @Path("userId") userId: String,
-        @retrofit2.http.Query("days") days: Int? = null
+        @retrofit2.http.Query("year") year: Int,
+        @retrofit2.http.Query("month") month: Int
     ): Response<ReportResponse>
 
     @GET("api/logs/latest/vehicle/{vehicleId}")
