@@ -1,6 +1,7 @@
 package com.example.drowsysyncapp
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -67,17 +68,23 @@ class ChangeOwnerActivity : AppCompatActivity() {
                     val response = RetrofitClient.instance.releaseVehicle(request)
 
                     if (response.isSuccessful) {
-                        // Clear vehicle from SharedPreferences
-                        prefs.edit()
-                            .putString("vehicle_id", "")
-                            .putBoolean("is_monitoring", false)
-                            .apply()
+                        // Clear ALL SharedPreferences to log out the user
+                        prefs.edit().clear().apply()
+
+                        // Stop background service if it is running
+                        val serviceIntent = Intent(this@ChangeOwnerActivity, DrowsySyncBackgroundService::class.java)
+                        stopService(serviceIntent)
 
                         Toast.makeText(
                             this@ChangeOwnerActivity,
                             getString(R.string.release_success),
                             Toast.LENGTH_LONG
                         ).show()
+
+                        // Navigate to LoginActivity and clear task stack
+                        val loginIntent = Intent(this@ChangeOwnerActivity, LoginActivity::class.java)
+                        loginIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(loginIntent)
                         finish()
                     } else {
                         val errorMsg = try {

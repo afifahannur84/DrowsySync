@@ -107,15 +107,37 @@ class MainActivity : AppCompatActivity() {
     private fun setupHeader() {
         refreshHeaderName()
 
-        binding.btnHistory.setOnClickListener {
+        binding.cardHistory.setOnClickListener {
             startActivity(Intent(this, HistoryActivity::class.java))
         }
-        binding.btnEditProfile.setOnClickListener {
+        binding.cardEditProfile.setOnClickListener {
             startActivity(Intent(this, EditProfileActivity::class.java))
         }
-        binding.btnSettings.setOnClickListener {
+        binding.cardReleaseVehicle.setOnClickListener {
             startActivity(Intent(this, ChangeOwnerActivity::class.java))
         }
+        binding.btnLogout.setOnClickListener {
+            performLogout()
+        }
+    }
+
+    private fun performLogout() {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().clear().apply()
+        
+        try {
+            val serviceIntent = Intent(this, DrowsySyncBackgroundService::class.java)
+            stopService(serviceIntent)
+        } catch (e: Exception) {
+            // Ignore
+        }
+        
+        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
+        
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     /** Called from both setupHeader() and onResume() so the name is always fresh. */
@@ -123,7 +145,8 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val userName = prefs.getString("user_name", "")
         if (!userName.isNullOrEmpty()) {
-            binding.tvHeaderTitle.text = "DrowsySync - $userName"
+            val firstName = userName.trim().split("\\s+".toRegex()).firstOrNull() ?: userName
+            binding.tvHeaderTitle.text = "Hi, $firstName 👋"
         } else {
             binding.tvHeaderTitle.text = "DrowsySync"
         }

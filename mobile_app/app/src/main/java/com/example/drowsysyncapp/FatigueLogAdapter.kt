@@ -39,24 +39,29 @@ class FatigueLogAdapter : RecyclerView.Adapter<FatigueLogAdapter.ViewHolder>() {
             // Format date: 2026-06-15T14:31:46.000Z to "dd/MM/yyyy HH:mm"
             try {
                 // MongoDB createdAt ISO format
-                val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-                parser.timeZone = TimeZone.getTimeZone("UTC")
-                val date = parser.parse(log.createdAt)
-                if (date != null) {
-                    val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-                    formatter.timeZone = TimeZone.getDefault() // Convert to local Malaysian time
-                    binding.tvEventMeta.text = formatter.format(date)
+                val createdAt = log.createdAt
+                if (createdAt != null) {
+                    val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+                    parser.timeZone = TimeZone.getTimeZone("UTC")
+                    val date = parser.parse(createdAt)
+                    if (date != null) {
+                        val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+                        formatter.timeZone = TimeZone.getDefault() // Convert to local Malaysian time
+                        binding.tvEventMeta.text = formatter.format(date)
+                    } else {
+                        binding.tvEventMeta.text = createdAt
+                    }
                 } else {
-                    binding.tvEventMeta.text = log.createdAt
+                    binding.tvEventMeta.text = ""
                 }
             } catch (e: Exception) {
                 // Fallback to iso string if parsing fails
-                binding.tvEventMeta.text = log.createdAt
+                binding.tvEventMeta.text = log.createdAt ?: ""
             }
 
             // Sub-details
-            val microsleepBadge = if (log.microsleepActive) " | MICROSLEEP" else ""
-            binding.tvEventBadge.text = "PERCLOS: ${log.perclos}% | EAR: ${log.ear} | YAWNS: ${log.recentYawnCount}$microsleepBadge"
+            val microsleepBadge = if (log.microsleepActive) " | ⚠️ Microsleep" else ""
+            binding.tvEventBadge.text = "Eyes closed: ${log.perclos}% | Yawns: ${log.recentYawnCount}$microsleepBadge"
 
             // UI styling based on stage severity
             when (log.stage) {

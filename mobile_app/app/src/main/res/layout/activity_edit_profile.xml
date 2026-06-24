@@ -59,8 +59,26 @@
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:layout_marginBottom="32dp" />
 
+            <!-- Full Name Input -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Full Name"
+                app:startIconDrawable="@drawable/ic_user_plus"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPersonName" />
+            </com.google.android.material.textfield.TextInputLayout>
+
             <!-- Email Input -->
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -77,15 +95,67 @@
 
             <!-- Phone Input -->
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilPhone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="32dp"
+                android:layout_marginBottom="16dp"
                 android:hint="Phone Number"
                 app:startIconDrawable="@drawable/ic_user_plus"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPhone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="phone" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Driver License Serial Input -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilLicenseSerial"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Driver License Serial Number"
+                app:startIconDrawable="@drawable/ic_shield_icon"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etLicenseSerial"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Emergency Contact Name Input -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilEmergencyName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Emergency Contact Name"
+                app:startIconDrawable="@drawable/ic_user_plus"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEmergencyName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPersonName" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Emergency Contact Phone Input -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilEmergencyPhone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="32dp"
+                android:hint="Emergency Contact Phone"
+                app:startIconDrawable="@drawable/ic_user_plus"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEmergencyPhone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="phone" />

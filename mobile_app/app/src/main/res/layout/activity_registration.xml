@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="100dp"
+    android:paddingBottom="180dp"
     android:clipToPadding="false"
     android:background="?android:attr/colorBackground">
 
@@ -168,6 +168,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/password_label"
                     app:endIconMode="password_toggle"
+                    app:errorIconDrawable="@null"
                     android:layout_marginBottom="16dp">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etPassword"
@@ -186,6 +187,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/confirm_password_label"
                     app:endIconMode="password_toggle"
+                    app:errorIconDrawable="@null"
                     android:layout_marginBottom="20dp">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etConfirmPassword"
@@ -258,6 +260,15 @@
             android:text="@string/btn_complete_fields"
             android:enabled="false"
             app:cornerRadius="8dp" />
+
+        <!-- Already registered? Go to Login -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNavToLogin"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/btn_nav_to_login" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

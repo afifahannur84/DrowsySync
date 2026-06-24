@@ -38,6 +38,11 @@ class RegistrationActivity : AppCompatActivity() {
 
         setupValidation()
 
+        binding.btnNavToLogin.setOnClickListener {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
+
         binding.btnSubmit.setOnClickListener {
             if (validity.values.all { it }) {
                 val name = binding.etFullName.text.toString()
@@ -79,7 +84,14 @@ class RegistrationActivity : AppCompatActivity() {
                             } catch (e: Exception) {
                                 response.message()
                             }
-                            Toast.makeText(this@RegistrationActivity, "Registration failed: $errorMsg", Toast.LENGTH_LONG).show()
+                            
+                            if (errorMsg.contains("already registered", ignoreCase = true) || 
+                                errorMsg.contains("already exists", ignoreCase = true)) {
+                                binding.tilEmail.error = getString(R.string.err_email_already_registered)
+                                Toast.makeText(this@RegistrationActivity, getString(R.string.err_email_already_registered), Toast.LENGTH_LONG).show()
+                            } else {
+                                Toast.makeText(this@RegistrationActivity, "Registration failed: $errorMsg", Toast.LENGTH_LONG).show()
+                            }
                             binding.btnSubmit.isEnabled = true
                             binding.btnSubmit.text = getString(R.string.btn_verify_email)
                         }

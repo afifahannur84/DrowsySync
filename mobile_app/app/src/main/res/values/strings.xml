@@ -24,6 +24,8 @@
     <string name="emergency_phone_label">Emergency Contact Phone</string>
     <string name="btn_verify_email">Verify Email</string>
     <string name="btn_complete_fields">Complete All Fields</string>
+    <string name="btn_nav_to_login">Already have an account? Log in</string>
+    <string name="err_email_already_registered">This email is already registered. Please log in instead.</string>
 
     <!-- Validation errors -->
     <string name="err_name_required">Name is required</string>

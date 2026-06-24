@@ -14,6 +14,10 @@ const bcrypt = require('bcryptjs');
 // Load environment variables
 dotenv.config();
 
+// Trim Brevo environment variables to remove any accidental trailing spaces or newlines
+if (process.env.BREVO_API_KEY) process.env.BREVO_API_KEY = process.env.BREVO_API_KEY.trim();
+if (process.env.BREVO_SENDER_EMAIL) process.env.BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL.trim();
+
 // Fix for Render IPv6 ENETUNREACH errors (Forces IPv4 first)
 const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
@@ -89,13 +93,20 @@ app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password, vehicleId, phone, licenseSerial, emergencyName, emergencyPhone } = req.body;
     const vId = vehicleId || "UTEM_LOG_862B";
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
+
+    // Check if the email is already registered (case-insensitive)
+    const existingUser = await User.findOne({ email: { $regex: new RegExp("^" + cleanEmail + "$", "i") } });
+    if (existingUser) {
+      return res.status(400).json({ error: 'This email is already registered. Please log in instead.' });
+    }
 
     const verificationCode = generateVerificationCode();
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const tempUser = new Verification({
       name,
-      email,
+      email: cleanEmail,
       password: hashedPassword,
       code: verificationCode,
       vehicleId: vId,
@@ -111,7 +122,7 @@ app.post('/api/auth/register', async (req, res) => {
     if (process.env.BREVO_API_KEY) {
       try {
         await sendBrevoEmail(
-          email,
+          cleanEmail,
           'Your DrowsySync Verification Code',
           `
             <div style="font-family: 'Times New Roman', Times, serif; padding: 20px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; max-width: 600px; margin: 0 auto;">
@@ -150,10 +161,16 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/verify', async (req, res) => {
   try {
     const { email, code } = req.body;
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
 
-    const tempUser = await Verification.findOne({ email, code });
+    const tempUser = await Verification.findOne({ email: { $regex: new RegExp("^" + cleanEmail + "$", "i") }, code });
     if (!tempUser) {
       return res.status(400).json({ error: 'Invalid or expired verification code' });
+    }
+
+    const duplicateUser = await User.findOne({ email: { $regex: new RegExp("^" + cleanEmail + "$", "i") } });
+    if (duplicateUser) {
+      return res.status(400).json({ error: 'This email is already registered and verified.' });
     }
 
     // Check if the plate is currently claimed by another user
@@ -206,9 +223,10 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password, vehicleId } = req.body;
     const vId = vehicleId || "UTEM_LOG_862B";
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
 
-    // Find the user by email (one User document per email)
-    const user = await User.findOne({ email }).select('+password');
+    // Find the user by email (case-insensitive)
+    const user = await User.findOne({ email: { $regex: new RegExp("^" + cleanEmail + "$", "i") } }).select('+password');
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
@@ -490,9 +508,39 @@ app.get('/api/logs/summary/:userId', async (req, res) => {
       return { warning, critical, total: warning + critical };
     };
 
+    // Calculate peak microsleep hour (GMT+8) from weeklyLogs
+    const microsleepLogs = weeklyLogs.filter(log => log.stage === 3 || log.microsleep_active === true);
+    let peakMicrosleepHour = "None detected";
+    if (microsleepLogs.length > 0) {
+      const hourCounts = new Array(24).fill(0);
+      microsleepLogs.forEach(log => {
+        const localTime = new Date(new Date(log.createdAt).getTime() + 8 * 60 * 60 * 1000);
+        const hour = localTime.getUTCHours();
+        hourCounts[hour]++;
+      });
+      let maxHour = 0;
+      let maxCount = 0;
+      for (let h = 0; h < 24; h++) {
+        if (hourCounts[h] > maxCount) {
+          maxCount = hourCounts[h];
+          maxHour = h;
+        }
+      }
+      if (maxCount > 0) {
+        const startHour = maxHour;
+        const endHour = (maxHour + 1) % 24;
+        const ampmStart = startHour >= 12 ? "PM" : "AM";
+        const ampmEnd = endHour >= 12 ? "PM" : "AM";
+        const displayStart = startHour === 0 ? 12 : (startHour > 12 ? startHour - 12 : startHour);
+        const displayEnd = endHour === 0 ? 12 : (endHour > 12 ? endHour - 12 : endHour);
+        peakMicrosleepHour = `${displayStart} ${ampmStart} - ${displayEnd} ${ampmEnd}`;
+      }
+    }
+
     res.status(200).json({
       today: getStats(todayLogs),
-      weekly: getStats(weeklyLogs)
+      weekly: getStats(weeklyLogs),
+      peakMicrosleepHour: peakMicrosleepHour
     });
   } catch (error) {
     console.error('Summary generation error:', error);
@@ -504,7 +552,7 @@ app.get('/api/logs/summary/:userId', async (req, res) => {
 app.get('/api/logs/report/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { year, month } = req.query;
+    const { year, month, download } = req.query;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -555,57 +603,94 @@ app.get('/api/logs/report/:userId', async (req, res) => {
       }
     });
 
-    const doc = new PDFDocument({ size: 'LETTER', margin: 50 });
-    const buffers = [];
-    doc.on('data', buffers.push.bind(buffers));
-
-    doc.on('end', async () => {
-      const pdfData = Buffer.concat(buffers);
-
-      // ── Send PDF report via Brevo Web API ──────────────────────────────────
-      if (process.env.BREVO_API_KEY) {
-        try {
-          const pdfBase64 = pdfData.toString('base64');
-          const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-          const monthName = months[monthInt - 1] || "Selected Month";
-
-          await sendBrevoEmail(
-            user.email,
-            `Your DrowsySync Fatigue Report - ${monthName} ${yearInt}`,
-            `
-              <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px;">
-                <h2 style="color: #2E5BFF; margin-bottom: 20px;">DrowsySync Driver Safety Summary</h2>
-                <p style="color: #333333; line-height: 1.6; font-size: 14px;">Dear ${user.name},</p>
-                <p style="color: #333333; line-height: 1.6; font-size: 14px;">Please find attached your visual driver fatigue report for the month of <strong>${monthName} ${yearInt}</strong>.</p>
-                <p style="color: #333333; line-height: 1.6; font-size: 14px;">This PDF report contains visual weekly charts, key fatigue indicators, and log details. Review these statistics to analyze driving patterns and secure safer travel habits.</p>
-                <div style="background-color: #f7f9fd; border-left: 4px solid #2E5BFF; padding: 12px; margin: 20px 0; border-radius: 4px;">
-                  <strong style="color: #1A1B1E; font-size: 13px;">Month Overview:</strong>
-                  <ul style="color: #555555; font-size: 13px; margin: 8px 0 0 0; padding-left: 20px;">
-                    <li>Total Driving Events Logged: <strong>${events.length}</strong></li>
-                    <li>Warning Alert Detections (Stage 1/2): <strong>${totalWarnings}</strong></li>
-                    <li>Critical Alarms (Stage 3): <strong>${totalCritical}</strong></li>
-                  </ul>
-                </div>
-                <p style="color: #888888; font-size: 12px; margin-top: 30px;">Sincerely,<br>The DrowsySync Analytics Team</p>
-              </div>
-            `,
-            [
-              {
-                name: `DrowsySync_Report_${monthName}_${yearInt}.pdf`,
-                content: pdfBase64
-              }
-            ]
-          );
-          console.log(`✉️ [Brevo] Fatigue report PDF dispatched successfully to ${user.email}`);
-          res.status(200).json({ message: 'Report emailed successfully via Brevo' });
-        } catch (mailError) {
-          console.error('❌ [Brevo] Failed to dispatch fatigue report PDF:', mailError);
-          res.status(500).json({ error: 'Failed to send report email via Brevo API' });
+    // Calculate peak microsleep hour (GMT+8) from monthly events
+    const microsleepEvents = events.filter(e => e.stage === 3 || e.microsleep_active === true);
+    let peakHour = "None";
+    if (microsleepEvents.length > 0) {
+      const hourCounts = new Array(24).fill(0);
+      microsleepEvents.forEach(e => {
+        const localTime = new Date(new Date(e.createdAt).getTime() + 8 * 60 * 60 * 1000);
+        const hour = localTime.getUTCHours();
+        hourCounts[hour]++;
+      });
+      let maxHour = 0;
+      let maxCount = 0;
+      for (let h = 0; h < 24; h++) {
+        if (hourCounts[h] > maxCount) {
+          maxCount = hourCounts[h];
+          maxHour = h;
         }
-      } else {
-        res.status(200).json({ message: 'BREVO_API_KEY not set. PDF generated but not sent.' });
       }
-    });
+      if (maxCount > 0) {
+        const startHour = maxHour;
+        const endHour = (maxHour + 1) % 24;
+        const ampmStart = startHour >= 12 ? "PM" : "AM";
+        const ampmEnd = endHour >= 12 ? "PM" : "AM";
+        const displayStart = startHour === 0 ? 12 : (startHour > 12 ? startHour - 12 : startHour);
+        const displayEnd = endHour === 0 ? 12 : (endHour > 12 ? endHour - 12 : endHour);
+        peakHour = `${displayStart} ${ampmStart} - ${displayEnd} ${ampmEnd}`;
+      }
+    }
+
+    const doc = new PDFDocument({ size: 'LETTER', margin: 50 });
+    const isDownload = download === 'true';
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const monthName = months[monthInt - 1] || "Selected Month";
+
+    if (isDownload) {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=DrowsySync_Report_${monthName}_${yearInt}.pdf`);
+      doc.pipe(res);
+    } else {
+      const buffers = [];
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', async () => {
+        const pdfData = Buffer.concat(buffers);
+
+        // ── Send PDF report via Brevo Web API ──────────────────────────────────
+        if (process.env.BREVO_API_KEY) {
+          try {
+            const pdfBase64 = pdfData.toString('base64');
+
+            await sendBrevoEmail(
+              user.email,
+              `Your DrowsySync Fatigue Report - ${monthName} ${yearInt}`,
+              `
+                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px;">
+                  <h2 style="color: #2E5BFF; margin-bottom: 20px;">DrowsySync Driver Safety Summary</h2>
+                  <p style="color: #333333; line-height: 1.6; font-size: 14px;">Dear ${user.name},</p>
+                  <p style="color: #333333; line-height: 1.6; font-size: 14px;">Please find attached your visual driver fatigue report for the month of <strong>${monthName} ${yearInt}</strong>.</p>
+                  <p style="color: #333333; line-height: 1.6; font-size: 14px;">This PDF report contains visual weekly charts, key fatigue indicators, and log details. Review these statistics to analyze driving patterns and secure safer travel habits.</p>
+                  <div style="background-color: #f7f9fd; border-left: 4px solid #2E5BFF; padding: 12px; margin: 20px 0; border-radius: 4px;">
+                    <strong style="color: #1A1B1E; font-size: 13px;">Month Overview:</strong>
+                    <ul style="color: #555555; font-size: 13px; margin: 8px 0 0 0; padding-left: 20px;">
+                      <li>Total Driving Events Logged: <strong>${events.length}</strong></li>
+                      <li>Warning Alert Detections (Stage 1/2): <strong>${totalWarnings}</strong></li>
+                      <li>Critical Alarms (Stage 3): <strong>${totalCritical}</strong></li>
+                      <li>Peak Microsleep Frequency Hour: <strong>${peakHour}</strong></li>
+                    </ul>
+                  </div>
+                  <p style="color: #888888; font-size: 12px; margin-top: 30px;">Sincerely,<br>The DrowsySync Analytics Team</p>
+                </div>
+              `,
+              [
+                {
+                  name: `DrowsySync_Report_${monthName}_${yearInt}.pdf`,
+                  content: pdfBase64
+                }
+              ]
+            );
+            console.log(`✉️ [Brevo] Fatigue report PDF dispatched successfully to ${user.email}`);
+            res.status(200).json({ message: 'Report emailed successfully via Brevo' });
+          } catch (mailError) {
+            console.error('❌ [Brevo] Failed to dispatch fatigue report PDF:', mailError);
+            res.status(500).json({ error: 'Failed to send report email via Brevo API' });
+          }
+        } else {
+          res.status(200).json({ message: 'BREVO_API_KEY not set. PDF generated but not sent.' });
+        }
+      });
+    }
 
     // —— 1. Header block
     doc.rect(0, 0, 612, 100).fillColor('#2E5BFF').fill();
@@ -613,9 +698,6 @@ app.get('/api/logs/report/:userId', async (req, res) => {
     doc.fontSize(12).font('Helvetica').text('Driver Fatigue Summary Report', 50, 62);
 
     // —— 2. Metadata details
-    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    const monthName = months[monthInt - 1] || "Selected Month";
-
     doc.fillColor('#1A1B1E').fontSize(10).font('Helvetica-Bold').text('DRIVER PROFILE', 50, 120);
     doc.font('Helvetica').text(`Driver Name: ${user.name}`, 50, 135);
     doc.text(`Vehicle Plate: ${user.vehicleId || 'N/A'}`, 50, 150);
@@ -625,23 +707,31 @@ app.get('/api/logs/report/:userId', async (req, res) => {
     doc.text(`Generated On: ${new Date().toLocaleDateString('en-MY', { timeZone: 'Asia/Kuala_Lumpur' })}`, 350, 150);
 
     // Separator line
-    doc.moveTo(50, 170).lineTo(562, 170).strokeColor('#E9EBEF').strokeWidth(1).stroke();
+    doc.moveTo(50, 170).lineTo(562, 170);
+    doc.strokeColor('#E9EBEF');
+    doc.lineWidth(1);
+    doc.stroke();
 
-    // —— 3. KPI Blocks
-    // Left Box (Total logs)
-    doc.rect(50, 185, 150, 65).fillColor('#F4F6FA').fill();
-    doc.fillColor('#1A1B1E').fontSize(20).font('Helvetica-Bold').text(`${events.length}`, 65, 198);
-    doc.fillColor('#717182').fontSize(8.5).font('Helvetica').text('Logs Recorded', 65, 226);
+    // —— 3. KPI Blocks (4-column layout)
+    // Block 1: Logs Recorded
+    doc.rect(50, 185, 116, 65).fillColor('#F4F6FA').fill();
+    doc.fillColor('#1A1B1E').fontSize(20).font('Helvetica-Bold').text(`${events.length}`, 60, 198);
+    doc.fillColor('#717182').fontSize(8.5).font('Helvetica').text('Logs Recorded', 60, 226);
 
-    // Middle Box (Warnings)
-    doc.rect(220, 185, 150, 65).fillColor('#FFF4E5').fill();
-    doc.fillColor('#FFA500').fontSize(20).font('Helvetica-Bold').text(`${totalWarnings}`, 235, 198);
-    doc.fillColor('#717182').fontSize(8.5).font('Helvetica').text('Warning Alerts (S1/S2)', 235, 226);
+    // Block 2: Warnings
+    doc.rect(182, 185, 116, 65).fillColor('#FFF4E5').fill();
+    doc.fillColor('#FFA500').fontSize(20).font('Helvetica-Bold').text(`${totalWarnings}`, 192, 198);
+    doc.fillColor('#717182').fontSize(8.5).font('Helvetica').text('Warnings (S1/S2)', 192, 226);
 
-    // Right Box (Critical)
-    doc.rect(390, 185, 172, 65).fillColor('#FFEAEA').fill();
-    doc.fillColor('#FF0000').fontSize(20).font('Helvetica-Bold').text(`${totalCritical}`, 405, 198);
-    doc.fillColor('#717182').fontSize(8.5).font('Helvetica').text('Critical Alarms (S3)', 405, 226);
+    // Block 3: Critical
+    doc.rect(314, 185, 116, 65).fillColor('#FFEAEA').fill();
+    doc.fillColor('#FF0000').fontSize(20).font('Helvetica-Bold').text(`${totalCritical}`, 324, 198);
+    doc.fillColor('#717182').fontSize(8.5).font('Helvetica').text('Critical (S3)', 324, 226);
+
+    // Block 4: Peak Microsleep
+    doc.rect(446, 185, 116, 65).fillColor('#E8F0FE').fill();
+    doc.fillColor('#2E5BFF').fontSize(10.5).font('Helvetica-Bold').text(peakHour, 452, 203);
+    doc.fillColor('#717182').fontSize(8.5).font('Helvetica').text('Peak Microsleep', 452, 226);
 
     // —— 4. Section Title: Weekly Distribution
     doc.fillColor('#2E5BFF').fontSize(14).font('Helvetica-Bold').text('Weekly Alert Distribution', 50, 275);
@@ -653,7 +743,10 @@ app.get('/api/logs/report/:userId', async (req, res) => {
     const chartWidth = 280;
 
     // Y Axis
-    doc.moveTo(axisX, axisY).lineTo(axisX, axisY - chartHeight).strokeColor('#D2D2D6').strokeWidth(1.5).stroke();
+    doc.moveTo(axisX, axisY).lineTo(axisX, axisY - chartHeight);
+    doc.strokeColor('#D2D2D6');
+    doc.lineWidth(1.5);
+    doc.stroke();
     // X Axis
     doc.moveTo(axisX, axisY).lineTo(axisX + chartWidth, axisY).stroke();
 
@@ -670,7 +763,10 @@ app.get('/api/logs/report/:userId', async (req, res) => {
       const gVal = Math.round((maxVal / gridLines) * i * 10) / 10;
       const gY = axisY - (chartHeight / gridLines) * i;
       // Grid line
-      doc.moveTo(axisX, gY).lineTo(axisX + chartWidth, gY).strokeColor('#E9EBEF').strokeWidth(1).stroke();
+      doc.moveTo(axisX, gY).lineTo(axisX + chartWidth, gY);
+      doc.strokeColor('#E9EBEF');
+      doc.lineWidth(1);
+      doc.stroke();
       // Y-axis label
       doc.fillColor('#717182').fontSize(8).font('Helvetica').text(`${gVal}`, axisX - 25, gY - 4, { width: 20, align: 'right' });
     }
@@ -721,7 +817,10 @@ app.get('/api/logs/report/:userId', async (req, res) => {
       .text('W1: Days 1–7\nW2: Days 8–14\nW3: Days 15–21\nW4: Days 22–End', legendX + 10, legendY + 45);
 
     // Separator line
-    doc.moveTo(50, 445).lineTo(562, 445).strokeColor('#E9EBEF').strokeWidth(1).stroke();
+    doc.moveTo(50, 445).lineTo(562, 445);
+    doc.strokeColor('#E9EBEF');
+    doc.lineWidth(1);
+    doc.stroke();
 
     // —— 5. Alert log details (Table)
     doc.fillColor('#2E5BFF').fontSize(14).font('Helvetica-Bold').text('Detailed Alarm Log', 50, 460);
@@ -758,12 +857,16 @@ app.get('/api/logs/report/:userId', async (req, res) => {
       if (event.stage === 3) statusColor = '#FF0000';
       else if (event.stage === 2) statusColor = '#FFA500';
 
-      doc.fillColor(statusColor).font('Helvetica-Bold').text(`${event.status}`, 260, currentY + 4);
+      doc.fillColor(statusColor).font('Helvetica-Bold').text(`${event.status || 'N/A'}`, 260, currentY + 4);
       doc.fillColor('#1A1B1E').font('Helvetica');
 
-      doc.text(`${event.perclos.toFixed(1)}%`, 390, currentY + 4);
-      doc.text(`${event.ear.toFixed(3)}`, 450, currentY + 4);
-      doc.text(`${event.recent_yawn_count}`, 510, currentY + 4);
+      const perclosVal = (event.perclos != null) ? `${event.perclos.toFixed(1)}%` : '0.0%';
+      const earVal = (event.ear != null) ? event.ear.toFixed(3) : '0.000';
+      const yawnCountVal = (event.recent_yawn_count != null) ? `${event.recent_yawn_count}` : '0';
+
+      doc.text(perclosVal, 390, currentY + 4);
+      doc.text(earVal, 450, currentY + 4);
+      doc.text(yawnCountVal, 510, currentY + 4);
 
       currentY += 16;
     });
@@ -877,23 +980,112 @@ app.post('/api/logs', handleLogIngestion);
 app.put('/api/users/profile/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { email, phone } = req.body;
+    const { email, phone, name, licenseSerial, emergencyName, emergencyPhone } = req.body;
     
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    if (email) user.email = email;
-    if (phone !== undefined) user.phone = phone; // allow empty phone
+    // Update fields
+    if (name) user.name = name;
+    if (phone !== undefined) user.phone = phone;
+    if (licenseSerial !== undefined) user.licenseSerial = licenseSerial;
+    if (emergencyName !== undefined) user.emergencyName = emergencyName;
+    if (emergencyPhone !== undefined) user.emergencyPhone = emergencyPhone;
+
+    let emailChanged = false;
+
+    // Check if email has changed (case-insensitive and trimmed)
+    if (email) {
+      const cleanEmail = email.trim().toLowerCase();
+      const currentEmail = user.email ? user.email.trim().toLowerCase() : '';
+      
+      if (cleanEmail !== currentEmail) {
+        // Check if the cleanEmail is already taken by another account as active or pending email
+        const existingUser = await User.findOne({
+          _id: { $ne: user._id },
+          $or: [
+            { email: { $regex: new RegExp("^" + cleanEmail + "$", "i") } },
+            { pendingEmail: { $regex: new RegExp("^" + cleanEmail + "$", "i") } }
+          ]
+        });
+
+        if (existingUser) {
+          return res.status(400).json({ error: 'This email is already registered to another account' });
+        }
+
+        const verificationCode = generateVerificationCode();
+        user.pendingEmail = cleanEmail;
+        user.verificationCode = verificationCode;
+        emailChanged = true;
+
+        if (process.env.BREVO_API_KEY) {
+          try {
+            await sendBrevoEmail(
+              cleanEmail,
+              'Your DrowsySync Email Verification Code',
+              `
+                <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; max-width: 600px; margin: 0 auto;">
+                  <h2 style="color: #2E5BFF; border-bottom: 1px solid #eeeeee; padding-bottom: 10px;">DrowsySync Email Verification</h2>
+                  <p>Dear ${user.name || 'User'},</p>
+                  <p>You have updated your email address to ${cleanEmail}. To complete this change and verify your new email, please use the following authentication code:</p>
+                  <div style="background-color: #f5f5f5; padding: 15px; text-align: center; margin: 20px 0;">
+                    <h1 style="color: #000000; letter-spacing: 5px; margin: 0; font-family: monospace;">${verificationCode}</h1>
+                  </div>
+                  <p>Do not share this code with anyone.</p>
+                  <p>Sincerely,<br>The DrowsySync Analytics Team</p>
+                </div>
+              `
+            );
+            console.log(`✉️ [Brevo] Profile change OTP dispatched successfully to ${cleanEmail}`);
+          } catch (mailError) {
+            console.error('❌ [Brevo] Failed to dispatch profile change OTP:', mailError);
+          }
+        }
+      }
+    }
     
     await user.save();
-    res.status(200).json({ message: 'Profile updated successfully', user });
+    res.status(200).json({ message: 'Profile updated successfully', emailChanged, user });
   } catch (error) {
     if (error.code === 11000) {
       return res.status(400).json({ error: 'Email already exists' });
     }
     console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// [POST /api/users/verify-email]
+app.post('/api/users/verify-email', async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
+
+    // Search using pendingEmail and verificationCode
+    const user = await User.findOne({
+      pendingEmail: { $regex: new RegExp("^" + cleanEmail + "$", "i") },
+      verificationCode: code
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired verification code' });
+    }
+
+    // Email verified successfully: commit the change
+    user.email = user.pendingEmail;
+    user.isEmailVerified = true;
+    user.pendingEmail = undefined;
+    user.verificationCode = undefined;
+    await user.save();
+
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
+    res.status(200).json({ message: 'Email verified successfully', user: safeUser });
+  } catch (error) {
+    console.error('Verify email error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });

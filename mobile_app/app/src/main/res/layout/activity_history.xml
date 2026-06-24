@@ -115,6 +115,19 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Download Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDownloadReport"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:text="@string/btn_download_report"
+                app:icon="@drawable/ic_download_icon"
+                app:iconGravity="textStart"
+                app:cornerRadius="8dp"
+                android:layout_marginBottom="12dp" />
+
             <!-- Summary Dashboard Card -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -204,6 +217,124 @@
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
+            <!-- Peak Microsleep Analysis Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardPeakFatigue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline"
+                app:cardBackgroundColor="?attr/colorSurface"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
+
+                    <FrameLayout
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@color/warning_alpha20"
+                        android:layout_marginEnd="12dp">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_clock"
+                            app:tint="@color/warning"
+                            android:contentDescription="Peak Microsleep Time" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Peak Microsleep Time"
+                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        <TextView
+                            android:id="@+id/tvPeakMicrosleepHour"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="None detected"
+                            android:textAppearance="?attr/textAppearanceTitleMedium"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textStyle="bold"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Hourly Breakdown Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardHourlyBreakdown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline"
+                app:cardBackgroundColor="?attr/colorSurface"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <FrameLayout
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:background="@drawable/bg_icon_circle_primary"
+                            android:layout_marginEnd="12dp">
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_clock"
+                                app:tint="@color/primary"
+                                android:contentDescription="Hourly Breakdown" />
+                        </FrameLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Hourly Fatigue Breakdown (24h)"
+                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvHourlyBreakdownText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="No fatigue data available."
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:lineSpacingMultiplier="1.2" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Fatigue Events Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -263,18 +394,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Download Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDownloadReport"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="16dp"
-                android:paddingBottom="16dp"
-                android:text="@string/btn_download_report"
-                app:icon="@drawable/ic_download_icon"
-                app:iconGravity="textStart"
-                app:cornerRadius="8dp"
-                android:layout_marginBottom="8dp" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

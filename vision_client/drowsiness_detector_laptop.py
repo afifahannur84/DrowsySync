@@ -28,25 +28,12 @@ import os
 import sys
 import threading
 import time
-from enum import Enum, auto
 from typing import Deque, List, Optional, Tuple
-
 # ── Third-party ───────────────────────────────────────────────────────────────
 import cv2
 import mediapipe as mp
 import numpy as np
 import requests
-import requests
-
-try:
-    import pygame
-
-    _PYGAME_OK = True
-except ImportError:
-    _PYGAME_OK = False
-    print(
-        "[WARNING] pygame not installed — audio alarm disabled. Run: pip install pygame"
-    )
 
 
 # =============================================================================
@@ -121,8 +108,7 @@ MOUTH_OUTLINE: List[int] = [
     95,
 ]
 
-# ── Alarm ─────────────────────────────────────────────────────────────────────
-ALARM_PATH = "../assets/alarm.wav"
+
 
 # ── HUD Colours (BGR) ─────────────────────────────────────────────────────────
 CLR_GREEN = (50, 210, 60)  # Stage 0 — Normal
@@ -172,100 +158,7 @@ def compute_mar(lm: np.ndarray) -> float:
     return 0.0 if horiz == 0 else vert / (2.0 * horiz)
 
 
-# =============================================================================
-# SECTION 3 — ALARM MANAGER  (multi-mode: OFF / PULSE / CONTINUOUS)
-# =============================================================================
 
-
-class AlarmMode(Enum):
-    OFF = auto()  # Silence
-    PULSE = auto()  # Stage 2: intermittent chime (play → gap → repeat)
-    CONTINUOUS = auto()  # Stage 3: aggressive looped siren
-
-
-class AlarmManager:
-    """
-    Thread-safe alarm controller.
-    Call set_mode() from the main loop — returns immediately.
-
-    PULSE    : plays alarm for PULSE_ON_SECS, pauses PULSE_OFF_SECS, repeats.
-    CONTINUOUS: loops alarm indefinitely via pygame.mixer.music.play(-1).
-    """
-
-    PULSE_ON_SECS = 0.8  # chime play duration
-    PULSE_OFF_SECS = 1.5  # gap between chimes
-
-    def __init__(self, wav_path: str) -> None:
-        self._path = wav_path
-        self._mode = AlarmMode.OFF
-        self._lock = threading.Lock()
-        self._running = True
-        self._ready = False
-
-        if _PYGAME_OK:
-            try:
-                pygame.mixer.pre_init(frequency=44100, size=-16, channels=1, buffer=512)
-                pygame.mixer.init()
-                if os.path.exists(wav_path):
-                    pygame.mixer.music.load(wav_path)
-                    self._ready = True
-                else:
-                    print(f"[WARNING] Alarm file not found: {wav_path}")
-            except Exception as e:
-                print(f"[WARNING] pygame init failed: {e}")
-
-        self._thread = threading.Thread(target=self._run, daemon=True)
-        self._thread.start()
-
-    def set_mode(self, mode: AlarmMode) -> None:
-        with self._lock:
-            self._mode = mode
-
-    def _run(self) -> None:
-        pulse_state = "off"  # "on" | "off"
-        pulse_timer = 0.0
-
-        while self._running:
-            with self._lock:
-                mode = self._mode
-
-            if not self._ready:
-                time.sleep(0.05)
-                continue
-
-            now = time.time()
-
-            if mode == AlarmMode.OFF:
-                if pygame.mixer.music.get_busy():
-                    pygame.mixer.music.stop()
-                pulse_state = "off"
-                pulse_timer = now
-
-            elif mode == AlarmMode.PULSE:
-                if pulse_state == "off" and now - pulse_timer >= self.PULSE_OFF_SECS:
-                    pygame.mixer.music.play()
-                    pulse_state = "on"
-                    pulse_timer = now
-                elif pulse_state == "on" and now - pulse_timer >= self.PULSE_ON_SECS:
-                    pygame.mixer.music.stop()
-                    pulse_state = "off"
-                    pulse_timer = now
-
-            elif mode == AlarmMode.CONTINUOUS:
-                if not pygame.mixer.music.get_busy():
-                    pygame.mixer.music.play(-1)  # loop forever
-                pulse_state = "off"  # reset pulse state
-                pulse_timer = now
-
-            time.sleep(0.05)
-
-    def shutdown(self) -> None:
-        self._running = False
-        if self._ready and pygame.mixer.music.get_busy():
-            pygame.mixer.music.stop()
-        self._thread.join(timeout=1.0)
-        if _PYGAME_OK:
-            pygame.mixer.quit()
 
 
 # =============================================================================
@@ -771,7 +664,6 @@ def main() -> None:
     lm_px = np.zeros((468, 2), dtype=np.int32)
 
     # ── Supporting objects ────────────────────────────────────────────────────
-    alarm = AlarmManager(ALARM_PATH)
     state = DetectionState()
     w, h = FRAME_WIDTH, FRAME_HEIGHT
 
@@ -803,7 +695,6 @@ def main() -> None:
                 # Handle full counter reset (Stop Monitoring or Dismiss Alarm)
                 if session.get("resetCounters"):
                     state.full_reset()
-                    alarm.set_mode(AlarmMode.OFF)
 
                 # Handle STANDBY ↔ MONITORING transitions
                 new_monitoring = session.get("sessionActive", False)
@@ -814,7 +705,6 @@ def main() -> None:
                     else:
                         print("\n[STANDBY] Session ended — detection paused.")
                         state.full_reset()
-                        alarm.set_mode(AlarmMode.OFF)
 
             # ── STANDBY mode: show a simple waiting screen ───────────────────────────
             if not is_monitoring:
@@ -869,13 +759,7 @@ def main() -> None:
                     on_status_change(state)
                     state._last_pushed_time = current_time
 
-                # ── Set alarm mode based on effective stage ────────────────────────────
-                if state.stage3_latched or state.stage == 3:
-                    # Stage 3: aggressive continuous siren
-                    alarm.set_mode(AlarmMode.CONTINUOUS)
-                else:
-                    # Stage 0, 1, or 2: silence
-                    alarm.set_mode(AlarmMode.OFF)
+
 
                 # ── Draw ──────────────────────────────────────────────────────
                 draw_eye_contours(frame, lm_px)
@@ -899,10 +783,7 @@ def main() -> None:
                 if state.changed:
                     on_status_change(state)
 
-                # Keep Stage 3 alarm alive even without face (safety)
-                alarm.set_mode(
-                    AlarmMode.CONTINUOUS if state.stage3_latched else AlarmMode.OFF
-                )
+
 
                 draw_no_face(frame, fps_val, h)
                 print(
@@ -921,8 +802,6 @@ def main() -> None:
         print("\n[INFO] Interrupted by user.")
     finally:
         print("\n[INFO] Shutting down...")
-        alarm.set_mode(AlarmMode.OFF)
-        alarm.shutdown()
         cap.release()
         face_mesh.close()
         cv2.destroyAllWindows()

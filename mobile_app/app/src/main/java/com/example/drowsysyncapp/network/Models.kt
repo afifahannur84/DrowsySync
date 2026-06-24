@@ -39,12 +39,17 @@ data class UserDto(
 )
 
 data class ProfileUpdateRequest(
+    @SerializedName("name") val name: String,
     @SerializedName("email") val email: String,
-    @SerializedName("phone") val phone: String
+    @SerializedName("phone") val phone: String,
+    @SerializedName("licenseSerial") val licenseSerial: String,
+    @SerializedName("emergencyName") val emergencyName: String,
+    @SerializedName("emergencyPhone") val emergencyPhone: String
 )
 
 data class ProfileUpdateResponse(
     @SerializedName("message") val message: String,
+    @SerializedName("emailChanged") val emailChanged: Boolean? = false,
     @SerializedName("user") val user: UserDto
 )
 
@@ -83,7 +88,8 @@ data class GuestModeRequest(
 
 data class SummaryResponse(
     @SerializedName("today") val today: PeriodSummary,
-    @SerializedName("weekly") val weekly: PeriodSummary
+    @SerializedName("weekly") val weekly: PeriodSummary,
+    @SerializedName("peakMicrosleepHour") val peakMicrosleepHour: String? = null
 )
 
 data class PeriodSummary(

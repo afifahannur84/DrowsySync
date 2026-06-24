@@ -36,34 +36,14 @@
             android:fontFamily="sans-serif-medium" />
 
         <ImageButton
-            android:id="@+id/btnHistory"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:id="@+id/btnLogout"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_clock"
-            android:padding="10dp"
-            app:tint="?attr/colorOnSurface"
-            android:contentDescription="History" />
-
-        <ImageButton
-            android:id="@+id/btnEditProfile"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_edit_icon"
-            android:padding="10dp"
-            app:tint="?attr/colorOnSurface"
-            android:contentDescription="Edit Profile" />
-
-        <ImageButton
-            android:id="@+id/btnSettings"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_settings_icon"
-            android:padding="10dp"
-            app:tint="?attr/colorOnSurface"
-            android:contentDescription="Settings" />
+            android:src="@drawable/ic_logout"
+            android:padding="12dp"
+            app:tint="?attr/colorPrimary"
+            android:contentDescription="Logout" />
     </LinearLayout>
 
     <!-- Scrollable content -->
@@ -145,13 +125,28 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/display_mode_label"
-                        android:textAppearance="?attr/textAppearanceTitleMedium"
-                        android:textColor="?attr/colorOnSurface"
-                        android:layout_marginBottom="12dp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_sun_icon"
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="8dp"
+                            android:contentDescription="Theme" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/display_mode_label"
+                            android:textAppearance="?attr/textAppearanceTitleMedium"
+                            android:textColor="?attr/colorOnSurface" />
+                    </LinearLayout>
 
                     <com.google.android.material.button.MaterialButtonToggleGroup
                         android:id="@+id/toggleDisplayMode"
@@ -217,6 +212,14 @@
                     android:gravity="center_vertical"
                     android:padding="16dp">
 
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_shield_icon"
+                        app:tint="?attr/colorPrimary"
+                        android:layout_marginEnd="12dp"
+                        android:contentDescription="Privacy" />
+
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -272,57 +275,88 @@
                         android:text="Live Fatigue Metrics"
                         android:textAppearance="?attr/textAppearanceTitleMedium"
                         android:textColor="?attr/colorOnSurface"
-                        android:layout_marginBottom="12dp" />
+                        android:layout_marginBottom="16dp" />
 
-                    <!-- PERCLOS Row -->
+                    <!-- Horizontal Grid Layout for Metrics -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center_vertical">
-                        
-                        <TextView
+                        android:weightSum="2">
+
+                        <!-- Eye Closure Box -->
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="PERCLOS (Eye Closure %)"
-                            android:textAppearance="?attr/textAppearanceBodyMedium"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="16dp"
+                            android:layout_marginEnd="6dp"
+                            android:background="@drawable/bg_otp_box">
 
-                        <TextView
-                            android:id="@+id/tvPerclos"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0.0%"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textAppearance="?attr/textAppearanceBodyLarge"
-                            android:textStyle="bold" />
-                    </LinearLayout>
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:src="@drawable/ic_pulse"
+                                app:tint="?attr/colorPrimary"
+                                android:layout_marginBottom="8dp"
+                                android:contentDescription="Eye closure" />
 
-                    <!-- Yawns Row -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginTop="8dp">
-                        
-                        <TextView
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Eye Closure"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <TextView
+                                android:id="@+id/tvPerclos"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.0%"
+                                android:textAppearance="?attr/textAppearanceHeadlineMedium"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textStyle="bold"
+                                android:layout_marginTop="4dp" />
+                        </LinearLayout>
+
+                        <!-- Recent Yawns Box -->
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Recent Yawns (Last 3m)"
-                            android:textAppearance="?attr/textAppearanceBodyMedium"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="16dp"
+                            android:layout_marginStart="6dp"
+                            android:background="@drawable/bg_otp_box">
 
-                        <TextView
-                            android:id="@+id/tvYawns"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textAppearance="?attr/textAppearanceBodyLarge"
-                            android:textStyle="bold" />
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:src="@drawable/ic_coffee"
+                                app:tint="@color/warning"
+                                android:layout_marginBottom="8dp"
+                                android:contentDescription="Recent yawns" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Recent Yawns"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <TextView
+                                android:id="@+id/tvYawns"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textAppearance="?attr/textAppearanceHeadlineMedium"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textStyle="bold"
+                                android:layout_marginTop="4dp" />
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -339,6 +373,220 @@
                 android:text="@string/btn_start_monitoring"
                 android:textSize="16sp"
                 app:cornerRadius="8dp" />
+
+            <!-- ── Quick Actions Section ── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Quick Actions"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- View History Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="@color/primary"
+                app:cardBackgroundColor="@color/primary_alpha10"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_icon_circle_primary_solid"
+                        android:layout_marginEnd="12dp">
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_clock"
+                            app:tint="@color/white"
+                            android:contentDescription="History" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Fatigue History &amp; Logs"
+                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                            android:textColor="@color/primary"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Check historical driving reports &amp; charts"
+                            android:textAppearance="?attr/textAppearanceBodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_arrow_back"
+                        android:rotation="180"
+                        app:tint="@color/primary"
+                        android:contentDescription="Go" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Edit Profile Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardEditProfile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="@color/primary"
+                app:cardBackgroundColor="@color/primary_alpha10"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_icon_circle_primary_solid"
+                        android:layout_marginEnd="12dp">
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_edit_icon"
+                            app:tint="@color/white"
+                            android:contentDescription="Edit Profile" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Edit Driver Profile"
+                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                            android:textColor="@color/primary"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Update your email, phone &amp; emergency numbers"
+                            android:textAppearance="?attr/textAppearanceBodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_arrow_back"
+                        android:rotation="180"
+                        app:tint="@color/primary"
+                        android:contentDescription="Go" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Release Vehicle Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardReleaseVehicle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="@color/destructive"
+                app:cardBackgroundColor="@color/destructive_alpha10"
+                android:layout_marginBottom="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_icon_circle_destructive_solid"
+                        android:layout_marginEnd="12dp">
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_icon"
+                            app:tint="@color/white"
+                            android:contentDescription="Release Vehicle" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Release Vehicle Ownership"
+                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                            android:textColor="@color/destructive"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Transfer or unclaim this vehicle plate number"
+                            android:textAppearance="?attr/textAppearanceBodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_arrow_back"
+                        android:rotation="180"
+                        app:tint="@color/destructive"
+                        android:contentDescription="Go" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

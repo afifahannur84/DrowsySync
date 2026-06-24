@@ -77,6 +77,7 @@ class EmailVerificationActivity : AppCompatActivity() {
     private fun onOtpComplete() {
         val email = intent.getStringExtra("email") ?: return
         val enteredCode = otpFields.joinToString("") { it.text.toString() }
+        val isChangeEmail = intent.getBooleanExtra("is_change_email", false)
 
         // Disable fields during network check
         otpFields.forEach { it.isEnabled = false }
@@ -84,7 +85,11 @@ class EmailVerificationActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val request = com.example.drowsysyncapp.network.VerifyRequest(email, enteredCode)
-                val response = com.example.drowsysyncapp.network.RetrofitClient.instance.verifyEmail(request)
+                val response = if (isChangeEmail) {
+                    com.example.drowsysyncapp.network.RetrofitClient.instance.verifyProfileEmail(request)
+                } else {
+                    com.example.drowsysyncapp.network.RetrofitClient.instance.verifyEmail(request)
+                }
 
                 if (response.isSuccessful && response.body() != null) {
                     val user = response.body()?.user

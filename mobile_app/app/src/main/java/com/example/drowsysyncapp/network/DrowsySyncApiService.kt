@@ -15,6 +15,9 @@ interface DrowsySyncApiService {
     @POST("api/auth/verify")
     suspend fun verifyEmail(@Body request: VerifyRequest): Response<AuthResponse>
 
+    @POST("api/users/verify-email")
+    suspend fun verifyProfileEmail(@Body request: VerifyRequest): Response<AuthResponse>
+
     @POST("api/auth/login")
     suspend fun loginUser(@Body request: LoginRequest): Response<AuthResponse>
 
@@ -39,6 +42,15 @@ interface DrowsySyncApiService {
         @retrofit2.http.Query("year") year: Int,
         @retrofit2.http.Query("month") month: Int
     ): Response<ReportResponse>
+
+    @retrofit2.http.Streaming
+    @GET("api/logs/report/{userId}")
+    suspend fun downloadReport(
+        @Path("userId") userId: String,
+        @retrofit2.http.Query("year") year: Int,
+        @retrofit2.http.Query("month") month: Int,
+        @retrofit2.http.Query("download") download: Boolean
+    ): Response<okhttp3.ResponseBody>
 
     @GET("api/logs/latest/vehicle/{vehicleId}")
     suspend fun getLatestVehicleLog(

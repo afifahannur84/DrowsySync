@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, select: false },
   isEmailVerified: { type: Boolean, default: false },
   verificationCode: { type: String },
+  pendingEmail: { type: String },
   vehicleId: { type: String, default: "UTEM_LOG_862B" },
   isGuestModeActive: { type: Boolean, default: false },
   isCurrentlyDriving: { type: Boolean, default: false },

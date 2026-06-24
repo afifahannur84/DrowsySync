@@ -208,16 +208,20 @@ class DrowsySyncBackgroundService : Service() {
      * Stage 2: Directly launches SymptomAlertActivity over whatever is on screen.
      * FLAG_ACTIVITY_NEW_TASK is mandatory for a Service to start an Activity on Android.
      * A companion notification is also posted so the alert survives lock-screen scenarios.
-     */
-    private fun fireStage2Warning(manager: NotificationManager, log: FatigueLogResponse) {
-        // ── Launch SymptomAlertActivity only when user taps the notification ──
+     */    private fun fireStage2Warning(manager: NotificationManager, log: FatigueLogResponse) {
         val activityIntent = Intent(this, SymptomAlertActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_SINGLE_TOP or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 
-        // ── Heads-up notification (shows over Waze/Maps without opening app) ──
+        // Directly launch the activity so it takes over the screen immediately (needs draw overlays permission)
+        try {
+            startActivity(activityIntent)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to start SymptomAlertActivity directly from service background: ${e.message}")
+        }
+
         val tapPendingIntent = PendingIntent.getActivity(
             this, 0, activityIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -239,14 +243,19 @@ class DrowsySyncBackgroundService : Service() {
      * Also fires a full-screen-intent notification so it works over the lock screen.
      */
     private fun fireStage3CriticalAlarm(manager: NotificationManager, log: FatigueLogResponse) {
-        // ── MicrosleepAlertActivity opens only when notification is tapped ──────
         val activityIntent = Intent(this, MicrosleepAlertActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
                     Intent.FLAG_ACTIVITY_NO_HISTORY
         }
 
-        // ── Full-screen-intent notification (activates over lock screen) ────────
+        // Directly launch the activity so it takes over the screen immediately (needs draw overlays permission)
+        try {
+            startActivity(activityIntent)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to start MicrosleepAlertActivity directly from service background: ${e.message}")
+        }
+
         val fullScreenPendingIntent = PendingIntent.getActivity(
             this, 1, activityIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -270,8 +279,6 @@ class DrowsySyncBackgroundService : Service() {
             .build()
         manager.notify(NOTIF_ID_ALERT, notification)
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
     // Notification channel + persistent notification setup
     // ─────────────────────────────────────────────────────────────────────────
 
