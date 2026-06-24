@@ -72,8 +72,8 @@ MICROSLEEP_SECS = 5.0  # continuous eye closure → microsleep event
 # ── Yawn Events ───────────────────────────────────────────────────────────────
 YAWN_MIN_DURATION_SECS = 1.5  # LOWERED: MAR must exceed threshold for 1.5s (instead of 3.0s) to count as 1 event.
 YAWN_WINDOW_SECS = 180.0  # rolling window for counting yawn events (3 min)
-YAWN_STAGE1_COUNT = 1  # yawns in window → Stage 1 (was 2)
-YAWN_STAGE2_COUNT = 2  # yawns in window → Stage 2 (was 3)
+YAWN_STAGE1_COUNT = 2  # yawns in window → Stage 1
+YAWN_STAGE2_COUNT = 3  # yawns in window → Stage 2
 
 # ── Stage 3 Recovery ─────────────────────────────────────────────────────────
 RECOVERY_SECS = 3.0  # eyes must stay open continuously to silence Stage 3 alarm
@@ -582,8 +582,8 @@ def _send_log_async(payload: dict, state: DetectionState) -> None:
         # Read the JSON response to see if a remote alarm dismissal signal was received
         res_data = response.json()
         if res_data.get("dismissAlarm"):
-            state.stage3_latched = False
-            print("\n[INFO] Alarm dismissed remotely from mobile app.")
+            state.full_reset()
+            print("\n[INFO] Alarm dismissed remotely from mobile app. All counters reset.")
     except Exception as e:
         # Graceful failure: print a warning without crashing or blocking the script
         print(f"\n[WARNING] Failed to sync event to cloud backend: {e}")
