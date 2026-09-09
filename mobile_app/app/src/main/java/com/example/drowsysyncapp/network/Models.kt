@@ -6,7 +6,6 @@ data class UserRequest(
     @SerializedName("name") val name: String? = null,
     @SerializedName("email") val email: String,
     @SerializedName("password") val password: String,
-    @SerializedName("vehicleId") val vehicleId: String,
     @SerializedName("phone") val phone: String? = null,
     @SerializedName("licenseSerial") val licenseSerial: String? = null,
     @SerializedName("emergencyName") val emergencyName: String? = null,
@@ -15,8 +14,7 @@ data class UserRequest(
 
 data class LoginRequest(
     @SerializedName("email") val email: String,
-    @SerializedName("password") val password: String,
-    @SerializedName("vehicleId") val vehicleId: String
+    @SerializedName("password") val password: String
 )
 
 data class AuthResponse(
@@ -73,10 +71,7 @@ data class VerifyRequest(
     @SerializedName("code") val code: String
 )
 
-data class ReleaseVehicleRequest(
-    @SerializedName("userId") val userId: String,
-    @SerializedName("password") val password: String
-)
+
 
 data class FatigueLogResponse(
     @SerializedName("_id") val id: String,

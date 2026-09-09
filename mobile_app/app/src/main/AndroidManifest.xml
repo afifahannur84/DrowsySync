@@ -75,11 +75,6 @@
             android:name=".HistoryActivity"
             android:exported="false" />
 
-        <!-- ── Change Ownership ── -->
-        <activity
-            android:name=".ChangeOwnerActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
 
         <!-- ── Symptom Alert Overlay (semi-transparent) ── -->
         <!-- showWhenLocked + turnScreenOn = pops over other apps and lock screen -->

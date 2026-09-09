@@ -23,7 +23,6 @@ class RegistrationActivity : AppCompatActivity() {
         "fullName"       to false,
         "email"          to false,
         "phone"          to false,
-        "vehiclePlate"   to false,
         "licenseSerial"  to false,
         "password"       to false,
         "confirmPassword" to false,
@@ -48,7 +47,6 @@ class RegistrationActivity : AppCompatActivity() {
                 val name = binding.etFullName.text.toString()
                 val email = binding.etEmail.text.toString()
                 val password = binding.etPassword.text.toString()
-                val vehiclePlate = binding.etVehiclePlate.text.toString().replace("\\s+".toRegex(), "").uppercase()
                 val phone = binding.etPhone.text.toString()
                 val licenseSerial = binding.etLicenseSerial.text.toString()
                 val emergencyName = binding.etEmergencyName.text.toString()
@@ -63,7 +61,6 @@ class RegistrationActivity : AppCompatActivity() {
                             name = name,
                             email = email,
                             password = password,
-                            vehicleId = vehiclePlate,
                             phone = phone,
                             licenseSerial = licenseSerial,
                             emergencyName = emergencyName,
@@ -160,15 +157,6 @@ class RegistrationActivity : AppCompatActivity() {
         }
     }
 
-    private fun validatePlate(til: TextInputLayout, key: String, value: String) {
-        val regex = Regex("^[A-Z]{1,3}\\s?\\d{1,4}\\s?[A-Z]?\$", RegexOption.IGNORE_CASE)
-        when {
-            value.isBlank()       -> setError(til, key, getString(R.string.err_plate_required))
-            !regex.matches(value) -> setError(til, key, getString(R.string.err_plate_invalid))
-            else                  -> clearError(til, key)
-        }
-    }
-
     private fun validateLicense(til: TextInputLayout, key: String, value: String) {
         when {
             value.isBlank()   -> setError(til, key, getString(R.string.err_license_required))
@@ -231,16 +219,7 @@ class RegistrationActivity : AppCompatActivity() {
             validateEmail(binding.tilEmail, "email", it)
         })
         binding.etPhone.addTextChangedListener(phoneWatcher(binding.tilPhone, "phone"))
-        binding.etVehiclePlate.addTextChangedListener(watcher {
-            // Force uppercase
-            val upper = it.uppercase()
-            if (it != upper) {
-                binding.etVehiclePlate.removeTextChangedListener(this as? TextWatcher)
-                binding.etVehiclePlate.setText(upper)
-                binding.etVehiclePlate.setSelection(upper.length)
-            }
-            validatePlate(binding.tilVehiclePlate, "vehiclePlate", upper)
-        })
+
         binding.etLicenseSerial.addTextChangedListener(watcher {
             validateLicense(binding.tilLicenseSerial, "licenseSerial", it)
         })

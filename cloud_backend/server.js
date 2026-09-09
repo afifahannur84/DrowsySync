@@ -8,7 +8,6 @@ const PDFDocument = require('pdfkit');
 const User = require('./models/User');
 const FatigueLog = require('./models/FatigueLog');
 const Verification = require('./models/Verification');
-const VehicleOwnership = require('./models/VehicleOwnership');
 const Device = require('./models/Device');
 const bcrypt = require('bcryptjs');
 
@@ -92,8 +91,7 @@ const generateVerificationCode = () => {
 // [POST /api/auth/register]
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { name, email, password, vehicleId, phone, licenseSerial, emergencyName, emergencyPhone } = req.body;
-    const vId = vehicleId || "UTEM_LOG_862B";
+    const { name, email, password, phone, licenseSerial, emergencyName, emergencyPhone } = req.body;
     const cleanEmail = email ? email.trim().toLowerCase() : '';
 
     // Check if the email is already registered (case-insensitive)
@@ -110,7 +108,6 @@ app.post('/api/auth/register', async (req, res) => {
       email: cleanEmail,
       password: hashedPassword,
       code: verificationCode,
-      vehicleId: vId,
       phone: phone || "",
       licenseSerial: licenseSerial || "",
       emergencyName: emergencyName || "",
@@ -174,15 +171,6 @@ app.post('/api/auth/verify', async (req, res) => {
       return res.status(400).json({ error: 'This email is already registered and verified.' });
     }
 
-    // Check if the plate is currently claimed by another user
-    const existingOwnership = await VehicleOwnership.findOne({
-      vehicleId: tempUser.vehicleId,
-      isActive: true
-    });
-    if (existingOwnership) {
-      return res.status(409).json({ error: 'This vehicle plate is currently registered to another owner. Ask them to release it first.' });
-    }
-
     const newUser = new User({
       name: tempUser.name,
       email: tempUser.email,
@@ -199,15 +187,6 @@ app.post('/api/auth/verify', async (req, res) => {
 
     await newUser.save();
 
-    // Create VehicleOwnership record
-    await new VehicleOwnership({
-      userId: newUser._id,
-      vehicleId: tempUser.vehicleId,
-      isActive: true,
-      activatedAt: new Date()
-    }).save();
-    console.log(`🔑 VehicleOwnership created: ${newUser.email} → ${tempUser.vehicleId}`);
-
     await Verification.deleteOne({ _id: tempUser._id });
 
     const safeUser = newUser.toObject();
@@ -223,8 +202,7 @@ app.post('/api/auth/verify', async (req, res) => {
 // [POST /api/auth/login]
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { email, password, vehicleId } = req.body;
-    const vId = vehicleId || "UTEM_LOG_862B";
+    const { email, password } = req.body;
     const cleanEmail = email ? email.trim().toLowerCase() : '';
 
     // Find the user by email (case-insensitive)
@@ -243,38 +221,9 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Please verify your email before logging in.' });
     }
 
-    // ── Vehicle plate ownership check ───────────────────────────────────────
-    const activeOwnership = await VehicleOwnership.findOne({ vehicleId: vId, isActive: true });
-
-    if (activeOwnership && activeOwnership.userId.toString() !== user._id.toString()) {
-      // Plate is claimed by someone else
-      return res.status(409).json({ error: 'This vehicle plate is currently registered to another owner. Ask them to release it first.' });
-    }
-
-    if (!activeOwnership) {
-      // Plate is unclaimed — auto-claim for this user
-      await new VehicleOwnership({
-        userId: user._id,
-        vehicleId: vId,
-        isActive: true,
-        activatedAt: new Date()
-      }).save();
-      console.log(`🔑 Auto-claimed plate ${vId} for user ${user.email}`);
-    }
-
     // Update driving state
     user.sessionState.isCurrentlyDriving = true;
     await user.save();
-
-    // Unclaim all other drivers of this vehicle (look them up via VehicleOwnership)
-    const otherOwnerships = await VehicleOwnership.find({ vehicleId: vId, isActive: true, userId: { $ne: user._id } });
-    const otherUserIds = otherOwnerships.map(o => o.userId);
-    if (otherUserIds.length > 0) {
-      await User.updateMany(
-        { _id: { $in: otherUserIds } },
-        { $set: { 'sessionState.isCurrentlyDriving': false } }
-      );
-    }
 
     const safeUser = user.toObject();
     delete safeUser.password;
@@ -307,80 +256,7 @@ app.put('/api/users/guest-mode/:userId', async (req, res) => {
     console.error('Update guest mode error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
-});
-
-// [PUT /api/users/claim-vehicle/:userId]
-app.put('/api/users/claim-vehicle/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Resolve current vehicle plate from VehicleOwnership
-    const ownership = await VehicleOwnership.findOne({ userId: user._id, isActive: true });
-    const vehicleId = ownership ? ownership.vehicleId : null;
-
-    if (vehicleId) {
-      // Unclaim session for all other users sharing this vehicle plate
-      const otherOwnerships = await VehicleOwnership.find({ vehicleId, isActive: true, userId: { $ne: user._id } });
-      const otherUserIds = otherOwnerships.map(o => o.userId);
-      if (otherUserIds.length > 0) {
-        await User.updateMany(
-          { _id: { $in: otherUserIds } },
-          { $set: { 'sessionState.isCurrentlyDriving': false, 'sessionState.sessionActive': false } }
-        );
-      }
-    }
-
-    // Claim it for the current user — activate session, clear any pending reset
-    user.sessionState.isCurrentlyDriving  = true;
-    user.sessionState.sessionActive        = true;
-    user.sessionState.sessionResetPending  = false;
-    user.sessionState.alarmDismissed       = false;
-    await user.save();
-
-    // Adopt any orphaned logs (userId: null) for this vehicle
-    if (vehicleId) {
-      await FatigueLog.updateMany(
-        { vehicleId, userId: null },
-        { $set: { userId: user._id } }
-      );
-    }
-
-    res.status(200).json({ message: 'Vehicle claimed successfully' });
-  } catch (error) {
-    console.error('Claim vehicle error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-// [PUT /api/users/unclaim-vehicle/:userId]
-app.put('/api/users/unclaim-vehicle/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Stop session and signal Python to reset all counters
-    user.sessionState.isCurrentlyDriving  = false;
-    user.sessionState.sessionActive        = false;
-    user.sessionState.sessionResetPending  = true;
-    await user.save();
-
-    res.status(200).json({ message: 'Vehicle unclaimed successfully' });
-  } catch (error) {
-    console.error('Unclaim vehicle error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-// [PUT /api/users/dismiss-alarm/:userId]
+});// [PUT /api/users/dismiss-alarm/:userId]
 app.put('/api/users/dismiss-alarm/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -398,91 +274,6 @@ app.put('/api/users/dismiss-alarm/:userId', async (req, res) => {
     res.status(200).json({ message: 'Alarm dismiss signal set successfully' });
   } catch (error) {
     console.error('Dismiss alarm error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-// [GET /api/session/:vehicleId] — Polled by Python every 1.5s for start/stop/reset signals
-app.get('/api/session/:vehicleId', async (req, res) => {
-  try {
-    const { vehicleId } = req.params;
-
-    // Find the active owner of this vehicle via VehicleOwnership
-    const ownership = await VehicleOwnership.findOne({ vehicleId, isActive: true });
-    if (!ownership) {
-      return res.status(200).json({ sessionActive: false, resetCounters: false });
-    }
-
-    const user = await User.findOne({
-      _id: ownership.userId,
-      'sessionState.isCurrentlyDriving': true
-    }) || await User.findById(ownership.userId);
-
-    if (!user) {
-      // No user configured for this vehicle — stay in standby
-      return res.status(200).json({ sessionActive: false, resetCounters: false });
-    }
-
-    const resetCounters = user.sessionState.sessionResetPending;
-
-    // Consume the reset flag immediately so Python only resets once
-    if (resetCounters) {
-      user.sessionState.sessionResetPending = false;
-      await user.save();
-    }
-
-    res.status(200).json({
-      sessionActive: user.sessionState.sessionActive,
-      resetCounters
-    });
-  } catch (error) {
-    console.error('Session poll error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-// [POST /api/users/release-vehicle]
-app.post('/api/users/release-vehicle', async (req, res) => {
-  try {
-    const { userId, password } = req.body;
-
-    if (!userId || !password) {
-      return res.status(400).json({ error: 'userId and password are required' });
-    }
-
-    const user = await User.findById(userId).select('+password');
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Verify password
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      return res.status(401).json({ error: 'Incorrect password' });
-    }
-
-    // Look up current vehicle from VehicleOwnership
-    const ownership = await VehicleOwnership.findOne({ userId: user._id, isActive: true });
-    if (!ownership) {
-      return res.status(400).json({ error: 'No vehicle is currently assigned to this account' });
-    }
-
-    const releasedPlate = ownership.vehicleId;
-
-    // Deactivate the VehicleOwnership record
-    await VehicleOwnership.updateMany(
-      { userId: user._id, vehicleId: releasedPlate, isActive: true },
-      { $set: { isActive: false, deactivatedAt: new Date() } }
-    );
-
-    // Clear driving state
-    user.sessionState.isCurrentlyDriving = false;
-    await user.save();
-
-    console.log(`🔓 User ${user.email} released vehicle plate: ${releasedPlate}`);
-    res.status(200).json({ message: `Vehicle plate ${releasedPlate} released successfully. A new owner can now register with this plate.` });
-  } catch (error) {
-    console.error('Release vehicle error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -587,6 +378,9 @@ app.get('/api/logs/report/:userId', async (req, res) => {
     const now = new Date();
     const yearInt = parseInt(year) || now.getFullYear();
     const monthInt = parseInt(month) || (now.getMonth() + 1);
+    
+    // Find paired device for report
+    const device = await Device.findOne({ pairedUserId: user._id });
 
     // Define the UTC start and end bounds for the selected month in GMT+8 terms
     const startDate = new Date(Date.UTC(yearInt, monthInt - 1, 1, 0, 0, 0));
@@ -725,9 +519,7 @@ app.get('/api/logs/report/:userId', async (req, res) => {
     // —— 2. Metadata details
     doc.fillColor('#1A1B1E').fontSize(10).font('Helvetica-Bold').text('DRIVER PROFILE', 50, 120);
     doc.font('Helvetica').text(`Driver Name: ${user.name}`, 50, 135);
-    // Resolve vehicle plate from VehicleOwnership at report-generation time
-    const reportOwnership = await VehicleOwnership.findOne({ userId: user._id, isActive: true });
-    doc.text(`Vehicle Plate: ${reportOwnership ? reportOwnership.vehicleId : 'N/A'}`, 50, 150);
+    doc.text(`Device ID: ${device ? device.deviceId : 'N/A'}`, 50, 150);
 
     doc.font('Helvetica-Bold').text('REPORT DETAILS', 350, 120);
     doc.font('Helvetica').text(`Report Period: ${monthName} ${yearInt}`, 350, 135);
@@ -987,7 +779,7 @@ const handleLogIngestion = async (req, res) => {
       console.log('🔔 Remote alarm dismissal triggered for user:', matchedUser.email);
     }
 
-    console.log('📥 Received and logged fatigue event for Car Plate Number', vehicleId, ':', fatigueData.status);
+    console.log('📥 Received and logged fatigue event for Device ID', deviceId, ':', fatigueData.status);
     res.status(201).json({ message: 'Event successfully logged', data: logEntry, dismissAlarm });
   } catch (error) {
     console.error('Error logging event:', error);
@@ -1167,15 +959,11 @@ app.get('/api/devices/:deviceId/session', async (req, res) => {
       await User.findByIdAndUpdate(user._id, { 'sessionState.sessionResetPending': false });
     }
 
-    // Resolve the user's current vehicle plate from VehicleOwnership
-    const userOwnership = await VehicleOwnership.findOne({ userId: user._id, isActive: true });
-
     res.status(200).json({
       sessionActive:     user.sessionState.sessionActive,
       resetCounters:     shouldReset,
       dismissAlarm:      user.sessionState.alarmDismissed,
       userId:            user._id.toString(),
-      vehicleId:         userOwnership ? userOwnership.vehicleId : null,
       isGuestModeActive: user.sessionState.isGuestModeActive
     });
   } catch (error) {

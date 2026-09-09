@@ -21,15 +21,11 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Pre-fill default Car Plate Number to make testing easy
-        binding.etVehicleId.setText("DDH 4321")
-
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
-            val vehicleId = binding.etVehicleId.text.toString().replace("\\s+".toRegex(), "").uppercase()
 
-            if (email.isEmpty() || password.isEmpty() || vehicleId.isEmpty()) {
+            if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -40,11 +36,10 @@ class LoginActivity : AppCompatActivity() {
             binding.btnNavToRegister.isEnabled = false
             binding.etEmail.isEnabled = false
             binding.etPassword.isEnabled = false
-            binding.etVehicleId.isEnabled = false
 
             lifecycleScope.launch {
                 try {
-                    val request = LoginRequest(email, password, vehicleId)
+                    val request = LoginRequest(email, password)
                     val response = RetrofitClient.instance.loginUser(request)
 
                     if (response.isSuccessful && response.body() != null) {
@@ -53,12 +48,10 @@ class LoginActivity : AppCompatActivity() {
 
                         if (user != null) {
                             val prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
-                            // vehicleId comes from the login input field (not UserDto — resolved via VehicleOwnership on server)
                             val nameToSave = user.name.trim().ifEmpty { "Driver" }
                             prefs.edit()
                                 .putBoolean(MainActivity.KEY_LOGGED_IN, true)
                                 .putString("user_id", user.id)
-                                .putString("vehicle_id", vehicleId)
                                 .putString("user_name", nameToSave)
                                 .putString("user_email", user.email)
                                 .putString("user_phone", user.phone ?: "")
@@ -86,8 +79,6 @@ class LoginActivity : AppCompatActivity() {
                         val displayMsg = when {
                             errorMsg.contains("verify your email", ignoreCase = true) ->
                                 "Please verify your email before logging in. Check your inbox for the verification code."
-                            errorMsg.contains("currently registered to another owner", ignoreCase = true) ->
-                                "This vehicle plate is currently owned by another user. Ask them to release it from the app first."
                             else -> errorMsg
                         }
                         showError(displayMsg)
@@ -111,6 +102,5 @@ class LoginActivity : AppCompatActivity() {
         binding.btnNavToRegister.isEnabled = true
         binding.etEmail.isEnabled = true
         binding.etPassword.isEnabled = true
-        binding.etVehicleId.isEnabled = true
     }
 }

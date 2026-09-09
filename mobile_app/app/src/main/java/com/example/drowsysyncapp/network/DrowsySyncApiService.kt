@@ -23,11 +23,6 @@ interface DrowsySyncApiService {
     @POST("api/auth/login")
     suspend fun loginUser(@Body request: LoginRequest): Response<AuthResponse>
 
-    @POST("api/users/release-vehicle")
-    suspend fun releaseVehicle(
-        @Body request: ReleaseVehicleRequest
-    ): retrofit2.Response<okhttp3.ResponseBody>
-
     @GET("api/logs/{userId}")
     suspend fun getDriverHistory(
         @Path("userId") userId: String
@@ -63,16 +58,6 @@ interface DrowsySyncApiService {
     suspend fun toggleGuestMode(
         @Path("userId") userId: String,
         @Body request: GuestModeRequest
-    ): Response<okhttp3.ResponseBody>
-
-    @PUT("api/users/claim-vehicle/{userId}")
-    suspend fun claimVehicle(
-        @Path("userId") userId: String
-    ): Response<okhttp3.ResponseBody>
-
-    @PUT("api/users/unclaim-vehicle/{userId}")
-    suspend fun unclaimVehicle(
-        @Path("userId") userId: String
     ): Response<okhttp3.ResponseBody>
 
     @PUT("api/users/dismiss-alarm/{userId}")

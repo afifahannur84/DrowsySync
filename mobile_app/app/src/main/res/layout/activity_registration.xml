@@ -126,22 +126,6 @@
                         android:singleLine="true" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Vehicle Plate -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilVehiclePlate"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/vehicle_plate"
-                    android:layout_marginBottom="16dp">
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etVehiclePlate"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="textCapCharacters"
-                        android:imeOptions="actionNext"
-                        android:singleLine="true" />
-                </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- License Serial -->
                 <com.google.android.material.textfield.TextInputLayout

@@ -109,9 +109,7 @@ class MainActivity : AppCompatActivity() {
         binding.cardEditProfile.setOnClickListener {
             startActivity(Intent(this, EditProfileActivity::class.java))
         }
-        binding.cardReleaseVehicle.setOnClickListener {
-            startActivity(Intent(this, ChangeOwnerActivity::class.java))
-        }
+
 
         binding.cardPiDevice.setOnClickListener {
             startActivity(Intent(this, PairingActivity::class.java))
@@ -267,18 +265,7 @@ class MainActivity : AppCompatActivity() {
         val serviceIntent = Intent(this, DrowsySyncBackgroundService::class.java)
         startForegroundService(serviceIntent)
 
-        // 🚗 Claim the vehicle on the backend so logs map to THIS user
-        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val userId = prefs.getString("user_id", null)
-        if (userId != null) {
-            lifecycleScope.launch {
-                try {
-                    RetrofitClient.instance.claimVehicle(userId)
-                } catch (e: Exception) {
-                    android.util.Log.e("MainActivity", "Failed to claim vehicle: ${e.message}")
-                }
-            }
-        }
+
     }
 
     /**
@@ -339,18 +326,7 @@ class MainActivity : AppCompatActivity() {
         val serviceIntent = Intent(this, DrowsySyncBackgroundService::class.java)
         stopService(serviceIntent)
 
-        // 🚗 Unclaim the vehicle on the backend so isCurrentlyDriving is set to false
-        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val userId = prefs.getString("user_id", null)
-        if (userId != null) {
-            lifecycleScope.launch {
-                try {
-                    RetrofitClient.instance.unclaimVehicle(userId)
-                } catch (e: Exception) {
-                    android.util.Log.e("MainActivity", "Failed to unclaim vehicle: ${e.message}")
-                }
-            }
-        }
+
     }
 
     // ── Register/Unregister the Receiver with the Activity Lifecycle ──────────
