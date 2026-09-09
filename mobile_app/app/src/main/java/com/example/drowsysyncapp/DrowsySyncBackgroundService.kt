@@ -121,11 +121,14 @@ class DrowsySyncBackgroundService : Service() {
     private suspend fun fetchAndHandleLatestLog() {
         try {
             val prefs = getSharedPreferences(MainActivity.PREFS_NAME, MODE_PRIVATE)
-            // Use "DDH4321" as fallback — must match VEHICLE_ID in the Python script exactly
-            val vehicleId = prefs.getString("vehicle_id", "DDH4321") ?: "DDH4321"
-            Log.d(TAG, "Polling latest log for vehicleId='$vehicleId'")
+            val deviceId = prefs.getString("paired_device_id", null)
+            if (deviceId.isNullOrEmpty()) {
+                Log.w(TAG, "No paired device ID found, skipping poll")
+                return
+            }
+            Log.d(TAG, "Polling latest log for deviceId='$deviceId'")
 
-            val response = RetrofitClient.instance.getLatestVehicleLog(vehicleId)
+            val response = RetrofitClient.instance.getLatestDeviceLog(deviceId)
             if (response.isSuccessful) {
                 val latest = response.body()
                 if (latest != null) {
@@ -162,7 +165,7 @@ class DrowsySyncBackgroundService : Service() {
                     Log.w(TAG, "Got HTTP 200 but body was null — check server response format")
                 }
             } else {
-                Log.w(TAG, "Poll failed — HTTP ${response.code()} for vehicleId='$vehicleId'")
+                Log.w(TAG, "Poll failed — HTTP ${response.code()} for deviceId='$deviceId'")
             }
         } catch (e: Exception) {
             // Network is offline, server not reachable — fail silently

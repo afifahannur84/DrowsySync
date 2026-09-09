@@ -924,16 +924,16 @@ app.get('/api/logs/:userId', async (req, res) => {
   }
 });
 
-// [GET /api/logs/latest/vehicle/:vehicleId]
-app.get('/api/logs/latest/vehicle/:vehicleId', async (req, res) => {
+// [GET /api/logs/latest/device/:deviceId]
+app.get('/api/logs/latest/device/:deviceId', async (req, res) => {
   try {
-    const { vehicleId } = req.params;
+    const { deviceId } = req.params;
     // Sort by `timestamp` (ms epoch set by Python script) — ground truth for recency.
     // createdAt can lag by seconds on Render's free tier due to cold-start overhead.
-    const log = await FatigueLog.findOne({ vehicleId }).sort({ timestamp: -1 });
+    const log = await FatigueLog.findOne({ deviceId }).sort({ timestamp: -1 });
 
     if (!log) {
-      return res.status(404).json({ error: 'No logs found for this vehicle' });
+      return res.status(404).json({ error: 'No logs found for this device' });
     }
 
     res.status(200).json(log);

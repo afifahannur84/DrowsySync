@@ -54,9 +54,9 @@ interface DrowsySyncApiService {
         @retrofit2.http.Query("download") download: Boolean
     ): Response<okhttp3.ResponseBody>
 
-    @GET("api/logs/latest/vehicle/{vehicleId}")
-    suspend fun getLatestVehicleLog(
-        @Path("vehicleId") vehicleId: String
+    @GET("api/logs/latest/device/{deviceId}")
+    suspend fun getLatestDeviceLog(
+        @Path("deviceId") deviceId: String
     ): Response<FatigueLogResponse>
 
     @PUT("api/users/guest-mode/{userId}")
