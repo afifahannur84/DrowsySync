@@ -496,24 +496,28 @@ def _send_heartbeat() -> None:
 
 
 # Shared session state polled in background thread to eliminate video stutter
-_session_lock = threading.Lock()
-_shared_session_active = False
-_shared_reset_counters = False
-_shared_poll_running = True
+class SharedSessionState:
+    def __init__(self) -> None:
+        self.lock = threading.Lock()
+        self.session_active: bool = False
+        self.reset_counters: bool = False
+        self.running: bool = True
+
+
+_shared_session = SharedSessionState()
 
 
 def _session_polling_worker() -> None:
     """Background daemon thread: continuously polls session state without blocking OpenCV loop."""
-    global _shared_session_active, _shared_reset_counters
-    while _shared_poll_running:
+    while _shared_session.running:
         try:
             response = requests.get(SESSION_URL, timeout=3.0)
             if response.status_code == 200:
                 data = response.json()
-                with _session_lock:
-                    _shared_session_active = data.get("sessionActive", False)
+                with _shared_session.lock:
+                    _shared_session.session_active = data.get("sessionActive", False)
                     if data.get("resetCounters"):
-                        _shared_reset_counters = True
+                        _shared_session.reset_counters = True
         except Exception:
             pass  # network hiccups handled silently in background
         time.sleep(1.5)
@@ -539,7 +543,7 @@ def on_status_change(state: DetectionState) -> None:
 # =============================================================================
 
 def main() -> None:
-    global _HAS_PICAMERA2, _shared_poll_running
+    global _HAS_PICAMERA2
     print("=" * 64)
     print("  DrowsySync — Raspberry Pi 3B Vision Client (Local Display)")
     print(f"  Device ID  : {DEVICE_ID}")
@@ -645,10 +649,10 @@ def main() -> None:
                 threading.Thread(target=_send_heartbeat, daemon=True).start()
 
             # Non-blocking session check (0ms latency, zero frame lag)
-            with _session_lock:
-                new_monitoring = _shared_session_active
-                do_reset = _shared_reset_counters
-                _shared_reset_counters = False
+            with _shared_session.lock:
+                new_monitoring = _shared_session.session_active
+                do_reset = _shared_session.reset_counters
+                _shared_session.reset_counters = False
 
             if do_reset:
                 state.full_reset()
@@ -736,7 +740,7 @@ def main() -> None:
     except KeyboardInterrupt:
         print("\n[INFO] Interrupted by user (Ctrl+C).")
     finally:
-        _shared_poll_running = False
+        _shared_session.running = False
         print("[INFO] Releasing resources...")
         if _HAS_PICAMERA2:
             try:
