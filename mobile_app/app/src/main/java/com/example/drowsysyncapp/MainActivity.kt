@@ -23,6 +23,8 @@ import com.example.drowsysyncapp.network.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.net.Uri
+import android.provider.Settings
 import android.widget.Toast
 
 class MainActivity : AppCompatActivity() {
@@ -217,7 +219,28 @@ class MainActivity : AppCompatActivity() {
     // ── Monitoring button ──────────────────────────────────────────────────────
     private fun setupMonitoringButton() {
         binding.btnMonitoring.setOnClickListener {
-            if (!isMonitoring) startMonitoring() else stopMonitoring()
+            if (!isMonitoring) checkOverlayPermissionAndStart() else stopMonitoring()
+        }
+    }
+
+    private fun checkOverlayPermissionAndStart() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Alert Overlay Permission")
+                .setMessage("To display warning alerts over other apps (e.g. Google Maps or Waze) while driving, please enable 'Display over other apps' for DrowsySync.")
+                .setPositiveButton("Enable in Settings") { _, _ ->
+                    val intent = Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:$packageName")
+                    )
+                    startActivity(intent)
+                }
+                .setNegativeButton("Continue Anyway") { _, _ ->
+                    startMonitoring()
+                }
+                .show()
+        } else {
+            startMonitoring()
         }
     }
 

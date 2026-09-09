@@ -234,8 +234,10 @@ class DrowsySyncBackgroundService : Service() {
             .setSmallIcon(R.drawable.ic_warning_notification)
             .setContentTitle("⚠️ Early Drowsiness Detected")
             .setContentText("PERCLOS ${log.perclos}% — ${log.recentYawnCount} yawn(s). Tap to review.")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setFullScreenIntent(tapPendingIntent, true)
             .setAutoCancel(true)
             .setContentIntent(tapPendingIntent)
             .build()
@@ -306,6 +308,8 @@ class DrowsySyncBackgroundService : Service() {
             description = "Critical fatigue alerts that can interrupt other apps."
             // Ensure the alert channel can bypass Do Not Disturb
             setBypassDnd(true)
+            enableVibration(true)
+            vibrationPattern = longArrayOf(0, 500, 200, 500)
             lockscreenVisibility = Notification.VISIBILITY_PUBLIC
         }
 
