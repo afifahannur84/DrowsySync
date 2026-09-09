@@ -111,8 +111,8 @@ class EditProfileActivity : AppCompatActivity() {
                         .putString("user_name", updatedUser.name)
                         .putString("user_phone", updatedUser.phone ?: "")
                         .putString("license_serial", updatedUser.licenseSerial ?: "")
-                        .putString("emergency_name", updatedUser.emergencyName ?: "")
-                        .putString("emergency_phone", updatedUser.emergencyPhone ?: "")
+                        .putString("emergency_name", updatedUser.emergencyContact?.name ?: "")
+                        .putString("emergency_phone", updatedUser.emergencyContact?.phone ?: "")
 
                     if (!emailChanged) {
                         editor.putString("user_email", updatedUser.email)

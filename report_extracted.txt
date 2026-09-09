@@ -1,0 +1,1354 @@
+0: DrowsySync: IoT-Driven Vision Sensing for Proactive Driver Fatigue Intervention
+1: AFIFAH AN NUR BINTI HAZLAN
+2: UNIVERSITI TEKNIKAL MALAYSIA MELAKA
+3: BORANG PENGESAHAN STATUS LAPORAN JUDUL:  DrowsySync: IoT-Driven Vision Sensing for Proactive Driver Fatigue InterventionSESI PENGAJIAN: 2025/2026Saya:  AFIFAH AN NUT BINTI HAZLANmengaku membenarkan tesis Projek Sarjana Muda ini disimpan di Perpustakaan Universiti Teknikal Malaysia Melaka dengan syarat-syarat kegunaan seperti berikut:Tesis dan projek adalah hakmilik Universiti Teknikal Malaysia Melaka.Perpustakaan Fakulti Teknologi Maklumat dan Komunikasi dibenarkan membuat salinan unituk tujuan pengajian sahaja.Perpustakaan Fakulti Teknologi Maklumat dan Komunikasi dibenarkan membuat salinan tesis ini sebagai bahan pertukaran antara institusi pengajian tinggi. * Sila tandakan ()__________SULIT(Mengandungi maklumat yang berdarjah keselamatan atau kepentingan Malaysia seperti yang termaktub di dalam AKTA RAHSIA RASMI 1972)__________TERHAD(Mengandungi maklumat TERHAD yang telah ditentukan oleh organisasi / badan di mana penyelidikan dijalankan)TIDAK TERHADafifah(TANDATANGAN PELAJAR)(TANDATANGAN PENYELIA)Alamat tetap: W2/178, Jalan Rida, 17000 Pasir Mas, Kelantan.________________________________Nama PenyeliaTarikh: 24 Jun 2026Tarikh: __________________________CATATAN:* Jika tesis ini SULIT atau TERHAD, sila lampirkan surat daripada pihak berkuasa.BORANG PENGESAHAN STATUS LAPORAN JUDUL:  DrowsySync: IoT-Driven Vision Sensing for Proactive Driver Fatigue InterventionSESI PENGAJIAN: 2025/2026Saya:  AFIFAH AN NUT BINTI HAZLANmengaku membenarkan tesis Projek Sarjana Muda ini disimpan di Perpustakaan Universiti Teknikal Malaysia Melaka dengan syarat-syarat kegunaan seperti berikut:Tesis dan projek adalah hakmilik Universiti Teknikal Malaysia Melaka.Perpustakaan Fakulti Teknologi Maklumat dan Komunikasi dibenarkan membuat salinan unituk tujuan pengajian sahaja.Perpustakaan Fakulti Teknologi Maklumat dan Komunikasi dibenarkan membuat salinan tesis ini sebagai bahan pertukaran antara institusi pengajian tinggi. * Sila tandakan ()__________SULIT(Mengandungi maklumat yang berdarjah keselamatan atau kepentingan Malaysia seperti yang termaktub di dalam AKTA RAHSIA RASMI 1972)__________TERHAD(Mengandungi maklumat TERHAD yang telah ditentukan oleh organisasi / badan di mana penyelidikan dijalankan)TIDAK TERHADafifah(TANDATANGAN PELAJAR)(TANDATANGAN PENYELIA)Alamat tetap: W2/178, Jalan Rida, 17000 Pasir Mas, Kelantan.________________________________Nama PenyeliaTarikh: 24 Jun 2026Tarikh: __________________________CATATAN:* Jika tesis ini SULIT atau TERHAD, sila lampirkan surat daripada pihak berkuasa.
+4: BORANG PENGESAHAN STATUS LAPORAN
+5: JUDUL:  DrowsySync: IoT-Driven Vision Sensing for Proactive Driver Fatigue Intervention
+6: SESI PENGAJIAN: 2025/2026
+7: Saya:  AFIFAH AN NUT BINTI HAZLAN
+8: mengaku membenarkan tesis Projek Sarjana Muda ini disimpan di Perpustakaan Universiti Teknikal Malaysia Melaka dengan syarat-syarat kegunaan seperti berikut:
+9: Tesis dan projek adalah hakmilik Universiti Teknikal Malaysia Melaka.
+10: Perpustakaan Fakulti Teknologi Maklumat dan Komunikasi dibenarkan membuat salinan unituk tujuan pengajian sahaja.
+11: Perpustakaan Fakulti Teknologi Maklumat dan Komunikasi dibenarkan membuat salinan tesis ini sebagai bahan pertukaran antara institusi pengajian tinggi.
+12: * Sila tandakan ()
+13: __________
+14: SULIT
+15: (Mengandungi maklumat yang berdarjah keselamatan atau kepentingan Malaysia seperti yang termaktub di dalam AKTA RAHSIA RASMI 1972)
+16: __________
+17: TERHAD
+18: (Mengandungi maklumat TERHAD yang telah ditentukan oleh organisasi / badan di mana penyelidikan dijalankan)
+19: TIDAK TERHAD
+20: afifah
+21: (TANDATANGAN PELAJAR)
+22: (TANDATANGAN PENYELIA)
+23: Alamat tetap: W2/178, Jalan Rida, 17000 Pasir Mas, Kelantan.
+24: ________________________________
+25: Nama Penyelia
+26: Tarikh: 24 Jun 2026
+27: Tarikh: __________________________
+28: CATATAN:* Jika tesis ini SULIT atau TERHAD, sila lampirkan surat daripada pihak berkuasa.
+29: BORANG PENGESAHAN STATUS LAPORAN
+30: JUDUL:  DrowsySync: IoT-Driven Vision Sensing for Proactive Driver Fatigue Intervention
+31: SESI PENGAJIAN: 2025/2026
+32: Saya:  AFIFAH AN NUT BINTI HAZLAN
+33: mengaku membenarkan tesis Projek Sarjana Muda ini disimpan di Perpustakaan Universiti Teknikal Malaysia Melaka dengan syarat-syarat kegunaan seperti berikut:
+34: Tesis dan projek adalah hakmilik Universiti Teknikal Malaysia Melaka.
+35: Perpustakaan Fakulti Teknologi Maklumat dan Komunikasi dibenarkan membuat salinan unituk tujuan pengajian sahaja.
+36: Perpustakaan Fakulti Teknologi Maklumat dan Komunikasi dibenarkan membuat salinan tesis ini sebagai bahan pertukaran antara institusi pengajian tinggi.
+37: * Sila tandakan ()
+38: __________
+39: SULIT
+40: (Mengandungi maklumat yang berdarjah keselamatan atau kepentingan Malaysia seperti yang termaktub di dalam AKTA RAHSIA RASMI 1972)
+41: __________
+42: TERHAD
+43: (Mengandungi maklumat TERHAD yang telah ditentukan oleh organisasi / badan di mana penyelidikan dijalankan)
+44: TIDAK TERHAD
+45: afifah
+46: (TANDATANGAN PELAJAR)
+47: (TANDATANGAN PENYELIA)
+48: Alamat tetap: W2/178, Jalan Rida, 17000 Pasir Mas, Kelantan.
+49: ________________________________
+50: Nama Penyelia
+51: Tarikh: 24 Jun 2026
+52: Tarikh: __________________________
+53: CATATAN:* Jika tesis ini SULIT atau TERHAD, sila lampirkan surat daripada pihak berkuasa.
+54: DrowsySync: IoT-Driven Vision Sensing for Proactive Driver Fatigue Intervention
+55: AFIFAH AN NUR BINTI HAZLAN
+56: This report is submitted in partial fulfillment of the requirements for the
+57: Bachelor of [Computer Science (Software Development)] with Honours.
+58: FACULTY OF INFORMATION AND COMMUNICATION TECHNOLOGY UNIVERSITI TEKNIKAL MALAYSIA MELAKA
+59: 2026
+60: DECLARATIONI hereby declare that this project report entitled  DrowsySync: IoT-Driven Vision Sensing for Proactive Driver Fatigue Intervention is written by me and is my own effort and that no part has been plagiarized without citations.STUDENT: AFIFAH AN NUR BINTI HAZLAN         Date : 24 Jun 2026I hereby declare that I have read this project report and foundthis project report is sufficient in term of the scope and quality for the award of Bachelor of [Computer Science (Software Development)] with Honours.SUPERVISOR : Dr. Mohd Hariz Bin Naim @ Mohayat           Date : 24 Jun 2026DECLARATIONI hereby declare that this project report entitled  DrowsySync: IoT-Driven Vision Sensing for Proactive Driver Fatigue Intervention is written by me and is my own effort and that no part has been plagiarized without citations.STUDENT: AFIFAH AN NUR BINTI HAZLAN         Date : 24 Jun 2026I hereby declare that I have read this project report and foundthis project report is sufficient in term of the scope and quality for the award of Bachelor of [Computer Science (Software Development)] with Honours.SUPERVISOR : Dr. Mohd Hariz Bin Naim @ Mohayat           Date : 24 Jun 2026
+61: DECLARATION
+62: I hereby declare that this project report entitled
+63: DrowsySync: IoT-Driven Vision Sensing for Proactive Driver Fatigue Intervention
+64: is written by me and is my own effort and that no part has been plagiarized
+65: without citations.
+66: STUDENT: AFIFAH AN NUR BINTI HAZLAN         Date : 24 Jun 2026
+67: I hereby declare that I have read this project report and found
+68: this project report is sufficient in term of the scope and quality for the award of
+69: Bachelor of [Computer Science (Software Development)] with Honours.
+70: SUPERVISOR : Dr. Mohd Hariz Bin Naim @ Mohayat           Date : 24 Jun 2026
+71: DECLARATION
+72: I hereby declare that this project report entitled
+73: DrowsySync: IoT-Driven Vision Sensing for Proactive Driver Fatigue Intervention
+74: is written by me and is my own effort and that no part has been plagiarized
+75: without citations.
+76: STUDENT: AFIFAH AN NUR BINTI HAZLAN         Date : 24 Jun 2026
+77: I hereby declare that I have read this project report and found
+78: this project report is sufficient in term of the scope and quality for the award of
+79: Bachelor of [Computer Science (Software Development)] with Honours.
+80: SUPERVISOR : Dr. Mohd Hariz Bin Naim @ Mohayat           Date : 24 Jun 2026
+81: DEDICATION
+82: I would like to dedicate this Final Year Project, centered on the development of the DrowsySync platform, to my beloved parents and family for their endless love, encouragement, patience, and unwavering support throughout my academic journey. Their sacrifices, prayers, and motivation have always been a constant source of strength and inspiration for me to overcome technical challenges and achieve my goals. I would also like to dedicate this project to my supervisor, Dr. Mohd Hariz Bin Naim @ Mohayat and the lecturers of the Faculty of Information and Communication Technology (FTMK) who have provided valuable guidance, foundational knowledge, and critical support during the completion of this project. Furthermore, this work is dedicated to my close friends, classmates, and fellow members of the Associative of Inventive, Innovative and Creative Thinkers (ASIIC) club, whose encouragement and collaborative spirit greatly contributed to the progress of this development. Finally, I dedicate this project to everyone who has directly or indirectly contributed to my learning experience, personal growth, and engineering skills at Universiti Teknikal Malaysia Melaka. Their support and kindness have been truly appreciated and will always be remembered.
+83: ACKNOWLEDGEMENTS
+84: First and foremost, I would like to express my sincere gratitude to Allah for granting me the strength, patience, and determination to successfully complete this Final Year Project. I would like to extend my deepest appreciation to my project supervisor, Dr. Mohd Hariz Bin Naim @ Mohayat, for the continuous guidance, valuable suggestions, constructive feedback, and encouragement throughout the development of the DrowsySync system. Their academic support and expertise have been instrumental in helping me complete this software engineering project successfully. I would also like to thank all the lecturers in the Faculty of Information and Communication Technology (FTMK), Universiti Teknikal Malaysia Melaka (UTeM), for sharing their knowledge and providing valuable insights throughout my academic journey. I am also profoundly grateful to Yayasan TM for providing the scholarship support and opportunity that enabled me to pursue my computer science specialization smoothly.
+85: My heartfelt appreciation goes to my parents and family for their unconditional love, endless support, understanding, and encouragement. Their sacrifices and prayers have been a constant source of motivation that inspired me to overcome challenges and remain committed to achieving my goals. Special thanks are also extended to my close friends, classmates, and club project for their technical assistance, coordination during development sessions, and constant encouragement. Their support and willingness to share coding ideas and debugging experiences have contributed significantly to the success of this work. Finally, I would like to express my gratitude to everyone who has directly or indirectly contributed to the completion of this project. Your support and kindness are greatly appreciated. Thank you.
+86: ABSTRACT
+87: This project introduces DrowsySync, a decoupled three-tier distributed software platform developed in the field of computer-vision-based intelligent transport driver monitoring systems. Traditional in-vehicle monitoring solutions execute image frame capture, high-density facial landmark mesh parsing, and local alarm loops concurrently on a single hardware console. This configuration results in severe CPU throttling, processing latency, and critical thread lockups that mute warning chimes precisely during microsleep episodes. Furthermore, conventional setups operate in telemetry isolation, preventing fleet safety managers from reviewing live driving logs. To resolve these limitations, DrowsySync utilizes an agile prototyping-driven lifecycle to completely separate heavy computer vision workloads from the alarm execution loop. The architecture comprises an embedded Python edge vision client running on a Raspberry Pi, an asynchronous Node.js and MongoDB Atlas cloud data broker, and a native Kotlin Android application. The edge client captures video streams at optimized resolutions (320×240) with frame-skipping constraints (FRAME_SKIP = 2), computes geometric Eye Aspect Ratio (EAR) and Mouth Aspect Ratio (MAR) thresholds across a 4-stage fatigue escalation matrix, and dispatches state updates via HTTP REST POST payloads. The native Android layer operates a persistent background foreground service that polls the cloud data broker every 1.5 seconds via HTTP GET requests linked to unique vehicle identification indexes. System verification results demonstrate that the edge vision client maintains a stable processing throughput exceeding 20 frames per second while conserving 30MB of RAM through disabled iris tracking. Upon detecting critical fatigue stages, the background mobile service triggers full-screen window overlay takeovers (SymptomAlertActivity and MicrosleepAlertActivity), bypassing system lockscreens and overriding active mapping layers within 1.5 seconds to deliver uninterrupted audio sirens. Additionally, historical driving records are processed via a server-side vector charting engine to dispatch automated analytical monthly PDF reports to users using the Brevo Web API.
+88: ABSTRAK
+89: Projek ini memperkenalkan DrowsySync, sebuah platform perisian teragih tiga-lapisan yang dinyahgandingkan bagi sistem pemantauan kelesuan pemandu berasaskan penglihatan komputer dalam sektor pengangkutan. Penyelesaian pemantauan sedia ada secara konvensionalnya melaksanakan penangkapan bingkai imej, analisis jaringan tanda rujukan wajah (facial landmark), dan gelung amaran setempat secara serentak pada satu konsol perkakasan yang sama. Konfigurasi monolitik ini sering mengakibatkan pencerutan prestasi CPU yang teruk serta kegagalan sekatan benang (thread lockup) pada fasa masa jalan (runtime), sekali gus membisukan bunyi amaran tepat pada waktu episod mikrotidur (microsleep) berlaku. Selain itu, sistem konvensional beroperasi secara terasing tanpa penyelarasan telemetri, yang menghalang pengurus armada daripada menyemak log pemanduan masa nyata. Bagi mengatasi had tersebut, DrowsySync menggunakan kitaran hayat pembangunan tangkas (Agile) berasaskan prototaip untuk memisahkan sepenuhnya beban pemprosesan penglihatan komputer daripada gelung pelaksanaan amaran. Seni bina sistem ini merangkumi aplikasi klien penglihatan pinggir (edge vision) berasaskan Python pada Raspberry Pi, broker data awan Node.js bersama MongoDB Atlas, serta aplikasi mudah alih Android asli menggunakan Kotlin. Klien pinggir ini berfungsi menangkap strim video pada resolusi dioptimumkan ($320 \times 240$) dengan konfigurasi langkauan bingkai (FRAME_SKIP = 2), menghitung formula matematik Eye Aspect Ratio (EAR) dan Mouth Aspect Ratio (MAR) merentasi matriks eskalasi kelesuan empat peringkat, serta menghantar kemas kini status melalui permintaan HTTP REST POST. Seterusnya, lapisan Android menjalankan perkhidmatan latar depan (foreground service) secara berterusan untuk melakukan pengundian data (polling) daripada broker awan setiap 1.5 saat berpandukan nombor plat kenderaan yang unik. Hasil pengesahan sistem membuktikan bahawa klien penglihatan pinggir mampu mengekalkan kadar pemprosesan stabil melebihi 20 bingkai sesaat (FPS), di samping menjimatkan memori RAM sebanyak 30MB dengan melangkau penjejakan sub-jaringan iris. Apabila tahap kelesuan kritikal dikesan, perkhidmatan mudah alih akan mencetuskan pengambilalihan skrin penuh melalui paparan bertindan (SymptomAlertActivity dan MicrosleepAlertActivity), memintas skrin kunci peranti serta mengatasi lapisan aplikasi navigasi aktif dalam tempoh 1.5 saat bagi menyampaikan siren amaran tanpa gangguan. Laporan analitis bulanan dalam format PDF turut dijana secara automatik menggunakan enjin pemetaan vektor sebelah pelayan sebelum dihantar kepada pengguna via API Web Brevo.
+90: table of contents
+91: PAGE
+92: DECLARATIONii
+93: DEDICATIONiii
+94: ACKNOWLEDGEMENTSiv
+95: ABSTRACTv
+96: ABSTRAKvi
+97: table of contentsviii
+98: list of tablesxi
+99: list of figuresxii
+100: List of Abbreviationsxiii
+101: Chapter 1: INTRODUCTION1
+102: 1.1Project Background1
+103: 1.2Problem Statement2
+104: 1.3Objective4
+105: 1.4Scope4
+106: 1.5Project Significance6
+107: 1.6Expected Output7
+108: 1.7Conclusion9
+109: Chapter 2: literature review AND PROJECT METHODOLOGY10
+110: 2.1Introduction10
+111: 2.2Facts and Findings10
+112: 2.2.1Domain Analysis10
+113: 2.2.2Existing Systems11
+114: 2.2.3Technical Review12
+115: 2.3Project Methodology15
+116: 2.4Project Requirements16
+117: 2.4.1Software Requirements16
+118: 2.4.2Hardware Requirements17
+119: 2.4.3Other Requirements18
+120: 2.5Project Schedule and Milestones18
+121: 2.6Conclusion20
+122: Chapter 3: ANALYSIS21
+123: 3.1Introduction21
+124: 3.2Problem Analysis21
+125: 3.3Requirement Analysis23
+126: 3.3.1Data Requirement23
+127: 3.3.2Functional Requirements27
+128: 3.3.3Non_Functional Requirements30
+129: 3.3.4Others Requirement31
+130: 3.4Conclusion32
+131: Chapter 4: DESIGN34
+132: 4.1Introduction34
+133: 4.2High Level Design35
+134: 4.2.1System Architecture35
+135: 4.2.2User Interface Design36
+136: 4.2.3Database Design42
+137: 4.2.3.1Conceptual and Logical Database Design42
+138: 4.2.3.2Normalization47
+139: 4.3Detailed Design48
+140: 4.3.1Software Design49
+141: 4.3.2Physical Database Design54
+142: 4.4Conclusion56
+143: references57
+144: list of tables
+145: PAGE
+146: Table 2.1: Critical Review of Existing Driver Drowsiness Systems13
+147: Table 2.2: Summary of Project Schedule and Milestones18
+148: Table 3.1: Detailed Breakdowns of System Environment Limitations22
+149: Table 3.2: Data Requirements Matrix24
+150: Table 3.3: Functional Requirements Matrix27
+151: Table 3.4: Non-functional Requirements Matrix30
+152: Table 4.1: Input Design and Validation Matrix38
+153: Table 4.2: Drivers Collection Data Dictionary43
+154: Table 4.3: Vehicles Collection Data Dictionary44
+155: Table 4.4: Sessions Collection Data Dictionary45
+156: Table 4.5: Analytics Collection Data Dictionary46
+157: list of figures
+158: PAGE
+159: Figure 2.1: EAR Equations13
+160: Figure 2.2: MAR Equations13
+161: Figure 2.3: Prototyping-Driven Agile Lifecycle for the DrowsySync Platform15
+162: Figure 2.4: Project Gantt Chart Timeline Layout20
+163: Figure 3.1: As-Is System Sequence Diagram Showing Local Thread Failures22
+164: Figure 4.1: Multi-Tier Distributed Closed-Loop System Architecture Blueprint36
+165: Figure 4.2: Mobile Application Navigation Flow38
+166: Figure 4.3: Entity Relationship Diagram (ERD)42
+167: List of Abbreviations
+168: FYP
+169: -
+170: Final Year Project
+171: INTRODUCTION
+172: Project Background
+173: In modern transport infrastructures, maintaining driver cognitive alertness on public highways is a fundamental requirement for preserving road safety and reducing traffic fatalities. According to systematic global reporting by the World Health Organization (WHO), motor vehicle accidents are responsible for approximately 1.3 million deaths and up to 50 million non-fatal injuries annually, imposing significant socio-economic and public health burdens on municipal frameworks. Within these statistical indicators, human performance degradation—specifically driver fatigue, prolonged drowsiness, and momentary lapses of selective attention—stands as the most critical yet systematically unaddressed catalyst for catastrophic highway collisions. Continuous operation of motor vehicles over extended periods induces progressive cognitive exhaustion, which leads to a severe decline in situational awareness, delayed physical reaction times, and degraded tactical decision-making capabilities.
+174: Empirical traffic safety data compiled locally by the Malaysian Institute of Road Safety Research (MIROS) highlights an alarming hazard distribution within national logistics corridors: heavy commercial vehicle crashes on expressways account for up to 17% of overall expressway road accidents. Specialized forensic crash investigations indicate that driver fatigue directly precipitates 13.4% of commercial lorry collisions and roughly 7.9% of long-distance interstate bus accidents. This operational drop is heavily exacerbated by irregular shift rotations, extended long-haul transit mandates, and biological disruptions to natural human circadian rhythms. Heavy vehicle operators are exceptionally vulnerable to sudden cognitive drops during specific circadian low windows, notably between 2:00 AM and 6:00 AM, as well as mid-afternoon post-lunch periods between 12:00 PM and 2:00 PM.
+175: The physiological hazard of fatigued driving is directly comparable to chemical intoxication; remaining continuously awake for 18 hours degrades cognitive faculty to an extent equivalent to a Blood Alcohol Concentration (BAC) of 0.05%, which rapidly surges to a BAC of 0.10% after 24 hours of sleep deprivation. The progressive onset of fatigue frequently leads to a hazardous phenomenon known as "microsleep," wherein a driver experiences an involuntary, transient episode of unconsciousness lasting from 3 to 15 seconds. During these brief intervals, the vehicle travels completely unguided at high highway velocities, rendering traditional retrofitted reactive vehicle safety mechanisms completely ineffective.
+176: To mitigate this structural public hazard, this project presents DrowsySync, an embedded closed-loop internet-of-things (IoT) driver drowsiness detection and real-time intervention system. The core framework of DrowsySync shifts away from generic computing hardware or unoptimized USB webcams, implementing instead a dedicated vehicle-mounted device architecture. By decoupling intensive computer vision processing from alert execution, the system employs a multi-tier framework consisting of an optimized embedded vision edge client, a high-throughput central cloud data broker, and a resilient mobile background safety layer. This architecture ensures low-latency tracking of multi-feature facial fatigue indicators—such as eye closure ratios, yawning patterns, and rolling PERCLOS thresholds—while guaranteeing immediate, stable auditory and visual intervention directly inside the driver's cabin.
+177: Problem Statement
+178: Existing commercial driver monitoring setups and conventional computer vision configurations exhibit critical technical limitations that prevent reliable deployment in real-world environments. To ensure maximum clarity for project evaluation, these core technical, environmental, and architectural gaps are broken down into the following explicit problem vectors:
+179: Physiological Intrusiveness and Operational Friction: Advanced physiological monitoring frameworks—such as multi-channel Electroencephalography (EEG) bands or surface Electrocardiography (ECG) chest straps—demand constant physical body contact. These systems induce severe physical discomfort, disrupt driver ergonomics, require frequent calibration, and cause high operational rejection rates among professional drivers during long driving shifts.
+180: Reactive Nature of Vehicle Telemetry Systems: Standard vehicle-centric assistance configurations—such as lane departure warnings or steering wheel torque resistance sensors—are fundamentally indirect and reactive. These systems only generate alerts after the driver has already lost cognitive awareness and executed erratic lane drifting, which is frequently too late to prevent high-speed collisions on expressways.
+181: Algorithmic Volatility and Tracking Jitter on the Edge: Traditional image processing models relying on Dlib’s 68-point shape predictors suffer from severe spatial landmark tracking errors and point jittering during driver head movements, hallucinating up to 166 false blinks over short driving intervals. Conversely, classic Haar Cascade Classifiers exhibit extreme sensitivity to rapid lighting changes, frequently dropping tracking vectors within vehicle cabins or when passing through high-contrast shadows.
+182: High Computational Footprint of Transformer Frameworks: Emerging state-of-the-art architectures like Vision Transformers (ViTs) yield excellent eye-state tracking accuracy (~98.8%), but their massive parameter configurations create substantial memory and processing bottlenecks. These frameworks easily overwhelm low-power edge processors that lack dedicated hardware acceleration units.
+183: Environmental Degradation and Lens Flare Anomalies: Specialized vision-based detection systems encounter a severe tracking accuracy drop of up to 17% in unlit cabins when the operator wears prescription eyeglasses. This drop is caused by infrared glare or lens reflection anomalies that distort geometric aspect ratios.
+184: Local Edge Audio Thread Lockups and Audio Crashes: Conventional embedded setups rely extensively on localized Python audio libraries (such as pygame or aplay) executed directly on the core edge microcomputer. Under high, continuous image processing load, these local multi-threaded audio processes face severe resource throttling, thread blockages, and driver-level audio-codec hanging, which can completely mute critical cabin alarms.
+185: Objective
+186: The primary software engineering goal of this project is to develop and evaluate the DrowsySync platform as a functional system to reduce fatigue-related highway crashes. To ensure clear evaluation metrics, this goal is broken down into three action-oriented project objectives starting with explicit action verbs:
+187: To implement a high-efficiency edge vision pipeline using MediaPipe Face Mesh on a Raspberry Pi, optimized via frame-skipping and resolution scaling to calculate real-time geometric fatigue metrics without local audio dependencies.
+188: To develop a centralized Node.js and Express cloud backend integrated with a MongoDB Atlas database to track active driving sessions and securely route telemetry data mapped by vehicle plate indexes.
+189: To build a native Android mobile application in Kotlin that utilizes foreground services and overlay window permissions to execute stable, full-screen lockscreen override takeover alarms upon detecting critical drowsiness.
+190: Scope
+191: The operational boundaries, implementation limits, and system parameters of the DrowsySync platform are explicitly categorized below, along with clear justifications for each dimension to establish project constraints:
+192: Target Hardware and Platform Specifications: The embedded vision client is restricted to execution on the Raspberry Pi 3 or 4 single-board computer architecture to preserve low deployment costs in commercial cabins. Video capture is constrained natively to the RPI-3.6MM-5MIRCAM module (an OV5647 5MP Infrared night-vision camera featuring a 3.6mm adjustable focus lens) integrated via the hardware CSI ribbon interface. This specific hardware setup provides hardware-level capture low latency and night-vision capabilities for dark driving environments, conserving CPU overhead compared to USB webcams. The mobile safety layer is developed explicitly as a native Android application optimized for Android OS API Level 29 (Android 10.0) and higher, which is required to gain stable access to modern foreground service tokens and lockscreen overlay window permissions.
+193: Software Stack and Architectural Boundaries: Image acquisition and face geometry mapping are restricted to the Python implementation of Google’s MediaPipe Face Mesh API (utilizing the 468 3D coordinate point model) and OpenCV. Heavy alternative models such as raw Vision Transformers (ViTs) or uncompressed server-side deep networks are outside the system scope due to their high processing latency on constrained CPUs. Cloud routing logic is constrained to an asynchronous Node.js execution runtime running Express microservices, with data storage limited to a MongoDB Atlas cloud cluster to support low-overhead document storage. Automated analytics summary dispatching is restricted to PDF format compiled via server-side path drawing and distributed via the Brevo Web API.
+194: Tracking Metrics and Escalation Matrix: The detection engine is strictly confined to mapping three behavioral visual indicators: Eye Aspect Ratio (EAR) using 6 geometric coordinates per eye, Mouth Aspect Ratio (MAR) to monitor inner lip distance variations, and a rolling 60-second PERCLOS window. Drowsiness is mathematically scaled across a formal 4-stage matrix: Stage 0 (Normal), Stage 1 (Early Fatigue via 1 yawn or PERCLOS $\ge 4\%$), Stage 2 (Active Drowsiness via 2 yawns or PERCLOS $\ge 8\%$), and Stage 3 (Critical Alarm via continuous eye closure $\ge 5.0$ seconds or PERCLOS $> 12\%$). External biometric tracking (such as EEG brain waves or heart rate variability) and vehicle trajectory parameters (such as steering wheel angle data or GPS lane drift telemetry) are explicitly excluded from this software scope to prevent operator intrusiveness.
+195: Target Users and Environment Constraints: The software is designed for commercial shift drivers and private vehicle operators navigating long-distance expressways. Testing evaluations are restricted to fixed-distance cabin mockup environments where the CSI camera module is positioned within a 20 cm to 60 cm range from the subject’s face. Testing parameters focus on handling both bare-faced subjects and drivers wearing prescription eyewear under simulated daylight and completely dark cabin profiles to evaluate infrared threshold limits.
+196: Project Significance
+197: The implementation of the DrowsySync platform provides meaningful technological benefits across individual user safety domains, academic edge-vision research, and commercial software integration workflows, directly supporting the project's primary objectives. To demonstrate the depth of this research, its industrial and practical contributions are elaborated across three specialized tiers:
+198: Commercial Fleet Operators and Corporate Logistics Management: For long-haul logistics organizations and public transport companies, DrowsySync provides a non-intrusive framework to actively audit operator safety. Traditional telemetry only logs events after an accident sequence begins. DrowsySync captures early fatigue metrics, syncing telemetry records directly to MongoDB Atlas based on vehicle registration indexes. This structure allows safety officers to perform data-driven shift scheduling and access automated monthly PDF analytics. These charts help track driver fatigue patterns, simplify fleet compliance audits, reduce liability overheads, and lower asset damage risks on expressways.
+199: Industrial Embedded IoT Engineers and the Academic Research Community: From an architectural perspective, DrowsySync offers a decoupled solution to edge computing resource constraints. It introduces low-overhead edge configurations, such as skipping inference frames and disabling high-parameter iris sub-meshes, which allows the system to achieve stable performance of over 20 FPS on restricted processing units. This approach provides engineers with a practical framework for building stable edge devices. Additionally, by removing all local Python audio processes and offloading alarm delivery to a secondary background service, the system eliminates audio-codec crashes under high CPU load. This distributed design serves as a structural blueprint for multi-device safety networks.
+200: Professional Shift Operators and Private Motorists: For individual truck, bus, and night-shift drivers, DrowsySync serves as an active, in-cabin safety assistant. Driving fatigue builds up progressively, often making it difficult for operators to self-assess their own drowsiness level before a microsleep episode occurs. DrowsySync addresses this risk through its Android foreground layer, which uses window overlay permissions to bypass system locks and take over active mapping applications. This design ensures that loud auditory warnings are successfully delivered to prevent microsleep collisions without requiring direct body-contact sensors.
+201: Expected Output
+202: To ensure verifiable compliance with the software engineering goals of the BITS track, the DrowsySync project produces three distinct, fully integrated software deliverables. The technical specifications and operational capabilities of each output component are detailed below:
+203: Optimized Embedded Vision Edge Executable (Raspberry Pi Client): The first deliverable is a Python-based image processing application configured to run on a vehicle-mounted Raspberry Pi microcomputer. Connected to an official RPI-3.6MM-5MIRCAM 5MP Infrared camera via the CSI ribbon interface, this module captures and processes facial video streams at a resolution of 320×240. The executable leverages MediaPipe Face Mesh coordinates while utilizing specific code optimizations: processing every alternate frame (FRAME_SKIP = 2), setting refine_landmarks=False to save 30MB of RAM by bypassing iris tracking, and replacing heavy contour overlays with a lightweight, text-only Head-Up Display (HUD). This configuration ensures a processing speed of over 20 FPS while extracting mathematical EAR, MAR, and rolling PERCLOS metrics to classify fatigue states across a 4-stage escalation matrix. Upon identifying a stage transition, the script transmits an asynchronous REST POST request to the central server.
+204: Centralized Data Broker and PDF Reporting Engine (Cloud Backend): The second deliverable is a server-side backend application built using Node.js and Express, connected to a cloud-hosted MongoDB Atlas cluster. This microservice layer features endpoints designed to accept live telemetry records from the Raspberry Pi client, routing them to the appropriate database schemas using the vehicle's car plate number as a unique index. In addition to data storage, the backend includes an automated reporting engine. This component uses server-side path drawing commands (Vector Charting) to generate monthly analytical PDF documents containing weekly alert distribution bar charts. These reports are automatically emailed to drivers using the Brevo Web API.
+205: Native Foreground Monitoring and Alert Takeover Suite (Android Application): The final deliverable is a native Android application package (.apk) written in Kotlin, designed to run continuously on the driver's mobile device. The core of the app is a background foreground service that runs on a persistent 1.5-second polling interval, sending REST GET requests to check the cloud server for the latest vehicle logs. If a Stage 2 alert is received, the service launches SymptomAlertActivity to loop an audio chime. For a Stage 3 alert, it triggers MicrosleepAlertActivity, using system overlay tokens to override active navigation software and bypass lockscreens to play a continuous emergency siren through the device speaker. The alarm loop remains active until the operator manually taps the "Dismiss/I'm Awake" verification check on the screen.
+206: Conclusion
+207: In summary, Chapter 1 has outlined the foundational framework for the DrowsySync project in strict compliance with the BITS track software development formatting guidelines. By grounding the project motivation inside real-world expressway accident statistics, a clear technical requirement has been established for a distributed, non-intrusive driver safety system. The project objectives are tightly focused on solving the real-time processing constraints and audio failure rates that limit current edge setups. With the system scope, project significance, and expected outputs explicitly defined, the report next proceeds to Chapter 2, which will examine the technical literature and review existing driver state detection frameworks to justify the underlying development methodology
+208: literature review AND PROJECT METHODOLOGY
+209: Introduction
+210: Chapter 2 presents a comprehensive literature review and a detailed technical defense of the methodology selected for the DrowsySync platform. To ground this software engineering project in established academic and industrial frameworks, this chapter reviews the core domain of computer vision-based driver status monitoring, evaluating how ambient light fluctuations and user physical attributes affect system reliability. A critical review of four relevant existing software configurations highlights the engineering trade-offs between processing speed, physical comfort, and system stability.
+211: Following this domain review, alternative approaches—including intrusive physiological body sensors and reactive vehicle telemetry models—are examined to explain why a decoupled, non-intrusive vision-to-mobile architecture was chosen. Finally, this chapter outlines the prototyping-driven Agile lifecycle framework used to guide the project, defines the software and hardware requirements, and outlines the development schedule and project milestones.
+212: Facts and Findings
+213: Domain Analysis
+214: The domain of in-vehicle driver fatigue monitoring involves real-time embedded computing, edge-vision processing, and distributed network synchronization. Historically, the domain has focused on direct tracking of physiological facial variations, identifying specific indicators such as changes in eyelid closing velocity, blinking frequencies, mouth distension shapes, and prolonged head nodding profiles. The primary goal within this domain is to build a low-overhead system that accurately classifies these geometric facial changes into distinct fatigue states before a driver experiences an involuntary microsleep event on public highways.
+215: Executing computer vision pipelines within an active automotive cockpit introduces specific environmental challenges. Vehicle cabins experience rapid lighting shifts, such as intense direct sunlight, deep evening shadows, and complete darkness during night driving. Furthermore, user-specific physical variables, such as the wear of prescription glasses, frequently introduce infrared glare and lens reflections that degrade standard feature tracking models. Consequently, modern research focuses on multi-feature extraction models that combine eye tracking with independent indicators, like yawning, to maintain detection accuracy across variable operating environments.
+216: Existing Systems
+217: Several automated driver monitoring systems have been proposed in recent years, demonstrating distinct approaches to managing processing limits and tracking accuracy. Adi et al. (2020) developed an embedded system utilizing a Raspberry Pi processor paired with standard OpenCV libraries and Haar Cascade Classifiers to isolate the driver's face, eye zones, and mouth boundaries. Their configuration achieved an evaluation accuracy of 88.00% for focus tracking and 90.40% for drowsiness classification. However, Haar Cascade Classifiers rely on coarse regional pixel contrast variations. This makes the system highly sensitive to light changes, causing it to drop tracking locks when passing through highway shadows or when the driver tilts their head sideways.
+218: To improve landmark detail, Baby Shamini et al. (2022) proposed a vehicle monitoring system using an in-cab camera and Dlib’s 68-point shape predictors to monitor eye blink frequencies and trigger local buzzer warnings. While Dlib provides clear coordinate indexes, its localized geometric models are prone to spatial point jitter during head rotations, which can falsify blink duration measurements. Crucially, both frameworks execute localized Python audio libraries (such as pygame or aplay) directly on the primary edge hardware. Under high image-processing loads, these local multi-threaded audio processes are vulnerable to thread blockages and driver-level audio crashes, which can completely mute critical cabin alarms.
+219: Alternatively, Osmani et al. (2024) developed a high-accuracy detection framework based on the Vision Transformer (ViT) paradigm, fine-tuning a vit-base-patch16-224 model on an expansive dataset of 84,900 eye images. Their architecture maps long-range visual token dependencies across patch inputs to achieve an outstanding open-versus-closed eye state classification accuracy of 98.8%. However, the model contains a massive multi-layer transformer parameter matrix that requires substantial graphics processing unit (GPU) acceleration. This structure makes it incompatible with low-power edge hardware like a dashboard Raspberry Pi client, which lacks dedicated hardware acceleration units.
+220: To address these edge computing constraints, Vellayati et al. (2025) constructed an embedded microsleep detection system that uses an infrared camera connected to a Raspberry Pi to calculate the Eye Aspect Ratio (EAR) using Google's MediaPipe Face Mesh. This configuration achieved stable real-time performance with 1.5-second warning feedback loops. However, their testing exposed a critical environmental limitation: while bare-faced operators maintained 100% classification accuracy, drivers wearing prescription eyeglasses dropped to 83% accuracy under low-light conditions. This drop was caused by infrared lens reflections distorting the eye landmarks, which highlights the need to pair eye tracking with independent facial indicators.
+221: Technical Review
+222: To address algorithmic volatility and edge processing limits, modern architectures rely on geometric facial metric calculations. As established by Soukupová and Čech (2016), the Eye Aspect Ratio (EAR) utilizes specific coordinates to evaluate eyelid opening distance relative to eye width. The formal EAR equation is expressed as follows:
+223: Figure 2.1: EAR Equations
+224: When the driver's eyes close, the vertical distance points (p2, p6 and p3, p5) approach zero, causing the overall ratio to drop below the alert threshold. To mitigate the 17% accuracy drop that glasses-wearing drivers experience due to lens glare, modern systems cross-reference eye state drops with independent metrics like the Mouth Aspect Ratio (MAR) to track yawning patterns. The formal MAR equation is defined as follows:
+225: Figure 2.2: MAR Equations
+226: By combining these equations into a multi-feature tracking engine, systems can deploy an adaptive escalation framework that maintains reliability across variable operating environments. To defend the architectural choices of DrowsySync, a critical review comparing these alternative technologies is summarized in Table 2.1.
+227: Table 2.1: Critical Review of Existing Driver Drowsiness Systems
+228: Author & Year
+229: Technical Approach / Stack
+230: Performance Metrics
+231: System Limitations
+232: DrowsySync Enhancements
+233: Adi et al. (2020)
+234: Raspberry Pi + Haar Cascade Classifiers using OpenCV to detect faces, eyes, and mouth regions.
+235: Achieved 88.00% focus accuracy and 90.40% drowsiness accuracy under standard light.
+236: Highly sensitive to illumination variations, causing tracking drops in shadows.
+237: Deploys MediaPipe 468 3D landmark points to maintain dense feature tracking under varying lighting conditions.
+238: Baby Shamini et al. (2022)
+239: OpenCV + Dlib 68-Point Shape Predictor to track eye blink rates and trigger localized buzzers.
+240: Provides real-time tracking of open and closed eye ratios.
+241: Local Python audio threads face resource throttling and script lockups under continuous CPU load.
+242: Completely removes local audio dependencies, offloading all alarms to an Android foreground service.
+243: Osmani et al. (2024)
+244: fine-tuned Vision Transformer (vit-base-patch16-224) utilizing long-range self-attention.
+245: Achieved 98.8% accuracy across 84,900 open and closed eye image samples.
+246: Large model size creates high computational latency on edge hardware.
+247: Implements frame-skipping and resolution scaling to ensure a processing speed of over 20 FPS on edge units.
+248: Vellayati et al. (2025)
+249: Raspberry Pi 4 + MediaPipe Face Mesh + Infrared Camera Module using EAR algorithms.
+250: 100% accuracy for bare faces; 1.5-second warning feedback loops.
+251: Accuracy drops to 83% in low light when drivers wear prescription eyewear due to lens glare.
+252: Integrates eye closures and rolling mouth tracking within a 4-stage adaptive escalation matrix.
+253: Project Methodology
+254: To ensure structured execution across all modules, DrowsySync is developed using an iterative, prototyping-driven Agile methodology. This framework supports rapid development and validation cycles across the system's three operational layers: the embedded client, the cloud server, and the mobile background service. The project methodology is structured into five sequential phases:
+255: Figure 2.3: Prototyping-Driven Agile Lifecycle for the DrowsySync Platform
+256: Phase 1: Analysis and Requirement Formulation: This initial phase focuses on defining the mathematical and system constraints required for reliable driver safety tracking. Activities include setting baseline thresholds for facial ratios (such as EAR <0.18 and MAR >0.50), evaluating hardware constraints of single-board computers, and establishing the REST API schema specifications needed to connect the system components.
+257: Phase 2: Architectural and Database Design: This phase focuses on mapping the system components and data flows. Activities include modeling the multi-tier system topology, designing the MongoDB Atlas collection schemas for vehicle records, and drafting the user interfaces for the Android foreground application in Figma.
+258: Phase 3: Core System Implementation: This phase focuses on code development and optimization across all three layers. The embedded Python client is configured on a Raspberry Pi using frame-skipping and resolution scaling to ensure a processing speed of over 20 FPS. Simultaneously, the Node.js central data broker is implemented, and the native Kotlin foreground polling service is developed.
+259: Phase 4: Integration and System Verification: This phase focuses on verifying connectivity and alarm delivery across the distributed network. Activities include testing REST POST telemetry updates from the Pi client, verifying the 1.5-second polling routine on the Android background service, and validating full-screen window takeovers via SymptomAlertActivity and MicrosleepAlertActivity.
+260: Phase 5: Operational Deployment and Evaluation: The final phase focuses on system testing and performance analysis. The cloud components are deployed on MongoDB Atlas, and system accuracy is evaluated under simulated daylight and nocturnal cabin conditions. Finally, the reporting engine is verified to ensure successful delivery of monthly analytics PDFs via the Brevo Web API.
+261: Project Requirements
+262: Software Requirements
+263: To ensure compliance with the BITS track software engineering standards, the complete software stack and development utilities required for the DrowsySync platform are listed below in point form:
+264: Python 3.10 Runtime Environment: Used to run the embedded vision pipeline on the edge hardware client.
+265: Google MediaPipe Face Mesh API: Used to track the 468 3D coordinate landmark points required to compute facial aspect ratios.
+266: OpenCV-Python (v4.8): Used to capture frame matrices, downscale video streams, and manage image rendering adjustments.
+267: Node.js LTS (v20.x) & Express.js Framework: Used to construct the high-throughput asynchronous REST API backend broker.
+268: MongoDB Atlas Cloud Storage: Deployed as the central cloud database to store active session logs and historical driver records.
+269: Android Studio Hedgehog IDE & Kotlin SDK (API 29+): Used to develop and compile the native Android foreground tracking service.
+270: Brevo Transmit Web API: Integrated into the cloud layer to automate email delivery of monthly analytical PDF summaries.
+271: Git Source Code Management & GitHub Repository Platform: Applied to enforce version control procedures across all three software modules.
+272: Hardware Requirements
+273: The hardware components and computing units required to deploy the embedded closed-loop safety system are listed below in point form:
+274: Raspberry Pi 4 Model B Single-Board Computer: Deployed as the vehicle-mounted edge processor to execute image capture and local metric parsing.
+275: RPI-3.6MM-5MIRCAM Night-Vision Module: An OV5647 5MP Infrared night-vision camera featuring a 3.6mm adjustable focus lens, ribbon-connected to the Pi via the CSI interface.
+276: Android Mobile Smartphone (Android 10.0+): Acts as the driver's in-cabin warning interface, running foreground alert scripts and looping chimes.
+277: Development Workstation Laptop: Used to develop software modules, manage database connections, and run remote testing profiles.
+278: Other Requirements
+279: Beyond fundamental software and hardware tools, the execution of this project requires specific operational resources:
+280: UTeM Software Engineering Laboratory Access: Required to conduct system integration testing and evaluate hardware components under stable network conditions.
+281: Fixed-Distance Cabin Simulation Space: A workspace configured to place the camera module within a 20 cm to 60 cm range from subjects, required to evaluate system accuracy for bare-faced operators and drivers wearing prescription glasses.
+282: Project Schedule and Milestones
+283: To guarantee system delivery within university parameters, the development schedule maps operational steps directly across the exact task bounds extracted from the project documentation. The timeline begins with task formulation on March 22nd, moving through consecutive implementation sprints until final completion in late June. Table 2.2 maps out these operational schedules, and the finalized one-page Gantt chart layout is presented in Figure 2.1.
+284: Table 2.2: Summary of Project Schedule and Milestones
+285: Project Phase / Activity
+286: Task Description
+287: Expected Output / Deliverables
+288: Schedule Bounds (Start - End)
+289: Proposal Preparation
+290: Conduct baseline title scoping and proposal discussions with the project supervisor.
+291: Approved initial project proposal document.
+292: 22-March - 29-March
+293: Literature Review
+294: Review peer-reviewed studies regarding driver monitoring paradigms and computer vision models.
+295: Structured comparative literature analysis chapter.
+296: 29-March - 12-April
+297: Requirement Analysis
+298: Formulate problem vectors, boundary constraints, and functional/non-functional specifications.
+299: Finalized system requirements documentation.
+300: 12-April - 26-April
+301: System Design
+302: Design detailed structural diagrams, workflow outlines, and Android application wireframes.
+303: High-fidelity screen wireframes and UML models.
+304: 26-April - 03-May
+305: Database Design
+306: Construct collection structures, data dictionaries, and Entity Relationship Diagrams (ERD).
+307: Finalized database schemas on MongoDB Atlas.
+308: 03-May - 10-May
+309: System Development
+310: Write optimized code blocks, configure the edge scripts, and integrate data backend pipelines.
+311: Compiled modular code suites and working DB triggers.
+312: 10-May - 24-May
+313: System Testing
+314: Execute unit and integration tests across daytime and nocturnal conditions.
+315: Documented test cases with exact success-fail inputs.
+316: 10-May - 24-May
+317: Operational Evaluation
+318: Conduct final system discussions, accuracy checks, and performance optimizations.
+319: Verified alert takeovers and PDF delivery engine.
+320: 24-May - 07-June
+321: Documentation
+322: Compile the final project report chapters according to university formatting handbooks.
+323: Completed Final Report and system user manual.
+324: 10-May - 07-June
+325: Final Presentation
+326: Prepare visual presentation assets and present system capabilities for final assessment.
+327: Evaluated presentation deck and operational project demo.
+328: 14-June - 22-June
+329: Figure 2.4: Project Gantt Chart Timeline Layout
+330: Conclusion
+331: In conclusion, Chapter 2 has established the academic and theoretical foundations for the DrowsySync system by reviewing relevant literature and justifying the development methodology. A critical analysis of existing systems highlighted key limitations in localized edge audio processing and performance drop edge cases. These challenges support the selection of an Agile prototyping methodology to build a decoupled multi-device framework. With software and hardware requirements clearly defined, the report next proceeds to Chapter 3, which will present the functional analysis of the system architecture and specify user requirements.
+332: ANALYSIS
+333: Introduction
+334: Chapter 3 details the comprehensive analysis phase of the software engineering life cycle for the DrowsySync platform. The primary objective of this phase is to establish a clear, structured understanding of the structural deficiencies within existing in-vehicle driver monitoring scenarios and translate those findings into explicit system requirements.
+335: This chapter is organized into two primary divisions: problem analysis and requirement analysis. The problem analysis sub-section investigates the operational "As-Is" environment of transport operators and breaks down the core technical, ecological, and thread-scheduling issues that cause existing warning setups to fail.
+336: Subsequently, the requirement analysis section details the necessary data, functional, non-functional, and operational requirements of the proposed "To-Be" system architecture. This provides a structured blueprint to ensure the final implementation delivers real-time performance without resource conflicts.
+337: Problem Analysis
+338: The "As-Is" operational environment of long-haul transport logistics and private highway transit relies on direct manual observation or siloed, local warning devices. When a driver embarks on an extended expressway trip, cognitive fatigue builds progressively, with a significant drop in awareness occurring after 4 hours and 22 minutes of continuous driving. Under the current scenario, there is no active central link to capture behavioral fatigue updates or sync localized road events with a secure data center.
+339: If a driver encounters a sudden microsleep episode, traditional in-vehicle setups attempt to execute video parsing and local audio warning scripts concurrently on a single dashboard device. Under continuous image-processing load, this single-device configuration experiences significant resource throttling. The local Python multi-threaded audio processes (such as pygame or standard hardware aplay loops) frequently encounter driver-level thread blockages and audio-codec crashes. This issues can mute critical warning chimes precisely when a driver closes their eyes.
+340: Figure 3.1: As-Is System Sequence Diagram Showing Local Thread Failures
+341: This structural analysis supports the problem statement defined in Chapter 1. To ensure maximum clarity for project evaluation, the multi-dimensional bottlenecks identified in the current system environment are broken down into specific problem categories in Table 3.1:
+342: Table 3.1: Detailed Breakdowns of System Environment Limitations
+343: ID
+344: Problem Category
+345: Technical Description & Consequences
+346: P1.1
+347: Processing Co-dependency
+348: Executing image frame capture, high-density landmark mapping, and local alert scripts on a single edge microcomputer leads to severe CPU throttling and high processing latency.
+349: P1.2
+350: Core Audio Thread Lockups
+351: Multi-threaded Python sound playback libraries drop connections and crash under long processing loads, leaving the vehicle cockpit without active warning alarms.
+352: P1.3
+353: Visual Environmental Drops
+354: Vision-only frameworks face a tracking accuracy drop of up to 17% in unlit cabins when operators wear prescription glasses due to infrared lens flare anomalies.
+355: P1.4
+356: Isolated Fleet Telemetry
+357: Live fatigue events are not securely archived or synchronized across a central broker, which prevents safety managers from identifying long-term operator fatigue patterns.
+358: Requirement Analysis
+359: Data Requirement
+360: The DrowsySync system features a multi-tiered data architecture designed to ingest raw environmental data at the edge, transform it into operational state indicators, persist it in a cloud-based storage system, and output it in consolidated analytical formats. This lifecycle is structured across three primary data layers:
+361: Input Data Layer: Handles high-volume, transient spatial-temporal structures captured by the vision sensor. This includes raw frame streams downscaled at the edge, facial landmark coordinates extracted locally via the MediaPipe model, and identifier strings like vehicle registration numbers.
+362: Internal Database Layer: Formulates the persistent, structured representations of driving sessions, driver identities, and telemetry aggregates. Managed on a MongoDB Atlas instance, this layer stores user records, relational vehicle ownership configurations, verification structures, and time-stamped fatigue logs. These logs map raw metrics such as the Eye Aspect Ratio (EAR), Mouth Aspect Ratio (MAR), and rolling Percent of Eye Closure (PERCLOS) to categorized fatigue levels (Stage 0 to 3).
+363: Output Data Layer: Manages outbound communications, alert payloads, and analytical documentation. This includes JSON payloads sent during active monitoring, generated charting assets, and PDF reports sent via email.
+364: The complete data requirements for the DrowsySync system are detailed in Table 3.1.
+365: Table 3.2: Data Requirements Matrix
+366: Data Dimension
+367: Attribute Name
+368: Data Type
+369: Operational Description
+370: Input Data Layer
+371: frame_stream
+372: Binary Stream (Matrix)
+373: Real-time raw image matrices captured at 320x240 resolution from the RPI-3.6MM-5MIRCAM vision sensor on the Raspberry Pi client.
+374: landmark_coords
+375: Float Array (468 $\times$ 3)
+376: Spatial coordinate vectors ($x, y, z$) generated by the MediaPipe Face Mesh model representing facial geometry.
+377: car_plate_key
+378: String
+379: Unique alpha-numeric vehicle registration plate identifier (e.g., "DDH4321") entered by the driver to register and associate telemetry streams.
+380: Internal Database Layer
+381: _id
+382: ObjectId
+383: MongoDB unique 12-byte identifier automatically generated for indexing records.
+384: userId
+385: ObjectId (Ref)
+386: Relational reference pointing to the unique ID of the driver in the User collection.
+387: vehicleId
+388: String
+389: Indexed alphanumeric representation of the vehicle registration plate associated with the session.
+390: stage
+391: Integer
+392: Categorized fatigue severity index mapping integer values from 0 (Normal), 1 (Early Fatigue), 2 (Active Drowsiness), to 3 (Critical Microsleep).
+393: status
+394: String
+395: Textual status label matching the fatigue stage (e.g., "NORMAL", "STAGE 1", "STAGE 2", "STAGE 3").
+396: perclos
+397: Double
+398: Percent of Eye Closure metric representing the ratio of frames where the EAR is below the designated threshold over a rolling 60-second window.
+399: ear
+400: Double
+401: Computed Eye Aspect Ratio representing the ratio of vertical eye distances to horizontal eye distances.
+402: mar
+403: Double
+404: Computed Mouth Aspect Ratio representing the ratio of vertical mouth opening distances to horizontal mouth width.
+405: recent_yawn_count
+406: Integer
+407: Rolling count of valid yawn events registered within a sliding 180-second window.
+408: microsleep_active
+409: Boolean
+410: Binary flag indicating if continuous eye closure has exceeded the 5.0-second threshold.
+411: stage3_latched
+412: Boolean
+413: State flag indicating whether the system is locked in a Stage 3 alarm state, requiring a manual recovery loop.
+414: timestamp
+415: Long
+416: Unix epoch millisecond timestamp representing when the telemetry log was recorded.
+417: isCurrentlyDriving
+418: Boolean
+419: Status flag indicating if the driver has started a driving session on the mobile app, controlling the active monitoring cycle.
+420: sessionActive
+421: Boolean
+422: Server-controlled flag used by the Raspberry Pi script during polling to transition between STANDBY and MONITORING.
+423: Output Data Layer
+424: live_status_payload
+425: JSON Object
+426: Operational telemetry structure dispatched from the Raspberry Pi to the /api/logs backend endpoint via HTTP POST.
+427: weekly_chart_paths
+428: String Array
+429: Dynamic vector line commands and bounding rectangle definitions used to construct aggregate charts in the PDF generation pipeline.
+430: email_pdf_report
+431: PDF / Base64 Binary
+432: Compiled report document containing driver performance metrics, monthly aggregates, and visual weekly charts, dispatched via SMTP.
+433: Functional Requirements
+434: The functional architecture of DrowsySync is distributed across three physical tiers: the Edge Client (Raspberry Pi), the Cloud Backend (Node.js/Express), and the Mobile Application (Kotlin Android).
+435: Edge Client: Captures environmental feeds, runs localized computer vision inference, calculates fatigue metrics, and dispatches telemetry logs to the backend.
+436: Cloud Backend: Routes telemetry data to persistent storage, manages session states, and handles weekly aggregations, PDF reporting, and automated email dispatching.
+437: Mobile Application: Runs a background service to poll the backend, broadcasts updates to the dashboard, and takes over the user interface with high-volume alarms during critical events.
+438: The functional requirements for each tier are detailed in Table 3.2.
+439: Table 3.3: Functional Requirements Matrix
+440: FR ID
+441: Functional Module
+442: Operational Requirement Description
+443: Edge Client
+444: (Raspberry Pi)
+445: FR1.1
+446: Frame Resolution Scaling
+447: The edge system must downscale raw camera input frames to a fixed 320x240 resolution at capture time to minimize memory utilization and processing latency on the CPU.
+448: FR1.2
+449: Frame-Skipping Pipeline
+450: The system must implement a frame-skipping mechanism controlled by FRAME_SKIP = 2, executing full MediaPipe facial inference only on every second frame and holding the calculated state during skipped frames to conserve processing cycles.
+451: FR1.3
+452: MediaPipe Optimization
+453: The edge script must initialize the MediaPipe Face Mesh model with refine_landmarks=False to disable detailed iris tracking, reducing the edge client's RAM usage by approximately 30MB.
+454: FR1.4
+455: EAR Extraction
+456: The edge script must continuously compute the Eye Aspect Ratio (EAR) for both eyes using vertical-to-horizontal landmark distance matrices.
+457: FR1.5
+458: MAR Extraction
+459: The edge script must compute the Mouth Aspect Ratio (MAR) across three coordinate pairs to assess vertical mouth opening against horizontal width.
+460: FR1.6
+461: Multi-Feature Fatigue Classification
+462: The system must evaluate driver fatigue levels on a scale from 0 to 3 by combining a 60-second rolling PERCLOS window, a 3-minute sliding yawn frequency window, and continuous eye-closure durations.
+463: FR1.7
+464: Asynchronous Telemetry Dispatch
+465: The client must execute non-blocking HTTP POST requests to send telemetry payloads to the backend /api/logs endpoint only when a state transition is detected, minimizing network traffic.
+466: Cloud Backend
+467: (Node.js/Express)
+468: FR2.1
+469: Multi-Tenant Data Routing
+470: The backend must parse incoming HTTP requests and route telemetry data to the appropriate MongoDB Atlas collection based on the vehicleId parameter.
+471: FR2.2
+472: Active Session Control
+473: The backend must maintain user driving session states and update database flags like sessionActive to synchronize the edge client's monitoring loops.
+474: FR2.3
+475: Weekly Aggregation Engine
+476: The backend must aggregate fatigue events chronologically into weekly bins (Days 1–7, 8–14, 15–21, 22–31) to compile monthly reporting data.
+477: FR2.4
+478: PDF Vector Charting
+479: The server must compile a PDF report using a vector-drawing engine (PDFKit) to construct and color-code weekly bar charts based on historical warning and critical events.
+480: FR2.5
+481: Automated Report Dispatch
+482: The backend must convert generated PDF reports into Base64 formats and send them to the driver's registered email using the Brevo Web API.
+483: Mobile App
+484: (Kotlin Android)
+485: FR3.1
+486: Foreground Polling Service
+487: The app must run a persistent Android Foreground Service (DrowsySyncBackgroundService) that polls the backend /api/logs/latest endpoint at a 1.5-second interval.
+488: FR3.2
+489: Metric Broadcast
+490: The background service must broadcast real-time metrics (UPDATE_METRICS) to update the active dashboard interface without blocking execution.
+491: FR3.3
+492: Stage Transition Manager
+493: The app must monitor incoming logs and initiate state-specific alerts on the mobile interface when changes in the fatigue stage are detected.
+494: FR3.4
+495: Stage 2 Visual & Audio Overlay
+496: The app must launch SymptomAlertActivity during Stage 2 events, displaying a semi-transparent warning overlay with a countdown timer and a looping alarm sound.
+497: FR3.5
+498: Stage 3 Lockscreen Takeover
+499: The app must launch MicrosleepAlertActivity during Stage 3 events, using overlay window tokens and flags to bypass keyguards and play a high-volume siren.
+500: FR3.6
+501: Manual Alert Dismissal
+502: The alert interfaces must provide a dismiss button ("Dismiss / I'm Awake") that sends a reset request to /api/users/dismiss-alarm to clear the alarm state.
+503: Non_Functional Requirements
+504: Non-functional requirements specify the operational constraints, performance targets, and reliability thresholds of the DrowsySync system. These constraints ensure the application remains stable and usable under real-world driving conditions, including varying network connectivity and low-light environments.
+505: The non-functional requirements for the system are outlined in Table 3.3.
+506: Table 3.4: Non-functional Requirements Matrix
+507: NFR ID
+508: Quality Attribute
+509: Target Constraint Metric & Requirement Specification
+510: NFR1
+511: Edge Processing Throughput
+512: The edge client must maintain a processing speed of at least 20 Frames Per Second (FPS) on a Raspberry Pi 3 (1GB RAM) during active monitoring. This performance level is achieved by downscaling camera inputs to 320x240, using a frame skip of 2, and disabling iris tracking to keep CPU utilization within safe operating limits.
+513: NFR2
+514: Pipeline Latency
+515: The end-to-end latency—from the moment the camera detects a fatigue transition to when the Android app initiates the corresponding alert—must remain under 200ms in standard network conditions. This includes image processing, network transmission, backend database indexing, and mobile application polling.
+516: NFR3
+517: Mobile Resource Efficiency
+518: The mobile background polling service must limit network requests to a 1.5-second interval. This frequency balances the need for timely alerts with battery preservation, preventing thermal throttling and excessive resource drain on the driver's phone.
+519: NFR4
+520: System Uptime & Availability
+521: The cloud backend APIs and database services must maintain a 99.9% uptime baseline. This availability ensures reliable monitoring for commercial drivers and logistics operators during long-haul, cross-state shifts.
+522: NFR5
+523: Environmental & Hardware Robustness
+524: The edge client must maintain detection accuracy in low-light conditions. While drivers wearing glasses in dark cabins can experience a drop in landmark tracking accuracy of up to 17%, the system must mitigate this by cross-referencing EAR measurements with a rolling 3-minute yawn frequency window to maintain classification reliability.
+525: Others Requirement
+526: Operating the multi-tier platform requires specific software frameworks, developer utilities, and hardware layers. These components are selected to meet the processing constraints of the system:
+527: Software Requirements & Rationale:
+528: Python 3.10 Runtime Environment: Required to run the embedded vision scripts and facial analysis modules on the edge client.
+529: Google MediaPipe Face Mesh SDK: Selected to track the 468 3D coordinate points needed to compute aspect ratios, as it provides a stable alternative to jitter-prone 68-point Dlib models.
+530: Node.js LTS (v20.x) & Express.js Framework: Selected to build an asynchronous, high-throughput backend broker capable of handling multiple concurrent requests using JavaScript.
+531: MongoDB Atlas Cloud Clusters: Selected as the central database to manage driver log documents and support scalable data archiving.
+532: Android Studio Hedgehog IDE & Kotlin SDK (API 29+): Required to develop and compile the native Android foreground tracking application.
+533: Brevo Mail Delivery API Integration: Applied to automate monthly analytical report dispatching directly to users.
+534: Hardware Requirements & Rationale:
+535: Raspberry Pi 4 Model B Controller: Deployed as the in-cab processing unit to execute video capture and calculate tracking metrics locally.
+536: RPI-3.6MM-5MIRCAM Infrared Module: An OV5647 5MP hardware night-vision camera featuring a 3.6mm adjustable focus lens, ribbon-connected to the Pi via the CSI interface. This specific sensor configuration provides the hardware-level low latency and night-vision capabilities needed for dark cabin environments.
+537: Android Smartphone (Android 10.0+): Acts as the primary driver alert interface, running foreground service listeners to display warning chimes and sirens.
+538: Conclusion
+539: In conclusion, Chapter 3 has detailed the comprehensive analysis phase for the DrowsySync system in accordance with university software development tracks. By evaluating the operational limits of current Single-Board configurations and auditing edge audio failure rates, a clear requirement has been established for a decoupled multi-device architecture. The definition of data, functional, non-functional, and operational requirements provides a clear framework to guide system design. With the requirement matrices fully defined, the report next proceeds to Chapter 4, which will outline the high-level architecture diagrams, database collection design, and code program specifications.
+540: DESIGN
+541: Introduction
+542: Chapter 4 describes the detailed design phase of the software engineering life cycle for the DrowsySync platform. The primary objective of this phase is to translate the functional and non-functional requirements established in Chapter 3 into concrete, structured software and hardware system architecture blueprints. By defining the structural and operational frameworks of the application before deployment, this chapter ensures that the resulting distributed system executes reliably across all hardware tiers without resource conflicts.
+543: This chapter is organized systematically into three main design divisions: High-Level Design, Database Design, and Detailed Design. The High-Level Design section illustrates the overall structural view of the system components and interactions across a three-tier architecture (Raspberry Pi client, Node.js cloud server, and native Android application) while specifying the user interface layouts, screen navigation flows, and input/output parameters. Next, the Database Design section details the entity-relationship structures, document collection models, data dictionaries, and target collection rules managed within the cloud data store. Finally, the Detailed Design section breaks down the system components into explicit object class specifications, program logic definitions, and relational operations biased toward the chosen implementation languages.
+544: High Level Design
+545: System Architecture
+546: The structural architecture of the DrowsySync platform is designed as a decoupled, multi-tier distributed architecture to isolate intensive image processing tasks from real-time alert delivery mechanisms. Rather than relying on a monolithic system configuration or localized multi-threaded audio scripts that are vulnerable to runtime thread lockups, the system splits responsibilities cleanly across three independent hardware and software layers:
+547: The Embedded Vision Client Layer (Edge Tier): Composed of a vehicle-mounted Raspberry Pi microcomputer connected to the high-speed RPI-3.6MM-5MIRCAM night-vision infrared camera module via the dedicated low-overhead CSI ribbon interface. This layer is responsible for continuous image frame acquisition, low-overhead facial mesh landmark tracking, math threshold scaling, and dispatching state change notifications asynchronously via HTTP REST requests.
+548: The Data Broker Microservice Layer (Cloud Backend Tier): Deployed using an asynchronous Node.js execution runtime running an Express microservice network connected to a cloud-hosted MongoDB Atlas database cluster. This centralized tier handles multi-tenant data routing by car plate indexes, tracks active driving session logs, manages historical records, and compiles analytical summary reports.
+549: The Foreground Intervention Layer (Mobile Frontend Tier): Developed as a native Android application package (.apk) written in Kotlin and installed on the user's mobile device. This application executes a persistent background foreground service that polls the server data broker continuously to wake low-level device components and handle full-screen overlay takeovers during critical alerts.
+550: To visualize the complete dynamic data routing paths and dynamic structural view of these interacting tiers, the following PlantUML block provides a clean system architecture model that can be inserted into your design tools to render your high-level class and component configurations:
+551: Figure 4.1: Multi-Tier Distributed Closed-Loop System Architecture Blueprint
+552: The dynamic runtime flow within this architecture follows a strict closed-loop safety structure. The embedded client maintains a fast frame rate (>20 FPS) by processing alternate frames (FRAME_SKIP = 2) and using a text-only Head-Up Display (HUD). This structure keeps local processing fast and ensures that whenever a driver's face metrics drop across a threshold box, a data sync payload is sent immediately to the central cloud gateway. Because the edge device has zero physical audio dependencies, it avoids thread lockups, offloading the alarm execution loop entirely to the Android foreground layer.
+553: User Interface Design
+554: (a) Navigation Design
+555: The DrowsySync system employs a hierarchical navigation structure designed to manage user flows across the native Android mobile app, the cloud backend service, and the edge-processing Raspberry Pi client. The mobile application forms the user-facing interface, guiding drivers through user onboarding, active session control, historical data reviews, and safety alerts.
+556: Types of Navigation Controls
+557: BottomNavigationView Tabs: Anchors the main layout of MainActivity, allowing users to switch between the home monitor tab, the historical logs list, and user profile management.
+558: Action Buttons: Floating action buttons and standard button controls (btnStartMonitoring, btnStopMonitoring) that trigger REST API requests to toggle active driving states.
+559: Interrupt-Driven Modals: Screens (SymptomAlertActivity and MicrosleepAlertActivity) that lock active navigation layouts when background polling thread operations detect safety events. The driver cannot navigate away from these alerts until they complete the required touch-hold confirmation control.
+560: Login :                             Main Page :                     Dark Mode:
+561: Start Monitoring :                History and Log :            Email pdf :
+562: Edit Profile :                      Release Vehicle :                   Register :
+563: Figure 4.2: Mobile Application Navigation Flow
+564: (b) Input Design
+565: Inputs in the DrowsySync mobile application are designed to collect user credentials, vehicle identification numbers, and contact details. Text entry inputs, numeric phone fields, and date/time selection boxes are structured to validate data before it is transmitted to the cloud backend.
+566: Table 4.6 outlines the input screens, data types, and corresponding validation rules implemented within the system.
+567: Table 4.1: Input Design and Validation Matrix
+568: Screen Name
+569: Input Field
+570: Control Type
+571: Data Type
+572: Validation Rules & Logical Constraints
+573: LoginActivity
+574: Email Address
+575: Text Field
+576: String
+577: Must not be empty. Must match standard email formatting: ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$.
+578: Password
+579: Text (Hidden)
+580: String
+581: Must not be empty. Minimum length of 8 characters.
+582: Vehicle ID
+583: Text Field
+584: String
+585: Must not be empty. Alphanumeric, spaces stripped.
+586: RegistrationActivity
+587: Full Name
+588: Text Field
+589: String
+590: Must not be empty. Maximum length of 100 characters. Letters and spaces only.
+591: Email Address
+592: Text Field
+593: String
+594: Must not be empty. Must be unique in the database.
+595: Password
+596: Text (Hidden)
+597: String
+598: Minimum 8 characters. Must contain at least one digit and one uppercase letter.
+599: Vehicle ID
+600: Text Field
+601: String
+602: Must match the validation pattern: ^[A-Z0-9]{3,10}$ (alphanumeric, spaces stripped, prevents NoSQL injection attacks).
+603: Phone Number
+604: Number Field
+605: String
+606: Must be numeric. Length must be between 9 and 12 characters.
+607: License Serial
+608: Text Field
+609: String
+610: Must not be empty. Fixed alphanumeric format.
+611: Emergency Name
+612: Text Field
+613: String
+614: Letters and spaces only. Must not be empty.
+615: Emergency Phone
+616: Number Field
+617: String
+618: Must be numeric. Must not match the driver's own phone number.
+619: EmailVerificationActivity
+620: Verification Code
+621: Text Field
+622: String
+623: Fixed length of 6 characters. Alphanumeric.
+624: ChangeOwnerActivity
+625: Driver Password
+626: Text (Hidden)
+627: String
+628: Re-verification parameter. Must match the current user password.
+629: EditProfileActivity
+630: Updated Email
+631: Text Field
+632: String
+633: Must match standard email format.
+634: Updated Phone
+635: Number Field
+636: String
+637: Must be numeric. Must match standard phone formats.
+638: HistoryActivity
+639: Select Year
+640: Dropdown Box
+641: Integer
+642: Selected value must fall within the range [2024, Current Year].
+643: Select Month
+644: Dropdown Box
+645: Integer
+646: Selected value must fall within the range [1, 12].
+647: (c) Output Design
+648: Outputs in the DrowsySync system are categorized by their delivery method and generation schedule (continuous, ad-hoc, or periodic):
+649: Continuous Dashboard Outputs (Real-Time):
+650: Metrics Visualizer: Radial gauges displaying rolling PERCLOS percentages, Eye Aspect Ratio (EAR), and Mouth Aspect Ratio (MAR) values. Updated at a 1.5-second interval via UI broadcasts.
+651: Stage Indicator: Displays the current driver state using color-coded alerts (Green for normal, Orange for Stage 2, Red for Stage 3).
+652: Ad-hoc Outputs:
+653: Driver History Log: A list of chronological fatigue events displayed within the app. It queries records for the logged-in user, detailing the exact times, calculated metrics, and severity of past alerts.
+654: Summary Indicators: Aggregate counts showing total warnings and critical events registered "Today" and "This Week" on the main dashboard.
+655: Periodic Outputs:
+656: Monthly Analytical Report (PDF): Generated on-demand or at the end of the month. The report compiles aggregate driving safety metrics and includes a custom vector bar chart of weekly alert distributions.
+657: Email Summaries: Dispatched to the driver's inbox via the Brevo Web API. These emails summarize key safety metrics and include the monthly analytical PDF as an attachment.
+658: Database Design
+659: Conceptual and Logical Database Design
+660: A database schema design defines the structural boundaries of persistent records within a software application. The DrowsySync system uses MongoDB Atlas, a document-oriented database. Even within a NoSQL architecture, mapping relationships is critical to prevent data duplication, enforce validation rules, and establish logical links across data layers.
+661: Figure 4.3: Entity Relationship Diagram (ERD)
+662: Business Rules Applying to ERD Relationships
+663: Driver-to-Vehicle Ownership (1:1): A driver can own at most one active vehicle registration plate index. The association is enforced via the driver_id reference in the VEHICLES entity, with a unique index constraint preventing duplicate active assignments.
+664: Vehicle-to-Session Generation (1:N): A registered vehicle generates zero or more driving telemetry sessions over its lifecycle. The relationship is maintained by referencing the unique car_plate_key in the SESSIONS entity.
+665: Session-to-Log Embedding (1:N): A session documents multiple chronological checks. To speed up real-time queries, these checks are embedded directly in the SESSIONS document within the session_logs array.
+666: Driver-to-Monthly-Analytics (1:N): A driver profile receives monthly reports compiled at the end of each month. This relationship is managed using the driver_id foreign reference in the ANALYTICS collection.
+667: Database Data Dictionary
+668: The data storage system for DrowsySync is managed on MongoDB Atlas, a document-oriented database. The tables below outline the physical schemas, key constraints, validation rules, and indexing designs for each collection.
+669: 1. Drivers Collection
+670: This collection stores driver account credentials, contact information, and account status flags.
+671: Table 4.2: Drivers Collection Data Dictionary
+672: Field Name
+673: Data Type
+674: Key Type
+675: Validation / Constraints
+676: Operational Description
+677: _id
+678: ObjectId
+679: PK
+680: Unique, Required
+681: Unique 12-byte BSON identifier representing the driver document.
+682: driver_name
+683: String
+684: None
+685: Required, Max Length 100
+686: Full alphanumeric name of the registered driver.
+687: email_address
+688: String
+689: None
+690: Required, Unique Index, Email Regex
+691: Unique email address used as the primary login credential.
+692: password_hash
+693: String
+694: None
+695: Required, Salted and Hashed
+696: Encrypted representation of the user password.
+697: registration_date
+698: Date
+699: None
+700: Required, Default: Date.now
+701: Timestamp indicating when the driver account was created.
+702: 2. Vehicles Collection
+703: This collection maps vehicle registration plates to driver profiles and enforces vehicle ownership limits.
+704: Table 4.3: Vehicles Collection Data Dictionary
+705: Field Name
+706: Data Type
+707: Key Type
+708: Validation / Constraints
+709: Operational Description
+710: _id
+711: ObjectId
+712: PK
+713: Unique, Required
+714: Unique 12-byte BSON identifier representing the vehicle document.
+715: car_plate_key
+716: String
+717: None
+718: Required, Unique Index
+719: Alphanumeric plate registration identifier (e.g., "DDH4321").
+720: driver_id
+721: ObjectId
+722: FK
+723: Reference to Drivers._id
+724: Associates the vehicle with a registered driver.
+725: vehicle_model
+726: String
+727: None
+728: Default: ""
+729: Manufacturer and model description of the vehicle.
+730: manufacturing_year
+731: Number
+732: None
+733: Range: [1900, Current Year]
+734: The manufacturing year of the registered vehicle.
+735: 3. Sessions Collection
+736: This collection tracks driver monitoring sessions and contains nested arrays of real-time telemetry calculations.
+737: Table 4.4: Sessions Collection Data Dictionary
+738: Field Name
+739: Data Type
+740: Key Type
+741: Validation / Constraints
+742: Operational Description
+743: _id
+744: ObjectId
+745: PK
+746: Unique, Required
+747: Unique 12-byte BSON identifier representing the session document.
+748: car_plate_key
+749: String
+750: FK
+751: Reference to Vehicles.car_plate_key
+752: Associates the session with a registered vehicle.
+753: session_start
+754: Date
+755: None
+756: Required, Default: Date.now
+757: Start timestamp of the active driving session.
+758: session_end
+759: Date
+760: None
+761: Nullable
+762: End timestamp of the driving session when closed.
+763: active_status
+764: Boolean
+765: None
+766: Required, Default: true
+767: Indicates if the driving session is currently running.
+768: session_logs
+769: Array
+770: None
+771: Array of Embedded Documents
+772: Nested array of chronological log entries captured during the session.
+773: Sub-documents inside session_logs Array
+774: Nested Field
+775: Data Type
+776: Key Type
+777: Validation / Constraints
+778: Operational Description
+779: timestamps
+780: Number
+781: None
+782: Required, Int64
+783: Unix epoch millisecond timestamp representing when the log was generated.
+784: fatigue_stage
+785: Number
+786: None
+787: Range: [0, 3]
+788: Calculated fatigue stage severity (0 to 3).
+789: perclos_metric
+790: Double
+791: None
+792: Range: [0.0, 100.0]
+793: Percent of Eye Closure ratio calculated over the 60-second window.
+794: 4. Analytics Collection
+795: This collection stores compiled monthly driving statistics and base64-encoded PDF report files.
+796: Table 4.5: Analytics Collection Data Dictionary
+797: Field Name
+798: Data Type
+799: Key Type
+800: Validation / Constraints
+801: Operational Description
+802: _id
+803: ObjectId
+804: PK
+805: Unique, Required
+806: Unique 12-byte BSON identifier representing the analytics document.
+807: driver_id
+808: ObjectId
+809: FK
+810: Reference to Drivers._id
+811: Links the monthly report data to a driver profile.
+812: reporting_month
+813: String
+814: None
+815: Required, Format: YYYY-MM
+816: The target month and year of the report.
+817: compiled_date
+818: Date
+819: None
+820: Required, Default: Date.now
+821: Date and time when the analytical report was generated.
+822: warning_count
+823: Number
+824: None
+825: Required, Range: >=0
+826: Total warnings (Stage 1 and 2) recorded in the month.
+827: critical_count
+828: Number
+829: None
+830: Required, Range: >=0
+831: Total critical alerts (Stage 3) recorded in the month.
+832: pdf_binary_blob
+833: Binary
+834: None
+835: Required, BSON BinData
+836: The binary representation of the compiled PDF report file.
+837: Normalization
+838: To optimize performance for real-time telemetry writes, the database design uses a semi-normalized structure.
+839: 1st Normal Form (1NF): All collections structure data in atomic fields, removing repeating groups and multi-valued properties.
+840: 2nd Normal Form (2NF): Non-key fields in each collection depend entirely on their primary keys. For example, driver registration metadata depends on User._id, and telemetry depends on FatigueLog._id.
+841: 3rd Normal Form (3NF): Transitive dependencies are removed. Vehicle ownership fields like isActive and activatedAt are moved to the VehicleOwnership collection, separating them from user profile attributes in the User collection.
+842: NoSQL Balancing: Real-time write operations occur at a high frequency (often sub-200ms during alert transitions). To prevent document growth limits in MongoDB, fatigue logs are saved as independent documents in the FatigueLogs collection rather than being nested directly in user profiles. This split keeps read and write performance stable as driving history accumulates.
+843: Detailed Design
+844: The DrowsySync system functions through a continuous, closed-loop telemetry and alerting cycle. The system sequence runs as follows:
+845: Edge Acquisition & Calculation: The Raspberry Pi client downscales the video input and processes alternate frames using MediaPipe. It continuously calculates the EAR, MAR, and rolling PERCLOS percentages.
+846: State Transition Logging: When the calculated fatigue level transitions between stages, the client makes an asynchronous HTTP POST request to the cloud backend.
+847: Database Routing: The backend Express API processes the payload, maps the event to the driver's record, and indexes the log entry in MongoDB Atlas.
+848: Foreground Polling: The Android application runs a foreground service that polls the backend API at a 1.5-second interval. It retrieves the latest fatigue stage and broadcasts these metrics to update the dashboard.
+849: UI Interrupts: If the polled stage is evaluated as Stage 2 or Stage 3, the foreground service displays the appropriate alert overlay activity, overriding standard navigation and triggering auditory alerts.
+850: Software Design
+851: This section outlines the class designs, responsibilities, attributes, and methods of the core components in the DrowsySync system.
+852: 1. Class: DrowsySyncBackgroundService (Kotlin, Android Foreground Service)
+853: Responsibility: Runs as a persistent foreground service on the mobile device. It polls the backend API every 1.5 seconds, updates dashboard views, and handles alerts based on the driver's fatigue stage.
+854: Attributes:
+855: POLL_INTERVAL_MS: Long = 1500
+856: serviceScope: CoroutineScope
+857: pollingJob: Job
+858: lastAlertedStage: Int
+859: initialLogId: String
+860: hasCapturedInitialLog: Boolean
+861: Methods:
+862: onStartCommand(intent: Intent, flags: Int, startId: Int): Int
+863: Responsibility: Initializes the service, promotes it to the foreground with an active status notification, and starts the polling loop.
+864: Pre-condition: App must possess FOREGROUND_SERVICE and FOREGROUND_SERVICE_DATA_SYNC permissions.
+865: Post-condition: The service is registered in the foreground and the polling thread is active.
+866: Algorithm:
+867: kotlin
+868: 1. startForeground(NOTIF_ID_PERSISTENT, buildPersistentNotification())
+869: 2. startPolling()
+870: 3. return START_STICKY
+871: 4.
+872: startPolling(): Unit
+873: Responsibility: Launches a recurring coroutine on the IO dispatcher to poll the server.
+874: Algorithm:
+875: kotlin
+876: 1. pollingJob = serviceScope.launch {
+877: 2.     while (isActive) {
+878: 3.         fetchAndHandleLatestLog()
+879: 4.         delay(POLL_INTERVAL_MS)
+880: 5.     }
+881: 6. }
+882: fetchAndHandleLatestLog(): Unit
+883: Responsibility: Requests the latest telemetry log for the current vehicle plate from the backend, broadcasts dashboard updates, and triggers alerts on stage changes.
+884: Algorithm:
+885: kotlin
+886: 1. val response = RetrofitClient.instance.getLatestVehicleLog(vehicleId)
+887: 2. if (response.isSuccessful && response.body() != null) {
+888: 3.     val latest = response.body()!!
+889: 4.     if (!hasCapturedInitialLog) {
+890: 5.         initialLogId = latest.id
+891: 6.         hasCapturedInitialLog = true
+892: 7.         return
+893: 8.     }
+894: 9.     if (latest.id == initialLogId) return
+895: 10.
+896: 11.     broadcastMetrics(latest)
+897: 12.     handleStageChange(latest)
+898: 13. }
+899: 14.
+900: handleStageChange(log: FatigueLogResponse): Unit
+901: Responsibility: Compares the retrieved stage with lastAlertedStage and launches alert overlays on transition changes.
+902: Algorithm:
+903: kotlin
+904: 1. if (log.stage == lastAlertedStage) return
+905: 2. lastAlertedStage = log.stage
+906: 3. when (log.stage) {
+907: 4.     0, 1 -> cancelAlertNotification()
+908: 5.     2 -> launchSymptomAlertActivity(log)
+909: 6.     3 -> launchMicrosleepAlertActivity(log)
+910: 7. }
+911: 8.
+912: 2. Class: DetectionState (Python, Edge State Machine)
+913: Responsibility: Processes frame-by-frame data on the Raspberry Pi. It calculates EAR, MAR, and rolling PERCLOS percentages, evaluates fatigue stages, and manages yawn durations.
+914: Attributes:
+915: _eye_history: Deque[int] (max size: 1200)
+916: _eye_closed_sum: Int
+917: _eye_closed_since: Optional[Float]
+918: microsleep_active: Boolean
+919: _yawn_started_at: Optional[Float]
+920: _yawn_counted: Boolean
+921: _yawn_timestamps: List[Float]
+922: Methods:
+923: update(ear: Float, mar: Float, fps: Float) -> Tuple[Int, String, Float, Int, Boolean]
+924: Responsibility: Updates the rolling history registers, evaluates the current fatigue stage, and returns classification values.
+925: Pre-condition: EAR and MAR inputs must be calculated.
+926: Post-condition: State variables are updated for the current frame cycle.
+927: Algorithm:
+928: python
+929: 1. # Evaluate Eye Closure State
+930: 2. is_closed = 1 if ear < EAR_THRESHOLD else 0
+931: 3. self._eye_history.append(is_closed)
+932: 4. self._eye_closed_sum = sum(self._eye_history)
+933: 5. # Handle Continuous Close (Microsleep)
+934: 6. now = time.time()
+935: 7. if is_closed:
+936: 8.     if self._eye_closed_since is None:
+937: 9.         self._eye_closed_since = now
+938: 10.     elif (now - self._eye_closed_since) >= MICROSLEEP_SECS:
+939: 11.         self.microsleep_active = True
+940: 12. else:
+941: 13.     self._eye_closed_since = None
+942: 14.     self.microsleep_active = False
+943: 15.
+944: 16. # Calculate PERCLOS Ratio
+945: 17. perclos = (self._eye_closed_sum / len(self._eye_history)) * 100.0
+946: 18. # Handle Yawn Durations
+947: 19. if mar > MAR_THRESHOLD:
+948: 20.     if self._yawn_started_at is None:
+949: 21.         self._yawn_started_at = now
+950: 22.     elif (now - self._yawn_started_at) >= YAWN_MIN_DURATION_SECS and not self._yawn_counted:
+951: 23.         self._yawn_timestamps.append(now)
+952: 24.         self._yawn_counted = True
+953: 25. else:
+954: 26.     self._yawn_started_at = None
+955: 27.     self._yawn_counted = False
+956: 28.
+957: 29. # Clean out expired yawn stamps
+958: 30. self._yawn_timestamps = [t for t in self._yawn_timestamps if (now - t) <= YAWN_WINDOW_SECS]
+959: 31. yawn_count = len(self._yawn_timestamps)
+960: 32. # Evaluate Drowsiness Stage
+961: 33. stage = 0
+962: 34. status = "NORMAL"
+963: 35. if perclos >= PERCLOS_STAGE2_HI or self.microsleep_active:
+964: 36.     stage = 3
+965: 37.     status = "CRITICAL ALARM"
+966: 38. elif perclos >= PERCLOS_STAGE1_HI or yawn_count >= YAWN_STAGE2_COUNT:
+967: 39.     stage = 2
+968: 40.     status = "ACTIVE DROWSINESS"
+969: 41. elif perclos >= PERCLOS_STAGE1_LO or yawn_count >= YAWN_STAGE1_COUNT:
+970: 42.     stage = 1
+971: 43.     status = "EARLY FATIGUE"
+972: 44.
+973: 45. return stage, status, perclos, yawn_count, self.microsleep_active
+974: 46.
+975: Class: MicrosleepAlertActivity (Kotlin, Critical Alert Controller)
+976: Responsibility: Manages UI alerts for Stage 3 critical events. Bypasses lock screens, triggers a continuous high-volume siren, and handles manual alarm dismissals.
+977: Attributes:
+978: mediaPlayer: MediaPlayer
+979: bounceAnimator: ObjectAnimator
+980: Methods:
+981: onCreate(savedInstanceState: Bundle?): Unit
+982: Responsibility: Locks the activity layout on screen, configures hardware flags to wake the display, starts a continuous alarm sound, and plays warning animations.
+983: Algorithm:
+984: kotlin
+985: 1. setShowWhenLocked(true)
+986: 2. setTurnScreenOn(true)
+987: 3. mediaPlayer = MediaPlayer.create(this, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
+988: 4. mediaPlayer.isLooping = true
+989: 5. mediaPlayer.start()
+990: 6. startBounceAnimation()
+991: 7.
+992: btnDismiss.setOnClickListener: Unit
+993: Responsibility: Stops active alarms and sends a request to the backend to clear the alarm state.
+994: Algorithm:
+995: kotlin
+996: 1. stopAlarmSound()
+997: 2. bounceAnimator.cancel()
+998: 3. lifecycleScope.launch {
+999: 4.     RetrofitClient.instance.dismissAlarm(userId)
+1000: 5.     clearLocalMetricCache()
+1001: 6. }
+1002: 7. returnToDashboard()
+1003: 8.
+1004: Physical Database Design
+1005: The logical database model is translated into physical schemas using Mongoose definitions for MongoDB.
+1006: 1. /**
+1007: 2.  * DrowsySync Physical Database Schema Definitions (DDL)
+1008: 3.  * Target DBMS: MongoDB v6.0+ (Mongoose ODM v8.0+)
+1009: 4.  */
+1010: 5.
+1011: 6. const mongoose = require('mongoose');
+1012: 7.
+1013: 8. // ── 1. USERS COLLECTION SCHEMA ──────────────────────────────────────────────
+1014: 9. const userSchema = new mongoose.Schema({
+1015: 10.   name: { type: String, required: true, trim: true },
+1016: 11.   email: { type: String, required: true, unique: true, index: true },
+1017: 12.   phone: { type: String, default: "" },
+1018: 13.   licenseSerial: { type: String, default: "" },
+1019: 14.   emergencyName: { type: String, default: "" },
+1020: 15.   emergencyPhone: { type: String, default: "" },
+1021: 16.   password: { type: String, required: true, select: false },
+1022: 17.   isEmailVerified: { type: Boolean, default: false },
+1023: 18.   verificationCode: { type: String },
+1024: 19.   vehicleId: { type: String, default: "UTEM_LOG_862B", index: true },
+1025: 20.   isGuestModeActive: { type: Boolean, default: false },
+1026: 21.   isCurrentlyDriving: { type: Boolean, default: false },
+1027: 22.   alarmDismissed: { type: Boolean, default: false },
+1028: 23.   sessionActive: { type: Boolean, default: false },
+1029: 24.   sessionResetPending: { type: Boolean, default: false }
+1030: 25. }, { timestamps: true });
+1031: 26.
+1032: 27. // ── 2. FATIGUE LOGS COLLECTION SCHEMA ───────────────────────────────────────
+1033: 28. const fatigueLogSchema = new mongoose.Schema({
+1034: 29.   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
+1035: 30.   vehicleId: { type: String, required: true, index: true },
+1036: 31.   stage: { type: Number, required: true },
+1037: 32.   status: { type: String, required: true },
+1038: 33.   perclos: { type: Number, required: true },
+1039: 34.   ear: { type: Number, required: true },
+1040: 35.   mar: { type: Number, required: true },
+1041: 36.   recent_yawn_count: { type: Number, required: true },
+1042: 37.   microsleep_active: { type: Boolean, required: true },
+1043: 38.   stage3_latched: { type: Boolean, required: true },
+1044: 39.   timestamp: { type: Number, required: true }
+1045: 40. }, { timestamps: true });
+1046: 41.
+1047: 42. // Compound index to optimize chronological queries during PDF report generation
+1048: 43. fatigueLogSchema.index({ userId: 1, createdAt: 1 });
+1049: 44.
+1050: 45. // ── 3. VEHICLE OWNERSHIPS COLLECTION SCHEMA ─────────────────────────────────
+1051: 46. const vehicleOwnershipSchema = new mongoose.Schema({
+1052: 47.   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+1053: 48.   vehicleId: { type: String, required: true },
+1054: 49.   isActive: { type: Boolean, default: true },
+1055: 50.   activatedAt: { type: Date, default: Date.now },
+1056: 51.   deactivatedAt: { type: Date, default: null }
+1057: 52. });
+1058: 53.
+1059: 54. // Compound index to prevent concurrent driver registrations on the same vehicle plate
+1060: 55. vehicleOwnershipSchema.index({ vehicleId: 1, isActive: 1 });
+1061: 56.
+1062: 57. // ── 4. VERIFICATIONS COLLECTION SCHEMA ───────────────────────────────────────
+1063: 58. const verificationSchema = new mongoose.Schema({
+1064: 59.   email: { type: String, required: true },
+1065: 60.   vehicleId: { type: String, required: true },
+1066: 61.   name: { type: String, required: true },
+1067: 62.   phone: { type: String, default: "" },
+1068: 63.   licenseSerial: { type: String, default: "" },
+1069: 64.   emergencyName: { type: String, default: "" },
+1070: 65.   emergencyPhone: { type: String, default: "" },
+1071: 66.   password: { type: String, required: true },
+1072: 67.   code: { type: String, required: true },
+1073: 68.   createdAt: { type: Date, default: Date.now, expires: 600 } // Auto-deletes after 10 mins
+1074: 69. });
+1075: 70.
+1076: 71. // Compile Models
+1077: 72. const User = mongoose.model('User', userSchema);
+1078: 73. const FatigueLog = mongoose.model('FatigueLog', fatigueLogSchema);
+1079: 74. const VehicleOwnership = mongoose.model('VehicleOwnership', vehicleOwnershipSchema);
+1080: 75.
+1081: 76. const Verification = mongoose.model('Verification', verificationSchema);
+1082: 77.
+1083: Indexing & File Organization Design
+1084: Single Field Indexes: Configured on high-query fields like User.email to speed up authentication lookups and profile verification queries.
+1085: Compound Relational Indexes: Created on { vehicleId: 1, isActive: 1 } inside VehicleOwnership to quickly check for current ownership. This helps verify that a vehicle plate is not already claimed by another driver before starting a monitoring session.
+1086: Sorting Indexes: Built on { userId: 1, createdAt: 1 } inside FatigueLogs to optimize query performance when aggregating historical logs for dashboard summary widgets and weekly charts.
+1087: Time-To-Live (TTL) Indexes: Placed on Verification.createdAt with an expiration window of 600 seconds. MongoDB's background thread automatically removes expired records, keeping the database clear of unverified registration attempts.
+1088: Conclusion
+1089: In conclusion, Chapter 4 has successfully presented the complete detailed design specifications for the DrowsySync platform in strict compliance with the FTMK BITS Software Development track guidelines. By translating the multi-dimensional functional and non-functional requirements established in Chapter 3 into explicit system design assets, a concrete blueprint has been laid out for the finalized platform. The architectural design structures the system as a decoupled, three-tier distributed network, successfully isolating high-frequency facial landmark mesh computations on the Raspberry Pi edge client from the real-time background alert execution loops on the native Android application tier.
+1090: Furthermore, the user interface navigation design and validation rules provide low cognitive overhead for operators during highway transit, ensuring that critical overlay alerts override active mapping software to deliver immediate warnings. Simultaneously, the non-relational database design managed via cloud-hosted MongoDB Atlas collection schemas establishes a scalable data framework to handle time-stamped IoT driving logs. Finally, the documentation of explicit class specifications, attribute criteria, and language-biased algorithmic loops for both Python and Kotlin execution layers provides a clear operational framework to ensure real-time performance without resource throttling or audio-codec crashes.
+1091: IMPLEMENTATION
+1092: Overview of System Implementation
+1093: This chapter describes the technical implementation of the DrowsySync driver drowsiness detection system. The system comprises three main subsystems that operate in concert which are the Vision Client where a Python-based computer vision module running headlessly on a Raspberry Pi 3 Model B, responsible for real-time drowsiness detection, the Cloud Backend where a Node.js REST API server hosted on Render, backed by a MongoDB Atlas database and the Mobile Application where a native Android application developed in Kotlin that serves as the primary user interface and alert delivery mechanism.
+1094: The Vision Client runs entirely on the Raspberry Pi, no laptop or external PC is required. The Pi captures video from a Pi Camera Module, performs face landmark detection and drowsiness analysis, and synchronises with the cloud backend over WiFi. The driver never interacts with the Pi directly; all control is through the Android app.
+1095: Development Environment and Tools
+1096: Table 5.1: Development Tools and Technologies
+1097: Component
+1098: Technology / Tool
+1099: Version / Spec
+1100: Vision Client Hardware
+1101: Raspberry Pi 3 Model B
+1102: ARMv7, 1 GB RAM
+1103: Camera
+1104: Raspberry Pi Camera Module
+1105: V2 / V3
+1106: Camera Interface
+1107: Picamera2 (native) / OpenCV fallback
+1108: —
+1109: Vision Client OS
+1110: Raspberry Pi OS (64-bit)
+1111: Debian Bookworm
+1112: Vision Client Language
+1113: Python
+1114: 3.11
+1115: Face Landmark Detection
+1116: MediaPipe Face Mesh
+1117: ≥ 0.10.14
+1118: Image Processing
+1119: OpenCV Headless (opencv-python-headless)
+1120: ≥ 4.8.0
+1121: Numerical Computing
+1122: NumPy
+1123: ≥ 1.24.0
+1124: HTTP Communication (Python)
+1125: Requests
+1126: ≥ 2.31.0
+1127: Live Stream Server
+1128: Flask (MJPEG over HTTP)
+1129: ≥ 3.0.0
+1130: Service Management
+1131: systemd
+1132: —
+1133: Cloud Backend Runtime
+1134: Node.js
+1135: ≥ 18.0.0
+1136: Backend Framework
+1137: Express.js
+1138: 5.2.1
+1139: Object Data Modelling
+1140: Mongoose
+1141: 9.7.0
+1142: Database
+1143: MongoDB Atlas
+1144: Cloud (M0 Free Tier)
+1145: Password Hashing
+1146: bcryptjs
+1147: 3.0.3
+1148: PDF Generation
+1149: PDFKit
+1150: 0.19.1
+1151: Email Service
+1152: Brevo Transactional API
+1153: v3
+1154: Backend Hosting
+1155: Render
+1156: Cloud (Free Tier)
+1157: Mobile Platform
+1158: Android (Kotlin)
+1159: SDK 26+
+1160: Networking (Android)
+1161: Retrofit 2 + OkHttp
+1162: —
+1163: Maps
+1164: Google Maps SDK for Android
+1165: —
+1166: Location
+1167: Google Play Services (Fused Location)
+1168: —
+1169: IDE (Mobile)
+1170: Android Studio
+1171: Hedgehog
+1172: Vision Client Implementation
+1173: Architecture and Module Structure
+1174: The Vision Client (drowsiness_detector_pi.py) runs entirely on a Raspberry Pi 3 Model B in headless mode, there is no monitor or keyboard connected to the Pi during normal operation. All visual output is instead served as a live MJPEG video stream accessible via a web browser on any device connected to the same WiFi network, at http://<Pi-IP>:8080.
+1175: The Pi is mounted in the vehicle with the Camera Module aimed at the driver's face. On power-on, the systemd service manager automatically starts the Vision Client after the network interface is online. The detection algorithm runs continuously, polling the cloud backend to determine whether an active monitoring session has been started by the Android app.
+1176: The script is structured into six logical sections:
+1177: Section 1 – Configuration: All tuneable parameters (thresholds, resolution, frame skip, stream port, network URLs) are centralised for easy adjustment.
+1178: Section 2 – Metric Formulas: Pure, stateless NumPy functions for computing EAR and MAR.
+1179: Section 3 – Detection State Machine: The DetectionState class containing all temporal state and escalation logic.
+1180: Section 4 – Overlay Renderer: Pi-optimised compact text overlay drawn on frames before streaming.
+1181: Section 5 – API / Cloud Sync Hook + MJPEG Stream Server: Network communication and Flask live stream.
+1182: Section 6 – Main Loop: The top-level camera capture loop with session state machine.
+1183: Pi-Specific Performance Optimisations
+1184: The Raspberry Pi 3B has a single-core ARM CPU with significantly less processing power than a standard laptop. Four optimisations are applied to make real-time detection feasible on this hardware:
+1185: Table 5.2: Pi Performance Optimisations
+1186: Optimisation
+1187: Setting
+1188: Reason
+1189: Reduced resolution
+1190: 320 × 240 pixels
+1191: ~4× fewer pixels than 640×480; reduces MediaPipe inference time
+1192: Frame skipping
+1193: FRAME_SKIP = 2 (MediaPipe runs every 2nd frame)
+1194: Halves the number of full landmark inferences per second
+1195: Headless OpenCV
+1196: opencv-python-headless
+1197: Omits Qt/GTK display libraries, saving ~40 MB RAM
+1198: Disabled iris tracking
+1199: refine_landmarks=False
+1200: Saves ~30 MB RAM; iris landmarks are not needed for EAR/MAR
+1201: Buffer flush
+1202: CAP_PROP_BUFFERSIZE = 1
+1203: Prevents stale-frame accumulation when detection is slower than capture
+1204: Pre-allocated array
+1205: lm_px = np.zeros((468, 2), dtype=np.int32)
+1206: Zero heap allocation in the hot processing loop
+1207: Camera Initialisation
+1208: The Vision Client supports two camera interfaces with automatic fallback:
+1209: Primary: Picamera2 (native)
+1210: Picamera2 is the recommended interface for Raspberry Pi Camera Modules on Raspberry Pi OS. It is initialised with a 320×240 RGB888 preview configuration:
+1211: python
+1212: 1. picam = Picamera2()
+1213: 2.             config = picam.create_preview_configuration(main={"size": (FRAME_WIDTH, FRAME_HEIGHT), "format": "RGB888"})
+1214: 3. picam.configure(config)
+1215: 4. picam.start()
+1216: Fallback: OpenCV VideoCapture
+1217: If picamera2 is not installed (e.g., during development on a non-Pi system), the script falls back to cv2.VideoCapture(CAMERA_INDEX). This allows the same codebase to be tested on any machine.
+1218: Device Identity via CPU Serial
+1219: Each Raspberry Pi has a unique CPU serial number stored in /proc/cpuinfo. This serial is read at startup and used as the DEVICE_ID, which uniquely identifies the Pi in the cloud database without requiring any hardcoded configuration:
+1220: ptyhon
+1221: 1. def _read_pi_serial() -> str:
+1222: 2. with open("/proc/cpuinfo", "r") as f:
+1223: 3. for line in f:
+1224: 4. if line.startswith("Serial"):
+1225: 5. return line.split(":")[1].strip().upper()
+1226: 6. return "UNKNOWN_PI"
+1227: 7. DEVICE_ID: str = _read_pi_serial()
+1228: This DEVICE_ID is included in every fatigue log payload sent to the backend, enabling the Android app to query the status of a specific Pi device.
+1229: Face Detection and Landmark Extraction
+1230: MediaPipe Face Mesh is initialised to detect a maximum of one face, with iris refinement disabled to conserve RAM:
+1231: python
+1232: 1. face_mesh = mp_face_mesh.FaceMesh(
+1233: 2.     max_num_faces=1,
+1234: 3.     refine_landmarks=False,
+1235: 4.     min_detection_confidence=0.5,
+1236: 5.     min_tracking_confidence=0.5,
+1237: 6. )
+1238: Due to the FRAME_SKIP = 2 setting, MediaPipe inference only runs on every second captured frame. Between inference frames, the last known DetectionState is held constant — the overlay is still drawn and the frame is still pushed to the MJPEG stream. This halves the CPU load of MediaPipe while maintaining a smooth live stream.
+1239: Before passing the frame to MediaPipe, the RGB frame's writeable flag is set to False, which avoids an internal NumPy copy inside MediaPipe's C++ layer:
+1240: python
+1241: 1. rgb.flags.writeable = False
+1242: 2. results = face_mesh.process(rgb)
+1243: Face Detection and Landmark Extraction (Identical Logic to Section 5.3 Subsections)
+1244: The EAR, MAR, PERCLOS, microsleep detection, yawn event counting, stage determination, Stage 3 latch, and recovery mechanism are identical in algorithm to the implementation described below. Please refer to Sections 5.3.7 through 5.3.11 for full details.
+1245: Eye Aspect Ratio (EAR) Computation
+1246: The Eye Aspect Ratio is computed using the formula proposed by Soukupová and Čech (2016):
+1247: EAR = (|P₂−P₆| + |P₃−P₅|) / (2 × |P₁−P₄|)
+1248: MediaPipe landmark indices used:
+1249: python
+1250: 1. LEFT_EYE = [33, 160, 158, 133, 153, 144]
+1251: 2. RIGHT_EYE = [362, 385, 387, 263, 373, 380]
+1252: Both eyes are averaged. The closure threshold is EAR_THRESHOLD = 0.18.
+1253: Mouth Aspect Ratio (MAR) Computation
+1254: Yawn detection uses the Mouth Aspect Ratio:
+1255: MAR = Σ vertical_pair_distances / (2 × mouth_width)
+1256: python
+1257: 1. MOUTH_PAIRS = [(82, 87), (13, 14), (312, 317)]
+1258: 2. MOUTH_L = 61   # Left corner
+1259: 3. MOUTH_R = 291  # Right corner
+1260: A mouth is classified as open (yawning) when MAR > MAR_THRESHOLD = 0.50.
+1261: Three-Stage Adaptive Escalation System
+1262: The DetectionState class monitors three independent behavioural metrics simultaneously.
+1263: ERCLOS (Percentage of Eye Closure)
+1264: PERCLOS uses an O(1) running-sum deque with a 60-second rolling window. On the Pi, the maximum deque size is capped at 1,200 entries (at the Pi's ~20 FPS, this covers approximately 60 seconds):
+1265: python
+1266: 1. PERCLOS_MAXLEN = min(int(PERCLOS_WINDOW_SECS * PERCLOS_BASELINE_FPS), 1200)
+1267: 2. # = 1200 entries at 20 FPS, covering 60 seconds
+1268: Microsleep Detection
+1269: A wall-clock timer detects continuous eye closure ≥ 5 seconds. A yawn gate suppresses false alarms when MAR > threshold, unless the 5-second absolute hard limit is exceeded.
+1270: Yawn Event Counting
+1271: A discrete yawn event is counted when MAR > 0.50 is held for at least 1.5 seconds. Events are counted within a rolling 3-minute window.
+1272: Stage Determination
+1273: Table 5.3: Three-Stage Escalation Threshold
+1274: Stage
+1275: Label
+1276: Trigger Conditions
+1277: 0
+1278: Normal
+1279: No conditions met
+1280: 1
+1281: Early Fatigue
+1282: ≥ 2 yawns in 3 min OR PERCLOS ≥ 4.0%
+1283: 2
+1284: Active Drowsiness
+1285: ≥ 3 yawns in 3 min OR PERCLOS ≥ 8.0%
+1286: 3
+1287: Critical Alarm
+1288: Microsleep (5 s) OR PERCLOS > 12.0%
+1289: Stage 3 Latch and Recovery
+1290: Once Stage 3 triggers, the alarm latches until the driver keeps their eyes open for 3 continuous seconds. Recovery progress is tracked as a ratio from 0.0 to 1.0.
+1291: Pi-Optimised Overlay Renderer
+1292: Because the Pi runs headless (no cv2.imshow()), the overlay is drawn on the frame and then pushed to the MJPEG stream for remote viewing. The overlay is simplified compared to the laptop version to reduce CPU load:
+1293: Stage banner (top strip, semi-transparent at 35% alpha)
+1294: Stage label (top-left, compact 0.55 scale font)
+1295: Single-line metric strip (bottom): EAR, MAR, PERCLOS, Yawns, FPS on one line at 0.35 scale
+1296: MJPEG Live Stream Server
+1297: A Flask-based MJPEG streaming server runs in a background daemon thread on port 8080. It serves an annotated live camera feed at http://<Pi-IP>:8080/stream, allowing the developer or supervisor to monitor detection visually without connecting a display to the Pi.
+1298: python
+1299: 1. _frame_queue: queue.Queue = queue.Queue(maxsize=2)
+1300: 2. @_stream_app.route("/stream")
+1301: 3. def _mjpeg_stream():
+1302: 4.     def _generate():
+1303: 5.         while True:
+1304: 6.             frame_bytes = _frame_queue.get()
+1305: 7.             yield (b"--frame\r\nContent-Type: image/jpeg\r\r\n"
+1306: 8.                    + frame_bytes + b"\r\n")
+1307: 9.     return Response(_generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
+1308: Frames are JPEG-encoded at 70% quality before being placed in a bounded queue (maximum 2 frames). If the stream consumer (browser) is slower than the detection loop, frames are dropped using put_nowait() with a Full exception catch — ensuring the main loop is never blocked by a slow viewer.
+1309: The root route (/) serves a dark-mode HTML page that embeds the stream in a browser-friendly viewer, displaying the Pi's Device ID and local IP address.
+1310: Device Heartbeat
+1311: Every 5 seconds, the Pi posts a heartbeat to the cloud backend containing its current WiFi SSID and local IP address. This allows the Android app's device status card to show whether the Pi is online, and to display the live stream URL:
+1312: python
+1313: 1. def _send_heartbeat() -> None:
+1314: 2.     payload = {"currentWifi": _get_wifi_ssid(), "localIp": LOCAL_IP}
+1315: 3.     requests.post(f"{SERVER_BASE_URL}/api/devices/{DEVICE_ID}/heartbeat",
+1316: 4.                   json=payload, timeout=3.0)
+1317: 5.
+1318: The heartbeat is dispatched in a daemon thread and is best-effort — a failed heartbeat never crashes or blocks the main detection loop.
+1319: Cloud Synchronisation and Session State Machine
+1320: The session state machine operates identically to the description in the previous design section. The Pi polls GET /api/devices/<DEVICE_ID>/session every 1.5 seconds. The session URL is keyed by Device ID (CPU serial) rather than vehicle plate, since the Pi's identity is hardware-bound. On each poll:
+1321: If sessionActive: true, the Pi exits STANDBY and begins full detection.
+1322: If resetCounters: true, DetectionState.full_reset() is called, clearing all PERCLOS history, yawn events, and microsleep state.
+1323: Fatigue logs are dispatched to POST /api/logs on every stage transition and as a keepalive every 2 seconds. Each POST includes deviceId (the Pi CPU serial) and localIp in addition to all detection metrics. Network requests are dispatched in daemon background threads to prevent frame drops.
+1324: The Vision Client is registered as a systemd service (drowsysync.service) so that it starts automatically when the Pi boots and the network is available, and restarts automatically if it crashes:
+1325: ini
+1326: 1. [Unit]
+1327: 2. Description=DrowsySync Vision Client
+1328: 3. After=network-online.target
+1329: 4. Wants=network-online.target
+1330: 5. [Service]
+1331: 6. Type=simple
+1332: 7. User=pi
+1333: 8. WorkingDirectory=/home/pi/DrowsySync/vision_client
+1334: 9. ExecStart=/home/pi/DrowsySync/vision_client/venv/bin/python drowsiness_detector_pi.py
+1335: 10. Restart=always
+1336: 11. RestartSec=5
+1337: 12. StandardOutput=journal
+1338: 13. StandardError=journal
+1339: 14. [Install]
+1340: 15. WantedBy=multi-user.target
+1341: 16.
+1342: The service runs as the pi user, inside a Python virtual environment. All stdout and stderr output is captured by the systemd journal, viewable via journalctl -u drowsysync -f over SSH without attaching a display.
+1343: references
+1344: Adi, K., Widodo, C.E., Widodo, A.P. and Aristia, H.N., 2020. Monitoring System of Drowsiness and Lost Focused Driver Using Raspberry Pi. Iranian Journal of Public Health, 49(9), pp. 1675-1682. (Verbatim file reference: "Monitoring Sys Drowsy & Lost Focused RPi (Diponegoro, Indonesia)_2.pdf")
+1345: Adimulam, V.Y.K.Y., 2025. Drowsiness Detection in Vehicle Drivers Using Raspberry Pi Model based on Image Processing. Graduate Project for Master of Science in Computer Engineering. California State University, Northridge. (Verbatim file reference: "Drowsiness Detection in Vehicle Drivers Using Raspberry Pi Model based on Image Processing_2.pdf")
+1346: Baby Shamini, P., Vinodhini, M., Keerthana, B., Lakshna, S. and Meenatchi, K.R., 2022. Driver Drowsiness Detection based on Monitoring of Eye Blink Rate. In: Proceedings of the 4th International Conference on Smart Systems and Inventive Technology (ICSSIT-2022). Tirunelveli, India, 20-22 January 2022. New York: IEEE, pp. 1595-1599. (Verbatim file reference: "Driver_Drowsiness_Detection_based_on_Monitoring_of_Eye_Blink_Rate.pdf")
+1347: De, P., Biswas, S., Basak, D., Das, S. and Chowdhury, S., 2026. Real-Time Driver Drowsiness Detection System Using Eyes and Mouth Aspect Ratio. In: 2026 International Conference on Signal Analysis for Smart Systems (SIGNASS). Kolkata, India, 2026. New York: IEEE, pp. 1-6. (Verbatim file reference: "Real-Time_Driver_Drowsiness_Detection_System_Using_Eyes_and_Mouth_Aspect_Ratio.pdf")
+1348: Kabilmiharbi, N. and Khamis, N.K., 2024. Mental Workload and Road Environment Complexity: Subjective Assessments. Jurnal Kejuruteraan, 36(1), pp. 317-324. (Verbatim file reference: "85-Article Text-381-1-10-20230924.pdf")
+1349: Khonde, A., Sayyed, M., Barode, D. and Kawathekar, S., 2025. A Hybrid Approach for Driver Drowsiness Detection Using IoT. In: Proceedings of the 2nd International Conference on Integration of Computational Intelligent System (ICICIS). Pune, India, 9-12 September 2025. New York: IEEE, pp. 1-7. (Verbatim file reference: "A_Hybrid_Approach_for_Driver_Drowsiness_Detection_Using_IoT.pdf")
+1350: Osmani, F. and Wawage, P., 2024. Real-Time Driver Drowsiness Detection System using Vision Transformer for Accurate Eye State Analysis. In: Proceedings of the International Conference on Intelligent Systems and Advanced Applications (ICISAA). Pune, India, 25-26 October 2024. New York: IEEE, pp. 1-5. (Verbatim file reference: "Real-Time_Driver_Drowsiness_Detection_System_using_Vision_Transformer_for_Accurate_Eye_State_Analysis.pdf")
+1351: Shabadin, A., Azman, N.S., Radzi, M.A.M., Ghani, M.R.A., Hashim, H.H., Ishak, S.Z. and Mohamed, L., 2022. Fatigue Among Heavy Vehicle Drivers on Expressway. International Journal of Road Safety, 3(1), pp. 17-22.
+1352: Vellayati, F.D., Jusman, Y., Nurrahman, M.R., Loniza, E. and Chairunnisa, K., 2025. Automatic Microsleep Detection System Based on Eye Aspect Ratio Images. In: Proceedings of the 5th International Conference on Electronic and Electrical Engineering and Intelligent System (ICE3IS). Yogyakarta, Indonesia, 6-7 August 2025. New York: IEEE, pp. 167-172. (Verbatim file reference: "Automatic_Microsleep_Detection_System_Based_on_Eye_Aspect_Ratio_Images.pdf")
+1353: Zulkarnanie, M.A., Shanmugam, K.S., Badruddin, N. and Saad, M.N.M., 2022. Enhancements to PERCLOS Algorithm for Determining Eye Closures. In: Proceedings of the International Conference on Future Trends in Smart Communities (ICFTSC). Kuching, Sarawak, Malaysia, 1-2 December 2022. New York: IEEE, pp. 76-81. (Verbatim file reference: "Enhancements_to_PERCLOS_Algorithm_for_Determining_Eye_Closures.pdf")

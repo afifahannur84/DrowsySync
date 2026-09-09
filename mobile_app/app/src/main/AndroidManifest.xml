@@ -23,6 +23,8 @@
     <!-- ── Wake lock (keeps CPU alive while service polls) ── -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -103,6 +105,14 @@
             android:name=".DrowsySyncBackgroundService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+
+        <!-- ── Pi Pairing Screen ── -->
+        <activity
+            android:name=".PairingActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+
 
         <provider
             android:name="androidx.core.content.FileProvider"

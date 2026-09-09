@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
@@ -62,11 +63,17 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         // ── Login routing ──────────────────────────────────────────────────────
-        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         if (!prefs.getBoolean(KEY_LOGGED_IN, false)) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
+        }
+
+        // Apply saved display mode before inflating layout
+        val savedMode = prefs.getInt("display_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        if (savedMode != AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM && AppCompatDelegate.getDefaultNightMode() != savedMode) {
+            AppCompatDelegate.setDefaultNightMode(savedMode)
         }
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -75,17 +82,6 @@ class MainActivity : AppCompatActivity() {
         // Request notifications permission for Android 13+ to allow popups over other apps
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100)
-        }
-
-        // Request display overlay permission if not granted
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!android.provider.Settings.canDrawOverlays(this)) {
-                val intent = Intent(
-                    android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    android.net.Uri.parse("package:$packageName")
-                )
-                startActivityForResult(intent, 101)
-            }
         }
 
         setupHeader()
@@ -115,6 +111,10 @@ class MainActivity : AppCompatActivity() {
         }
         binding.cardReleaseVehicle.setOnClickListener {
             startActivity(Intent(this, ChangeOwnerActivity::class.java))
+        }
+
+        binding.cardPiDevice.setOnClickListener {
+            startActivity(Intent(this, PairingActivity::class.java))
         }
         binding.btnLogout.setOnClickListener {
             performLogout()
@@ -154,21 +154,29 @@ class MainActivity : AppCompatActivity() {
 
     // ── Display mode ──────────────────────────────────────────────────────────
     private fun setupDisplayModeToggle() {
-        // Restore correct toggle state without triggering loops
-        when (AppCompatDelegate.getDefaultNightMode()) {
-            AppCompatDelegate.MODE_NIGHT_NO -> binding.toggleDisplayMode.check(R.id.btnModeLight)
-            AppCompatDelegate.MODE_NIGHT_YES -> binding.toggleDisplayMode.check(R.id.btnModeDark)
-            else -> binding.toggleDisplayMode.check(R.id.btnModeAuto)
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        val savedMode = prefs.getInt("display_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+
+        binding.toggleDisplayMode.clearOnButtonCheckedListeners()
+
+        val buttonId = when (savedMode) {
+            AppCompatDelegate.MODE_NIGHT_NO -> R.id.btnModeLight
+            AppCompatDelegate.MODE_NIGHT_YES -> R.id.btnModeDark
+            else -> R.id.btnModeAuto
         }
+        binding.toggleDisplayMode.check(buttonId)
 
         binding.toggleDisplayMode.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (!isChecked) return@addOnButtonCheckedListener
             val targetMode = when (checkedId) {
                 R.id.btnModeLight -> AppCompatDelegate.MODE_NIGHT_NO
                 R.id.btnModeDark  -> AppCompatDelegate.MODE_NIGHT_YES
-                else -> AppCompatDelegate.MODE_NIGHT_AUTO_TIME
+                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
             }
-            if (AppCompatDelegate.getDefaultNightMode() != targetMode) {
+
+            val currentSaved = prefs.getInt("display_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+            if (currentSaved != targetMode) {
+                prefs.edit().putInt("display_mode", targetMode).apply()
                 AppCompatDelegate.setDefaultNightMode(targetMode)
             }
         }

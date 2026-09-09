@@ -93,7 +93,7 @@
                             android:layout_width="64dp"
                             android:layout_height="64dp"
                             android:src="@drawable/ic_pulse"
-                            app:tint="@color/muted_fg_light"
+                            app:tint="?attr/colorOnSurfaceVariant"
                             android:contentDescription="Activity icon" />
 
                         <TextView
@@ -102,7 +102,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/monitoring_inactive"
                             android:textAppearance="?attr/textAppearanceBodyMedium"
-                            android:textColor="@color/muted_fg_light"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:layout_marginTop="8dp" />
                     </LinearLayout>
                 </FrameLayout>
@@ -242,7 +242,7 @@
                             android:layout_marginTop="2dp" />
                     </LinearLayout>
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
+                    <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/switchGuestMode"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
@@ -438,6 +438,76 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Check historical driving reports &amp; charts"
+                            android:textAppearance="?attr/textAppearanceBodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_arrow_back"
+                        android:rotation="180"
+                        app:tint="@color/primary"
+                        android:contentDescription="Go" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+
+
+            <!-- Pi Device Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardPiDevice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="@color/primary"
+                app:cardBackgroundColor="@color/primary_alpha10"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_icon_circle_primary_solid"
+                        android:layout_marginEnd="12dp">
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_icon"
+                            app:tint="@color/white"
+                            android:contentDescription="Pi Device" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Pi Device Pairing 📡"
+                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                            android:textColor="@color/primary"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Pair your DrowsySync Pi device"
                             android:textAppearance="?attr/textAppearanceBodySmall"
                             android:textColor="?attr/colorOnSurfaceVariant" />
                     </LinearLayout>

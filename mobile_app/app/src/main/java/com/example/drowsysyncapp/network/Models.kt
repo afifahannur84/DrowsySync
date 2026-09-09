@@ -30,12 +30,27 @@ data class UserDto(
     @SerializedName("name") val name: String,
     @SerializedName("email") val email: String,
     @SerializedName("phone") val phone: String?,
-    @SerializedName("vehicleId") val vehicleId: String?,
     @SerializedName("isEmailVerified") val isEmailVerified: Boolean,
-    @SerializedName("isCurrentlyDriving") val isCurrentlyDriving: Boolean?,
     @SerializedName("licenseSerial") val licenseSerial: String?,
-    @SerializedName("emergencyName") val emergencyName: String?,
-    @SerializedName("emergencyPhone") val emergencyPhone: String?
+    // Emergency contact is now a nested sub-document on the server
+    @SerializedName("emergencyContact") val emergencyContact: EmergencyContactDto?,
+    // Session state is now a nested sub-document on the server
+    @SerializedName("sessionState") val sessionState: SessionStateDto?
+)
+
+// ── Emergency contact sub-document ──────────────────────────────────────────
+data class EmergencyContactDto(
+    @SerializedName("name")  val name: String?,
+    @SerializedName("phone") val phone: String?
+)
+
+// ── Session state sub-document ───────────────────────────────────────────────
+data class SessionStateDto(
+    @SerializedName("isGuestModeActive")   val isGuestModeActive: Boolean?,
+    @SerializedName("isCurrentlyDriving")  val isCurrentlyDriving: Boolean?,
+    @SerializedName("alarmDismissed")      val alarmDismissed: Boolean?,
+    @SerializedName("sessionActive")       val sessionActive: Boolean?,
+    @SerializedName("sessionResetPending") val sessionResetPending: Boolean?
 )
 
 data class ProfileUpdateRequest(
@@ -96,4 +111,24 @@ data class PeriodSummary(
     @SerializedName("warning") val warning: Int,
     @SerializedName("critical") val critical: Int,
     @SerializedName("total") val total: Int
+)
+
+// ── Device / Pi pairing ─────────────────────────────────────────────────────
+
+data class PairingRequest(
+    @SerializedName("userId") val userId: String,
+    @SerializedName("deviceId") val deviceId: String
+)
+
+data class DeviceStatusResponse(
+    @SerializedName("deviceId") val deviceId: String,
+    @SerializedName("isOnline") val isOnline: Boolean,
+    @SerializedName("currentWifi") val currentWifi: String?,
+    @SerializedName("localIp") val localIp: String?,
+    @SerializedName("lastSeen") val lastSeen: String?,
+    @SerializedName("pairedUserId") val pairedUserId: String?
+)
+
+data class PairingResponse(
+    @SerializedName("ok") val ok: Boolean
 )

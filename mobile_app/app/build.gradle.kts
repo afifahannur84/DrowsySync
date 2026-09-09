@@ -1,11 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
 }
 
 android {
     namespace = "com.example.drowsysyncapp"
-    // Using API 36 as required by your project's recent AGP version
     compileSdk = 36
 
     defaultConfig {
@@ -21,7 +19,7 @@ android {
     buildTypes {
         debug {
             isMinifyEnabled = false
-            isTestCoverageEnabled = true
+            enableUnitTestCoverage = true
         }
         release {
             isMinifyEnabled = false
@@ -34,9 +32,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
     }
     buildFeatures {
         viewBinding = true

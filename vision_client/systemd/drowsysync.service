@@ -1,0 +1,20 @@
+[Unit]
+Description=DrowsySync Vision Client
+# Only start after the network is fully online (WiFi connected)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/DrowsySync/vision_client
+ExecStart=/home/pi/DrowsySync/vision_client/venv/bin/python drowsiness_detector_pi.py
+# Restart automatically within 5 seconds if Python crashes
+Restart=always
+RestartSec=5
+# Capture stdout/stderr to the systemd journal (view with: journalctl -u drowsysync -f)
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

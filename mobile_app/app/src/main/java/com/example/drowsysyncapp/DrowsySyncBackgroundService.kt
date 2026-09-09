@@ -6,7 +6,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
@@ -19,6 +18,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import android.content.pm.ServiceInfo
 
 /**
  * DrowsySyncBackgroundService
@@ -208,7 +208,8 @@ class DrowsySyncBackgroundService : Service() {
      * Stage 2: Directly launches SymptomAlertActivity over whatever is on screen.
      * FLAG_ACTIVITY_NEW_TASK is mandatory for a Service to start an Activity on Android.
      * A companion notification is also posted so the alert survives lock-screen scenarios.
-     */    private fun fireStage2Warning(manager: NotificationManager, log: FatigueLogResponse) {
+     */
+    private fun fireStage2Warning(manager: NotificationManager, log: FatigueLogResponse) {
         val activityIntent = Intent(this, SymptomAlertActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_SINGLE_TOP or
@@ -279,6 +280,7 @@ class DrowsySyncBackgroundService : Service() {
             .build()
         manager.notify(NOTIF_ID_ALERT, notification)
     }
+
     // Notification channel + persistent notification setup
     // ─────────────────────────────────────────────────────────────────────────
 

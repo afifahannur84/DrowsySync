@@ -9,6 +9,7 @@ const User = require('./models/User');
 const FatigueLog = require('./models/FatigueLog');
 const Verification = require('./models/Verification');
 const VehicleOwnership = require('./models/VehicleOwnership');
+const Device = require('./models/Device');
 const bcrypt = require('bcryptjs');
 
 // Load environment variables
@@ -187,12 +188,13 @@ app.post('/api/auth/verify', async (req, res) => {
       email: tempUser.email,
       phone: tempUser.phone,
       licenseSerial: tempUser.licenseSerial,
-      emergencyName: tempUser.emergencyName,
-      emergencyPhone: tempUser.emergencyPhone,
+      emergencyContact: {
+        name:  tempUser.emergencyName || "",
+        phone: tempUser.emergencyPhone || ""
+      },
       password: tempUser.password,
       isEmailVerified: true,
-      vehicleId: tempUser.vehicleId,
-      isGuestModeActive: false
+      sessionState: { isGuestModeActive: false }
     });
 
     await newUser.save();
@@ -260,16 +262,19 @@ app.post('/api/auth/login', async (req, res) => {
       console.log(`🔑 Auto-claimed plate ${vId} for user ${user.email}`);
     }
 
-    // Update user's vehicleId cache and driving state
-    user.vehicleId = vId;
-    user.isCurrentlyDriving = true;
+    // Update driving state
+    user.sessionState.isCurrentlyDriving = true;
     await user.save();
 
-    // Unclaim all other drivers of this vehicle
-    await User.updateMany(
-      { vehicleId: vId, _id: { $ne: user._id } },
-      { $set: { isCurrentlyDriving: false } }
-    );
+    // Unclaim all other drivers of this vehicle (look them up via VehicleOwnership)
+    const otherOwnerships = await VehicleOwnership.find({ vehicleId: vId, isActive: true, userId: { $ne: user._id } });
+    const otherUserIds = otherOwnerships.map(o => o.userId);
+    if (otherUserIds.length > 0) {
+      await User.updateMany(
+        { _id: { $in: otherUserIds } },
+        { $set: { 'sessionState.isCurrentlyDriving': false } }
+      );
+    }
 
     const safeUser = user.toObject();
     delete safeUser.password;
@@ -289,7 +294,7 @@ app.put('/api/users/guest-mode/:userId', async (req, res) => {
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { $set: { isGuestModeActive } },
+      { $set: { 'sessionState.isGuestModeActive': isGuestModeActive } },
       { new: true, runValidators: true }
     );
 
@@ -314,24 +319,36 @@ app.put('/api/users/claim-vehicle/:userId', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Unclaim vehicle for all other users sharing this Car Plate Number
-    await User.updateMany(
-      { vehicleId: user.vehicleId },
-      { $set: { isCurrentlyDriving: false, sessionActive: false } }
-    );
+    // Resolve current vehicle plate from VehicleOwnership
+    const ownership = await VehicleOwnership.findOne({ userId: user._id, isActive: true });
+    const vehicleId = ownership ? ownership.vehicleId : null;
+
+    if (vehicleId) {
+      // Unclaim session for all other users sharing this vehicle plate
+      const otherOwnerships = await VehicleOwnership.find({ vehicleId, isActive: true, userId: { $ne: user._id } });
+      const otherUserIds = otherOwnerships.map(o => o.userId);
+      if (otherUserIds.length > 0) {
+        await User.updateMany(
+          { _id: { $in: otherUserIds } },
+          { $set: { 'sessionState.isCurrentlyDriving': false, 'sessionState.sessionActive': false } }
+        );
+      }
+    }
 
     // Claim it for the current user — activate session, clear any pending reset
-    user.isCurrentlyDriving = true;
-    user.sessionActive = true;
-    user.sessionResetPending = false;
-    user.alarmDismissed = false;
+    user.sessionState.isCurrentlyDriving  = true;
+    user.sessionState.sessionActive        = true;
+    user.sessionState.sessionResetPending  = false;
+    user.sessionState.alarmDismissed       = false;
     await user.save();
 
     // Adopt any orphaned logs (userId: null) for this vehicle
-    await FatigueLog.updateMany(
-      { vehicleId: user.vehicleId, userId: null },
-      { $set: { userId: user._id } }
-    );
+    if (vehicleId) {
+      await FatigueLog.updateMany(
+        { vehicleId, userId: null },
+        { $set: { userId: user._id } }
+      );
+    }
 
     res.status(200).json({ message: 'Vehicle claimed successfully' });
   } catch (error) {
@@ -351,9 +368,9 @@ app.put('/api/users/unclaim-vehicle/:userId', async (req, res) => {
     }
 
     // Stop session and signal Python to reset all counters
-    user.isCurrentlyDriving = false;
-    user.sessionActive = false;
-    user.sessionResetPending = true;
+    user.sessionState.isCurrentlyDriving  = false;
+    user.sessionState.sessionActive        = false;
+    user.sessionState.sessionResetPending  = true;
     await user.save();
 
     res.status(200).json({ message: 'Vehicle unclaimed successfully' });
@@ -374,8 +391,8 @@ app.put('/api/users/dismiss-alarm/:userId', async (req, res) => {
     }
 
     // Dismiss alarm AND signal Python to reset all counters to 0
-    user.alarmDismissed = true;
-    user.sessionResetPending = true;
+    user.sessionState.alarmDismissed      = true;
+    user.sessionState.sessionResetPending = true;
     await user.save();
 
     res.status(200).json({ message: 'Alarm dismiss signal set successfully' });
@@ -390,25 +407,32 @@ app.get('/api/session/:vehicleId', async (req, res) => {
   try {
     const { vehicleId } = req.params;
 
-    // Find the active owner of this vehicle
-    const user = await User.findOne({ vehicleId, isCurrentlyDriving: true })
-      || await User.findOne({ vehicleId }).sort({ updatedAt: -1 });
+    // Find the active owner of this vehicle via VehicleOwnership
+    const ownership = await VehicleOwnership.findOne({ vehicleId, isActive: true });
+    if (!ownership) {
+      return res.status(200).json({ sessionActive: false, resetCounters: false });
+    }
+
+    const user = await User.findOne({
+      _id: ownership.userId,
+      'sessionState.isCurrentlyDriving': true
+    }) || await User.findById(ownership.userId);
 
     if (!user) {
       // No user configured for this vehicle — stay in standby
       return res.status(200).json({ sessionActive: false, resetCounters: false });
     }
 
-    const resetCounters = user.sessionResetPending;
+    const resetCounters = user.sessionState.sessionResetPending;
 
     // Consume the reset flag immediately so Python only resets once
     if (resetCounters) {
-      user.sessionResetPending = false;
+      user.sessionState.sessionResetPending = false;
       await user.save();
     }
 
     res.status(200).json({
-      sessionActive: user.sessionActive,
+      sessionActive: user.sessionState.sessionActive,
       resetCounters
     });
   } catch (error) {
@@ -437,11 +461,13 @@ app.post('/api/users/release-vehicle', async (req, res) => {
       return res.status(401).json({ error: 'Incorrect password' });
     }
 
-    if (!user.vehicleId || user.vehicleId === '') {
+    // Look up current vehicle from VehicleOwnership
+    const ownership = await VehicleOwnership.findOne({ userId: user._id, isActive: true });
+    if (!ownership) {
       return res.status(400).json({ error: 'No vehicle is currently assigned to this account' });
     }
 
-    const releasedPlate = user.vehicleId;
+    const releasedPlate = ownership.vehicleId;
 
     // Deactivate the VehicleOwnership record
     await VehicleOwnership.updateMany(
@@ -449,9 +475,8 @@ app.post('/api/users/release-vehicle', async (req, res) => {
       { $set: { isActive: false, deactivatedAt: new Date() } }
     );
 
-    // Clear user's vehicle assignment
-    user.vehicleId = '';
-    user.isCurrentlyDriving = false;
+    // Clear driving state
+    user.sessionState.isCurrentlyDriving = false;
     await user.save();
 
     console.log(`🔓 User ${user.email} released vehicle plate: ${releasedPlate}`);
@@ -700,7 +725,9 @@ app.get('/api/logs/report/:userId', async (req, res) => {
     // —— 2. Metadata details
     doc.fillColor('#1A1B1E').fontSize(10).font('Helvetica-Bold').text('DRIVER PROFILE', 50, 120);
     doc.font('Helvetica').text(`Driver Name: ${user.name}`, 50, 135);
-    doc.text(`Vehicle Plate: ${user.vehicleId || 'N/A'}`, 50, 150);
+    // Resolve vehicle plate from VehicleOwnership at report-generation time
+    const reportOwnership = await VehicleOwnership.findOne({ userId: user._id, isActive: true });
+    doc.text(`Vehicle Plate: ${reportOwnership ? reportOwnership.vehicleId : 'N/A'}`, 50, 150);
 
     doc.font('Helvetica-Bold').text('REPORT DETAILS', 350, 120);
     doc.font('Helvetica').text(`Report Period: ${monthName} ${yearInt}`, 350, 135);
@@ -926,28 +953,23 @@ const handleLogIngestion = async (req, res) => {
       return res.status(400).json({ error: 'vehicleId is required' });
     }
 
-    // Look up the active owner via VehicleOwnership table first
+    // Look up the active owner via VehicleOwnership
     let matchedUser = null;
     const activeOwnership = await VehicleOwnership.findOne({ vehicleId, isActive: true });
     if (activeOwnership) {
       matchedUser = await User.findById(activeOwnership.userId);
     }
 
-    // Fallback: try to find the user who actively claimed the Car Plate Number (backward compat)
+    // Fallback: find whoever is currently driving this vehicle
     if (!matchedUser) {
-      matchedUser = await User.findOne({ vehicleId, isCurrentlyDriving: true });
-    }
-
-    // Final fallback: first registered owner
-    if (!matchedUser) {
-      matchedUser = await User.findOne({ vehicleId });
+      matchedUser = await User.findOne({ 'sessionState.isCurrentlyDriving': true });
     }
 
     if (!matchedUser) {
       return res.status(404).json({ error: 'No user found for this Car Plate Number.' });
     }
 
-    if (matchedUser.isGuestModeActive) {
+    if (matchedUser.sessionState.isGuestModeActive) {
       fatigueData.userId = null;
     } else {
       fatigueData.userId = matchedUser._id;
@@ -958,9 +980,9 @@ const handleLogIngestion = async (req, res) => {
 
     // Check if the user dismissed the alarm
     let dismissAlarm = false;
-    if (matchedUser && matchedUser.alarmDismissed) {
+    if (matchedUser && matchedUser.sessionState.alarmDismissed) {
       dismissAlarm = true;
-      matchedUser.alarmDismissed = false;
+      matchedUser.sessionState.alarmDismissed = false;
       await matchedUser.save();
       console.log('🔔 Remote alarm dismissal triggered for user:', matchedUser.email);
     }
@@ -991,8 +1013,8 @@ app.put('/api/users/profile/:userId', async (req, res) => {
     if (name) user.name = name;
     if (phone !== undefined) user.phone = phone;
     if (licenseSerial !== undefined) user.licenseSerial = licenseSerial;
-    if (emergencyName !== undefined) user.emergencyName = emergencyName;
-    if (emergencyPhone !== undefined) user.emergencyPhone = emergencyPhone;
+    if (emergencyName !== undefined) user.emergencyContact.name  = emergencyName;
+    if (emergencyPhone !== undefined) user.emergencyContact.phone = emergencyPhone;
 
     let emailChanged = false;
 
@@ -1086,6 +1108,326 @@ app.post('/api/users/verify-email', async (req, res) => {
     res.status(200).json({ message: 'Email verified successfully', user: safeUser });
   } catch (error) {
     console.error('Verify email error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// ==========================================
+// DEVICE ENDPOINTS (Raspberry Pi)
+// ==========================================
+
+// [POST /api/devices/:deviceId/heartbeat]
+// Pi sends this every ~5s to report its presence, WiFi SSID, and local IP.
+// Creates the device document if first time (upsert). Marks it online.
+app.post('/api/devices/:deviceId/heartbeat', async (req, res) => {
+  try {
+    const { deviceId } = req.params;
+    const { currentWifi, localIp } = req.body;
+
+    const device = await Device.findOneAndUpdate(
+      { deviceId },
+      {
+        currentWifi: currentWifi || null,
+        localIp: localIp || null,
+        lastSeen: new Date(),
+        isOnline: true,
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
+    res.status(200).json({ ok: true, pairedUserId: device.pairedUserId });
+  } catch (error) {
+    console.error('Device heartbeat error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// [GET /api/devices/:deviceId/session]
+// Pi polls this every 1.5s to know if the app has started a session.
+// Returns sessionActive and resetCounters flags (same as old user-based endpoint,
+// but keyed by device so multiple users can have their own device).
+app.get('/api/devices/:deviceId/session', async (req, res) => {
+  try {
+    const { deviceId } = req.params;
+
+    // Find the user paired to this device
+    const device = await Device.findOne({ deviceId });
+    if (!device || !device.pairedUserId) {
+      // Device not paired yet — stay in standby
+      return res.status(200).json({ sessionActive: false, resetCounters: false });
+    }
+
+    const user = await User.findById(device.pairedUserId);
+    if (!user) {
+      return res.status(200).json({ sessionActive: false, resetCounters: false });
+    }
+
+    const shouldReset = user.sessionState.sessionResetPending;
+    if (shouldReset) {
+      await User.findByIdAndUpdate(user._id, { 'sessionState.sessionResetPending': false });
+    }
+
+    // Resolve the user's current vehicle plate from VehicleOwnership
+    const userOwnership = await VehicleOwnership.findOne({ userId: user._id, isActive: true });
+
+    res.status(200).json({
+      sessionActive:     user.sessionState.sessionActive,
+      resetCounters:     shouldReset,
+      dismissAlarm:      user.sessionState.alarmDismissed,
+      userId:            user._id.toString(),
+      vehicleId:         userOwnership ? userOwnership.vehicleId : null,
+      isGuestModeActive: user.sessionState.isGuestModeActive
+    });
+  } catch (error) {
+    console.error('Device session poll error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// [GET /api/devices/:deviceId/status]
+// App fetches this to display the Pi status card on the dashboard.
+app.get('/api/devices/:deviceId/status', async (req, res) => {
+  try {
+    const { deviceId } = req.params;
+    const device = await Device.findOne({ deviceId });
+    if (!device) {
+      return res.status(404).json({ error: 'Device not found' });
+    }
+
+    // Mark offline if no heartbeat in last 10 seconds
+    const OFFLINE_TIMEOUT_MS = 10000;
+    const isOnline = device.lastSeen &&
+      (Date.now() - new Date(device.lastSeen).getTime() < OFFLINE_TIMEOUT_MS);
+
+    if (device.isOnline !== isOnline) {
+      await Device.findByIdAndUpdate(device._id, { isOnline });
+    }
+
+    res.status(200).json({
+      deviceId: device.deviceId,
+      isOnline,
+      currentWifi: device.currentWifi,
+      localIp: device.localIp,
+      lastSeen: device.lastSeen,
+      pairedUserId: device.pairedUserId,
+    });
+  } catch (error) {
+    console.error('Device status error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// [POST /api/devices/pair]
+// App calls this to pair the user's account with a specific Pi device serial.
+// Body: { userId, deviceId }
+app.post('/api/devices/pair', async (req, res) => {
+  try {
+    const { userId, deviceId } = req.body;
+    if (!userId || !deviceId) {
+      return res.status(400).json({ error: 'userId and deviceId are required' });
+    }
+
+    // Upsert the device document
+    const device = await Device.findOneAndUpdate(
+      { deviceId },
+      { pairedUserId: userId, lastSeen: new Date() },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
+    // Note: pairedDeviceId is no longer stored on the User document.
+    // The authoritative pairing is stored in Device.pairedUserId.
+
+    res.status(200).json({ ok: true, device });
+  } catch (error) {
+    console.error('Pair device error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// [GET /api/devices]
+// Returns a list of all registered Pi devices with their online/offline status.
+// Used by the mobile app's device picker so users can identify their device
+// (it will be the one showing isOnline: true when powered on).
+app.get('/api/devices', async (req, res) => {
+  try {
+    const OFFLINE_TIMEOUT_MS = 30 * 1000; // 30 seconds — matches Pi heartbeat interval
+    const devices = await Device.find({}).lean();
+
+    const result = devices.map(device => {
+      const isOnline = device.isOnline &&
+        device.lastSeen &&
+        (Date.now() - new Date(device.lastSeen).getTime() < OFFLINE_TIMEOUT_MS);
+      return {
+        deviceId: device.deviceId,
+        isOnline,
+        lastSeen: device.lastSeen,
+        currentWifi: device.currentWifi || null
+      };
+    });
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('List devices error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+// ==========================================
+// GPS / LOCATION ENDPOINTS
+// ==========================================
+
+// [PATCH /api/logs/:logId/location]
+// Android app patches GPS coordinates onto an existing FatigueLog entry
+// immediately after the alert fires (while the user is still at the location).
+// Performs a free reverse geocode via OpenStreetMap Nominatim.
+app.patch('/api/logs/:logId/location', async (req, res) => {
+  try {
+    const { logId } = req.params;
+    const { lat, lng } = req.body;
+
+    if (lat === undefined || lng === undefined) {
+      return res.status(400).json({ error: 'lat and lng are required' });
+    }
+
+    // Reverse geocode via Nominatim (free, no API key)
+    let locationName = null;
+    try {
+      const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
+      const geoRes = await fetch(geocodeUrl, {
+        headers: { 'User-Agent': 'DrowsySync/1.0 (fyp.contact@example.com)' }
+      });
+      if (geoRes.ok) {
+        const geoData = await geoRes.json();
+        // Use road name + suburb + state for a concise display name
+        const addr = geoData.address || {};
+        const parts = [
+          addr.road || addr.pedestrian || addr.highway,
+          addr.suburb || addr.city || addr.town || addr.village,
+          addr.state
+        ].filter(Boolean);
+        locationName = parts.length > 0 ? parts.join(', ') : geoData.display_name;
+      }
+    } catch (geoErr) {
+      console.warn('Nominatim geocode failed (non-fatal):', geoErr.message);
+    }
+
+    const updated = await FatigueLog.findByIdAndUpdate(
+      logId,
+      { 'location.lat': lat, 'location.lng': lng, 'location.name': locationName },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ error: 'Log not found' });
+    }
+
+    res.status(200).json({ ok: true, locationName });
+  } catch (error) {
+    console.error('Patch location error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// ==========================================
+// HOTSPOTS / AI INSIGHT ENDPOINT
+// ==========================================
+
+// [GET /api/hotspots/:userId]
+// Returns aggregated drowsiness hotspots, time patterns, and an AI-generated
+// natural-language insight string — all derived from the user's fatigue log.
+app.get('/api/hotspots/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Only include Stage 1+ logs that have GPS coordinates
+    const logs = await FatigueLog.find({
+      userId,
+      stage: { $gte: 1 },
+      'location.lat': { $ne: null },
+      'location.lng': { $ne: null }
+    }).lean();
+
+    if (logs.length === 0) {
+      return res.status(200).json({
+        hotspots: [],
+        timePatterns: { peakHour: 'N/A', peakDay: 'N/A', hourlyBreakdown: new Array(24).fill(0) },
+        aiInsight: 'Not enough data yet. Drive with DrowsySync for a few days to see your risk patterns.'
+      });
+    }
+
+    // ── Aggregate hotspots by location cluster (round to 3 decimal places ≈ 111m) ──
+    const locationMap = {};
+    for (const log of logs) {
+      const latKey = Math.round(log.location.lat * 1000) / 1000;
+      const lngKey = Math.round(log.location.lng * 1000) / 1000;
+      const key = `${latKey}_${lngKey}`;
+      if (!locationMap[key]) {
+        locationMap[key] = {
+          locationName: log.location.name || `${latKey}, ${lngKey}`,
+          lat: latKey,
+          lng: lngKey,
+          count: 0,
+          maxStage: 0
+        };
+      }
+      locationMap[key].count++;
+      if (log.stage > locationMap[key].maxStage) locationMap[key].maxStage = log.stage;
+    }
+    const hotspots = Object.values(locationMap).sort((a, b) => b.count - a.count);
+
+    // ── Hourly breakdown ──────────────────────────────────────────────────────
+    const hourlyBreakdown = new Array(24).fill(0);
+    const dayCount = new Array(7).fill(0); // 0=Sun, 1=Mon, ..., 6=Sat
+    for (const log of logs) {
+      const d = new Date(log.timestamp);
+      hourlyBreakdown[d.getHours()]++;
+      dayCount[d.getDay()]++;
+    }
+
+    // Peak hour window (2-hour sliding window with highest count)
+    let peakHourIdx = 0;
+    let maxHourCount = 0;
+    for (let h = 0; h < 24; h++) {
+      const window = hourlyBreakdown[h] + hourlyBreakdown[(h + 1) % 24];
+      if (window > maxHourCount) { maxHourCount = window; peakHourIdx = h; }
+    }
+    const peakHour = `${String(peakHourIdx).padStart(2, '0')}:00–${String((peakHourIdx + 2) % 24).padStart(2, '0')}:00`;
+
+    // Peak day
+    const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const peakDayIdx = dayCount.indexOf(Math.max(...dayCount));
+    const peakDay = DAY_NAMES[peakDayIdx];
+
+    // ── AI insight string (template-based, honest "AI analysis") ─────────────
+    const totalAlerts = logs.length;
+    const stage3Count = logs.filter(l => l.stage === 3).length;
+    const topHotspot = hotspots[0];
+
+    let riskLevel = totalAlerts < 5 ? 'LOW' : totalAlerts < 15 ? 'MODERATE' : 'HIGH';
+    if (stage3Count > 3) riskLevel = 'HIGH';
+
+    let aiInsight = `Based on your last ${totalAlerts} fatigue event${totalAlerts === 1 ? '' : 's'}, `;
+    aiInsight += `you face a ${riskLevel} drowsiness risk. `;
+    if (topHotspot) {
+      aiInsight += `Your highest-risk location is near ${topHotspot.locationName} (${topHotspot.count} event${topHotspot.count === 1 ? '' : 's'}). `;
+    }
+    if (maxHourCount > 0) {
+      aiInsight += `You are most alert-prone between ${peakHour} on ${peakDay}s. `;
+    }
+    if (stage3Count > 0) {
+      aiInsight += `You have experienced ${stage3Count} critical Stage 3 alarm${stage3Count === 1 ? '' : 's'} — consider planning rest stops during peak hours.`;
+    } else {
+      aiInsight += 'Consider taking a short break during these peak windows to stay safe.';
+    }
+
+    res.status(200).json({
+      hotspots,
+      timePatterns: { peakHour, peakDay, hourlyBreakdown },
+      aiInsight
+    });
+  } catch (error) {
+    console.error('Hotspots error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });

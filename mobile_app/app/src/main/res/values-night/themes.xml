@@ -14,5 +14,8 @@
         <item name="colorError">@color/destructive</item>
         <item name="colorOnError">@color/on_destructive</item>
         <item name="android:windowBackground">@color/background_dark</item>
+        <item name="android:windowDisablePreview">true</item>
     </style>
+
+    <style name="Theme.DrowsySyncApp" parent="Base.Theme.DrowsySyncApp" />
 </resources>

@@ -10,8 +10,7 @@ data class FatigueEvent(
     val id: String,
     val type: EventType,
     val date: String,
-    val time: String,
-    val location: String? = null
+    val time: String
 ) {
     enum class EventType { MICROSLEEP, SYMPTOM }
 }
@@ -72,8 +71,7 @@ class FatigueEventAdapter : RecyclerView.Adapter<FatigueEventAdapter.ViewHolder>
             b.iconBadge.alpha = 1f
             b.tvEventBadge.alpha = 1f
 
-            val locationStr = if (event.location != null) " • ${event.location}" else ""
-            b.tvEventMeta.text = "${event.date} at ${event.time}$locationStr"
+            b.tvEventMeta.text = "${event.date} at ${event.time}"
         }
     }
 }

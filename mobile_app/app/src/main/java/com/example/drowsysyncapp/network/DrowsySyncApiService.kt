@@ -7,6 +7,8 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 
+
+
 interface DrowsySyncApiService {
 
     @POST("api/auth/register")
@@ -83,8 +85,19 @@ interface DrowsySyncApiService {
         @Path("userId") userId: String,
         @Body request: ProfileUpdateRequest
     ): Response<ProfileUpdateResponse>
-    
+
     // Kept for backward compatibility with the existing background service
     @GET("api/events")
     suspend fun getLatestEvents(): Response<List<FatigueLogResponse>>
+
+    // ── Device / Pi pairing ─────────────────────────────────────────────────
+
+    @POST("api/devices/pair")
+    suspend fun pairDevice(@Body request: PairingRequest): Response<PairingResponse>
+
+    @GET("api/devices/{deviceId}/status")
+    suspend fun getDeviceStatus(
+        @Path("deviceId") deviceId: String
+    ): Response<DeviceStatusResponse>
 }
+
