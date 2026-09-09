@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.drowsysyncapp.network.PairingRequest
+import com.example.drowsysyncapp.network.UnpairRequest
 import com.example.drowsysyncapp.network.RetrofitClient
 import kotlinx.coroutines.launch
 
@@ -37,6 +38,7 @@ class PairingActivity : AppCompatActivity() {
     private lateinit var btnPair: Button
     private lateinit var progressBar: ProgressBar
     private lateinit var tvStatus: TextView
+    private lateinit var btnUnpair: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +48,7 @@ class PairingActivity : AppCompatActivity() {
         btnPair = findViewById(R.id.btnPair)
         progressBar = findViewById(R.id.pairingProgress)
         tvStatus = findViewById(R.id.tvPairingStatus)
+        btnUnpair = findViewById(R.id.btnUnpair)
 
         // Show currently paired device if already set
         val prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
@@ -53,6 +56,7 @@ class PairingActivity : AppCompatActivity() {
         if (!existingId.isNullOrEmpty()) {
             tvStatus.text = "Currently paired to: $existingId"
             tvStatus.visibility = View.VISIBLE
+            btnUnpair.visibility = View.VISIBLE
         }
 
         etDeviceId.addTextChangedListener(object : TextWatcher {
@@ -64,6 +68,7 @@ class PairingActivity : AppCompatActivity() {
         })
 
         btnPair.setOnClickListener { attemptPairing() }
+        btnUnpair.setOnClickListener { attemptUnpairing(existingId) }
         findViewById<View>(R.id.btnCancelPairing)?.setOnClickListener { finish() }
     }
 
@@ -102,6 +107,34 @@ class PairingActivity : AppCompatActivity() {
             } finally {
                 progressBar.visibility = View.GONE
                 btnPair.isEnabled = true
+            }
+        }
+    }
+
+    private fun attemptUnpairing(deviceId: String?) {
+        if (deviceId.isNullOrEmpty()) return
+        val prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
+        val userId = prefs.getString("user_id", null) ?: return
+
+        progressBar.visibility = View.VISIBLE
+        btnUnpair.isEnabled = false
+
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.instance.unpairDevice(UnpairRequest(userId, deviceId))
+                if (response.isSuccessful) {
+                    prefs.edit().remove("paired_device_id").apply()
+                    tvStatus.text = "Device unpaired successfully."
+                    btnUnpair.visibility = View.GONE
+                    Toast.makeText(this@PairingActivity, "Unpaired!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@PairingActivity, "Failed to unpair device", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@PairingActivity, "Network error: ${e.message}", Toast.LENGTH_SHORT).show()
+            } finally {
+                progressBar.visibility = View.GONE
+                btnUnpair.isEnabled = true
             }
         }
     }

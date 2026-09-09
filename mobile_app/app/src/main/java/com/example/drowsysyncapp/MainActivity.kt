@@ -221,6 +221,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startMonitoring() {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val pairedDeviceId = prefs.getString("paired_device_id", null)
+        
+        if (pairedDeviceId.isNullOrEmpty()) {
+            Toast.makeText(this, "Please pair a Pi device first via Settings", Toast.LENGTH_LONG).show()
+            return
+        }
+
         isMonitoring = true
         isUserInitiatedStart = true
         getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()

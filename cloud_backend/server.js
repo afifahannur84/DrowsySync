@@ -1244,6 +1244,31 @@ app.post('/api/devices/pair', async (req, res) => {
   }
 });
 
+// [POST /api/devices/unpair]
+// App calls this to unpair a device from the user.
+// Body: { userId, deviceId }
+app.post('/api/devices/unpair', async (req, res) => {
+  try {
+    const { userId, deviceId } = req.body;
+    if (!userId || !deviceId) {
+      return res.status(400).json({ error: 'userId and deviceId are required' });
+    }
+
+    const device = await Device.findOne({ deviceId });
+    if (!device || String(device.pairedUserId) !== String(userId)) {
+      return res.status(404).json({ error: 'Device not found or not paired to this user' });
+    }
+
+    device.pairedUserId = null;
+    await device.save();
+
+    res.status(200).json({ ok: true, message: 'Device unpaired successfully' });
+  } catch (error) {
+    console.error('Unpair device error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // [GET /api/devices]
 // Returns a list of all registered Pi devices with their online/offline status.
 // Used by the mobile app's device picker so users can identify their device

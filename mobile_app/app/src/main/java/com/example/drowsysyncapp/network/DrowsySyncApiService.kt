@@ -95,6 +95,9 @@ interface DrowsySyncApiService {
     @POST("api/devices/pair")
     suspend fun pairDevice(@Body request: PairingRequest): Response<PairingResponse>
 
+    @POST("api/devices/unpair")
+    suspend fun unpairDevice(@Body request: UnpairRequest): Response<PairingResponse>
+
     @GET("api/devices/{deviceId}/status")
     suspend fun getDeviceStatus(
         @Path("deviceId") deviceId: String

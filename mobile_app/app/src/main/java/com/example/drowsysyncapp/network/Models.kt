@@ -120,6 +120,11 @@ data class PairingRequest(
     @SerializedName("deviceId") val deviceId: String
 )
 
+data class UnpairRequest(
+    @SerializedName("userId") val userId: String,
+    @SerializedName("deviceId") val deviceId: String
+)
+
 data class DeviceStatusResponse(
     @SerializedName("deviceId") val deviceId: String,
     @SerializedName("isOnline") val isOnline: Boolean,
