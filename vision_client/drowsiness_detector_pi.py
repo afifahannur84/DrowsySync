@@ -35,7 +35,6 @@ View logs (via SSH):
 
 # ── Standard library ──────────────────────────────────────────────────────────
 import collections
-import queue
 import socket
 import sys
 import threading
@@ -47,7 +46,6 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import requests
-from flask import Flask, Response
 
 try:
     from picamera2 import Picamera2
@@ -434,97 +432,7 @@ def draw_no_face(frame: np.ndarray, fps: float, h: int) -> None:
 
 SESSION_URL = f"{SERVER_BASE_URL}/api/devices/{DEVICE_ID}/session"
 
-# =============================================================================
-# SECTION 5b — MJPEG STREAM SERVER
-# Serves the live annotated camera feed on port 8080.
-# Open http://<Pi-IP>:8080 on any browser on the same WiFi network.
-# This runs as a daemon thread — it does NOT block the main detection loop.
-# =============================================================================
-
-_stream_app = Flask(__name__)
-_frame_queue: queue.Queue = queue.Queue(maxsize=2)
-
-
-@_stream_app.route("/stream")
-def _mjpeg_stream():
-    """Serve an infinite MJPEG stream of annotated camera frames."""
-    def _generate():
-        while True:
-            frame_bytes = _frame_queue.get()  # blocks until a frame is ready
-            yield (
-                b"--frame\r\n"
-                b"Content-Type: image/jpeg\r\n\r\n"
-                + frame_bytes
-                + b"\r\n"
-            )
-    return Response(
-        _generate(),
-        mimetype="multipart/x-mixed-replace; boundary=frame"
-    )
-
-
-@_stream_app.route("/")
-def _stream_index():
-    """Serve the dark-mode HTML page that embeds the MJPEG stream."""
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DrowsySync — Live Feed</title>
-  <style>
-    * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-    body {{ background: #0d1117; color: #e6edf3; font-family: 'Segoe UI', system-ui, sans-serif;
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: flex-start; min-height: 100vh; padding: 24px; }}
-    h1   {{ font-size: 1.4rem; font-weight: 600; margin-bottom: 4px;
-            color: #58a6ff; letter-spacing: 0.5px; }}
-    p.sub {{ font-size: 0.8rem; color: #8b949e; margin-bottom: 20px; }}
-    .stream-box {{
-      border: 2px solid #30363d; border-radius: 12px; overflow: hidden;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-    }}
-    img {{ display: block; width: 640px; height: 480px; object-fit: cover; }}
-    .info {{
-      margin-top: 16px; font-size: 0.78rem; color: #8b949e; text-align: center;
-    }}
-    .badge {{
-      display: inline-block; background: #238636; color: #fff;
-      padding: 2px 10px; border-radius: 20px; font-size: 0.72rem;
-      font-weight: 600; margin-left: 8px; vertical-align: middle;
-    }}
-  </style>
-</head>
-<body>
-  <h1>&#128247; DrowsySync <span class="badge">LIVE</span></h1>
-  <p class="sub">Real-time drowsiness detection &mdash; Device: {DEVICE_ID}</p>
-  <div class="stream-box">
-    <img src="/stream" alt="Live camera feed"
-         onerror="setTimeout(()=>this.src='/stream?t='+Date.now(), 2000)">
-  </div>
-  <p class="info">
-    Annotated frame &bull; EAR &bull; MAR &bull; PERCLOS &bull; Stage<br>
-    Pi IP: <strong>{LOCAL_IP}</strong> &nbsp;&bull;&nbsp; Port: {STREAM_PORT}
-  </p>
-</body>
-</html>"""
-
-
-def _start_stream_server() -> None:
-    """Launch the Flask MJPEG server. Called once in a daemon thread at startup."""
-    import logging
-    log = logging.getLogger("werkzeug")
-    log.setLevel(logging.ERROR)   # silence Flask request logs in the terminal
-    _stream_app.run(host="0.0.0.0", port=STREAM_PORT, threaded=True)
-
-
-def _push_frame(frame: np.ndarray) -> None:
-    """Encode frame as JPEG and push to the stream queue (non-blocking)."""
-    _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 70])
-    try:
-        _frame_queue.put_nowait(buf.tobytes())
-    except queue.Full:
-        pass  # browser too slow — drop frame, never block the detection loop
+# MJPEG Stream server has been removed in favor of local cv2.imshow
 
 
 def _send_log_async(payload: dict, state: DetectionState) -> None:
@@ -596,12 +504,7 @@ def main() -> None:
     print(f"  Local IP   : {LOCAL_IP}")
     print(f"  Stream URL : http://{LOCAL_IP}:{STREAM_PORT}")
     print(f"  Resolution : {FRAME_WIDTH}×{FRAME_HEIGHT}  |  Skip : every {FRAME_SKIP} frames")
-    print("  Running headless — no display window.")
     print("=" * 64)
-
-    # ── Start MJPEG stream server in background ───────────────────────────────
-    threading.Thread(target=_start_stream_server, daemon=True).start()
-    print(f"[STREAM] MJPEG server started → http://{LOCAL_IP}:{STREAM_PORT}")
 
     # Camera setup
     if _HAS_PICAMERA2:
@@ -768,8 +671,10 @@ def main() -> None:
             else:
                 draw_no_face(frame, fps_val, h)
 
-            _push_frame(frame)
-
+            cv2.imshow("DrowsySync - Pi Camera", frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                print("\n[INFO] 'q' pressed. Exiting...")
+                break
     except KeyboardInterrupt:
         print("\n[INFO] Interrupted by user (Ctrl+C).")
     finally:
@@ -783,7 +688,7 @@ def main() -> None:
         else:
             cap.release()
         face_mesh.close()
-        # No cv2.destroyAllWindows() — headless, no windows to destroy
+        cv2.destroyAllWindows()
         print("[INFO] Done.")
 
 
