@@ -574,10 +574,23 @@ def main() -> None:
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
         cap.set(cv2.CAP_PROP_FPS, TARGET_FPS)
-        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
         if not cap.isOpened():
             sys.exit("[ERROR] Cannot open camera via OpenCV. Check CAMERA_INDEX.")
+
+        # Allow camera sensor (e.g. ov5647 CSI / V4L2) 3-4 seconds to negotiate and stabilize stream
+        print("[INFO] Waiting for camera sensor stream to stabilize...")
+        warmup_ok = False
+        for _ in range(30):
+            ret, _ = cap.read()
+            if ret:
+                warmup_ok = True
+                break
+            time.sleep(0.15)
+        if warmup_ok:
+            print("[INFO] Camera stream established successfully.")
+        else:
+            print("[WARNING] Initial camera warmup timed out; continuing to main loop retries.")
 
     # MediaPipe Face Mesh
     mp_face_mesh = mp.solutions.face_mesh
@@ -627,10 +640,10 @@ def main() -> None:
             else:
                 ret, frame = cap.read()
 
-            if not ret:
+            if not ret or frame is None:
                 consecutive_failures += 1
-                if consecutive_failures >= 15:
-                    print("\n[ERROR] Frame grab failed consecutively 15 times — check camera connection.")
+                if consecutive_failures >= 50:
+                    print("\n[ERROR] Frame grab failed consecutively 50 times — check camera connection.")
                     break
                 time.sleep(0.1)
                 continue
