@@ -132,3 +132,13 @@ data class DeviceStatusResponse(
 data class PairingResponse(
     @SerializedName("ok") val ok: Boolean
 )
+
+data class DeviceSessionRequest(
+    @SerializedName("sessionActive") val sessionActive: Boolean,
+    @SerializedName("userId") val userId: String? = null
+)
+
+data class DeviceSessionResponse(
+    @SerializedName("ok") val ok: Boolean,
+    @SerializedName("sessionActive") val sessionActive: Boolean
+)

@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 
 const verificationSchema = new mongoose.Schema({
   email: { type: String, required: true },
-  vehicleId: { type: String, required: true },
   name: { type: String, required: true },
   phone: { type: String, default: "" },
   licenseSerial: { type: String, default: "" },

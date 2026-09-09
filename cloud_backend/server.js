@@ -221,8 +221,9 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Please verify your email before logging in.' });
     }
 
-    // Update driving state
-    user.sessionState.isCurrentlyDriving = true;
+    // Reset driving and monitoring state on fresh login
+    user.sessionState.isCurrentlyDriving = false;
+    user.sessionState.sessionActive = false;
     await user.save();
 
     const safeUser = user.toObject();
@@ -935,9 +936,7 @@ app.post('/api/devices/:deviceId/heartbeat', async (req, res) => {
 });
 
 // [GET /api/devices/:deviceId/session]
-// Pi polls this every 1.5s to know if the app has started a session.
-// Returns sessionActive and resetCounters flags (same as old user-based endpoint,
-// but keyed by device so multiple users can have their own device).
+// Pi polls this every 1.5s to know if a user is paired and if a session is active.
 app.get('/api/devices/:deviceId/session', async (req, res) => {
   try {
     const { deviceId } = req.params;
@@ -945,13 +944,23 @@ app.get('/api/devices/:deviceId/session', async (req, res) => {
     // Find the user paired to this device
     const device = await Device.findOne({ deviceId });
     if (!device || !device.pairedUserId) {
-      // Device not paired yet — stay in standby
-      return res.status(200).json({ sessionActive: false, resetCounters: false });
+      // Device not paired yet — stay in SETUP / NOT PAIRED mode
+      return res.status(200).json({
+        isPaired: false,
+        userName: null,
+        sessionActive: false,
+        resetCounters: false,
+      });
     }
 
     const user = await User.findById(device.pairedUserId);
     if (!user) {
-      return res.status(200).json({ sessionActive: false, resetCounters: false });
+      return res.status(200).json({
+        isPaired: false,
+        userName: null,
+        sessionActive: false,
+        resetCounters: false,
+      });
     }
 
     const shouldReset = user.sessionState.sessionResetPending;
@@ -960,14 +969,51 @@ app.get('/api/devices/:deviceId/session', async (req, res) => {
     }
 
     res.status(200).json({
-      sessionActive:     user.sessionState.sessionActive,
-      resetCounters:     shouldReset,
-      dismissAlarm:      user.sessionState.alarmDismissed,
+      isPaired:          true,
+      userName:          user.name || null,
+      sessionActive:     Boolean(user.sessionState.sessionActive),
+      resetCounters:     Boolean(shouldReset),
+      dismissAlarm:      Boolean(user.sessionState.alarmDismissed),
       userId:            user._id.toString(),
-      isGuestModeActive: user.sessionState.isGuestModeActive
+      isGuestModeActive: Boolean(user.sessionState.isGuestModeActive),
     });
   } catch (error) {
     console.error('Device session poll error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// [POST /api/devices/:deviceId/session]
+// App calls this when the user taps "Start Monitoring" or "Stop Monitoring"
+// Body: { sessionActive: Boolean, userId: String }
+app.post('/api/devices/:deviceId/session', async (req, res) => {
+  try {
+    const { deviceId } = req.params;
+    const { sessionActive, userId } = req.body;
+
+    const device = await Device.findOne({ deviceId });
+    if (!device) {
+      return res.status(404).json({ error: 'Device not found' });
+    }
+
+    const targetUserId = userId || device.pairedUserId;
+    if (targetUserId) {
+      const user = await User.findById(targetUserId);
+      if (user) {
+        user.sessionState.sessionActive = Boolean(sessionActive);
+        if (sessionActive) {
+          user.sessionState.sessionResetPending = true;
+          user.sessionState.isCurrentlyDriving = true;
+        } else {
+          user.sessionState.isCurrentlyDriving = false;
+        }
+        await user.save();
+      }
+    }
+
+    res.status(200).json({ ok: true, sessionActive: Boolean(sessionActive) });
+  } catch (error) {
+    console.error('Update device session error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -1022,8 +1068,13 @@ app.post('/api/devices/pair', async (req, res) => {
       { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
     );
 
-    // Note: pairedDeviceId is no longer stored on the User document.
-    // The authoritative pairing is stored in Device.pairedUserId.
+    // Initialise user session to standby (not actively monitoring until driver starts trip)
+    await User.findByIdAndUpdate(userId, {
+      'sessionState.sessionActive': false,
+      'sessionState.isCurrentlyDriving': false,
+      'sessionState.alarmDismissed': false,
+      'sessionState.sessionResetPending': true
+    });
 
     res.status(200).json({ ok: true, device });
   } catch (error) {
@@ -1049,6 +1100,12 @@ app.post('/api/devices/unpair', async (req, res) => {
 
     device.pairedUserId = null;
     await device.save();
+
+    // Turn off session on unpair
+    await User.findByIdAndUpdate(userId, {
+      'sessionState.sessionActive': false,
+      'sessionState.isCurrentlyDriving': false
+    });
 
     res.status(200).json({ ok: true, message: 'Device unpaired successfully' });
   } catch (error) {

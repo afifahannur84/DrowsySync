@@ -17,8 +17,10 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.drowsysyncapp.databinding.ActivityMainBinding
+import com.example.drowsysyncapp.network.DeviceSessionRequest
 import com.example.drowsysyncapp.network.GuestModeRequest
 import com.example.drowsysyncapp.network.RetrofitClient
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import android.widget.Toast
 
@@ -265,7 +267,18 @@ class MainActivity : AppCompatActivity() {
         val serviceIntent = Intent(this, DrowsySyncBackgroundService::class.java)
         startForegroundService(serviceIntent)
 
-
+        // Notify backend and Pi that monitoring session has officially started
+        val userId = prefs.getString("user_id", null)
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                RetrofitClient.instance.setDeviceSession(
+                    pairedDeviceId,
+                    DeviceSessionRequest(sessionActive = true, userId = userId)
+                )
+            } catch (e: Exception) {
+                // Non-fatal network glitch; Pi polling will catch up
+            }
+        }
     }
 
     /**
@@ -303,7 +316,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun stopMonitoring() {
         isMonitoring = false
-        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putBoolean(KEY_IS_MONITORING, false).apply()
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(KEY_IS_MONITORING, false).apply()
         
         pulseAnimator?.cancel()
         binding.monitoringRing.alpha = 1f
@@ -326,7 +340,21 @@ class MainActivity : AppCompatActivity() {
         val serviceIntent = Intent(this, DrowsySyncBackgroundService::class.java)
         stopService(serviceIntent)
 
-
+        // Notify backend and Pi that monitoring session has ended
+        val pairedDeviceId = prefs.getString("paired_device_id", null)
+        val userId = prefs.getString("user_id", null)
+        if (!pairedDeviceId.isNullOrEmpty()) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    RetrofitClient.instance.setDeviceSession(
+                        pairedDeviceId,
+                        DeviceSessionRequest(sessionActive = false, userId = userId)
+                    )
+                } catch (e: Exception) {
+                    // Non-fatal
+                }
+            }
+        }
     }
 
     // ── Register/Unregister the Receiver with the Activity Lifecycle ──────────

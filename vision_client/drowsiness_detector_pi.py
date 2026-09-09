@@ -42,6 +42,8 @@ import time
 from typing import Deque, List, Optional, Tuple
 
 # ── Third-party ───────────────────────────────────────────────────────────────
+import os
+os.environ["QT_QPA_PLATFORM"] = "xcb"
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -499,6 +501,8 @@ def _send_heartbeat() -> None:
 class SharedSessionState:
     def __init__(self) -> None:
         self.lock = threading.Lock()
+        self.is_paired: bool = False
+        self.user_name: Optional[str] = None
         self.session_active: bool = False
         self.reset_counters: bool = False
         self.running: bool = True
@@ -515,6 +519,8 @@ def _session_polling_worker() -> None:
             if response.status_code == 200:
                 data = response.json()
                 with _shared_session.lock:
+                    _shared_session.is_paired = data.get("isPaired", False)
+                    _shared_session.user_name = data.get("userName")
                     _shared_session.session_active = data.get("sessionActive", False)
                     if data.get("resetCounters"):
                         _shared_session.reset_counters = True
@@ -552,7 +558,7 @@ def main() -> None:
     print("=" * 64)
 
     # OpenCV Window Setup (explicit window sizing to prevent toolbar clipping/black borders)
-    cv2.namedWindow("DrowsySync - Pi Camera", cv2.WINDOW_NORMAL)
+    cv2.namedWindow("DrowsySync - Pi Camera", cv2.WINDOW_AUTOSIZE)
     cv2.resizeWindow("DrowsySync - Pi Camera", FRAME_WIDTH, FRAME_HEIGHT)
 
     # Camera setup
@@ -571,6 +577,7 @@ def main() -> None:
     if not _HAS_PICAMERA2:
         print("[INFO] Initialising OpenCV VideoCapture interface...")
         cap = cv2.VideoCapture(CAMERA_INDEX)
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
         cap.set(cv2.CAP_PROP_FPS, TARGET_FPS)
@@ -663,6 +670,8 @@ def main() -> None:
 
             # Non-blocking session check (0ms latency, zero frame lag)
             with _shared_session.lock:
+                is_paired = _shared_session.is_paired
+                user_name = _shared_session.user_name
                 new_monitoring = _shared_session.session_active
                 do_reset = _shared_session.reset_counters
                 _shared_session.reset_counters = False
@@ -670,6 +679,31 @@ def main() -> None:
             if do_reset:
                 state.full_reset()
 
+            # State 1: Device is NOT paired to any mobile app account
+            if not is_paired:
+                setup_frame = np.full((h, w, 3), (25, 25, 25), dtype=np.uint8)
+                cv2.putText(setup_frame, "DROWSYSYNC - NOT PAIRED", (24, 55), _FONT, 0.90, (50, 200, 255), 2, cv2.LINE_AA)
+                cv2.putText(setup_frame, "Please pair this device in the mobile app:", (24, 100), _FONT, 0.58, CLR_WHITE, 1, cv2.LINE_AA)
+
+                # Card box displaying Device ID
+                cv2.rectangle(setup_frame, (24, 125), (w - 24, 290), (45, 40, 35), -1)
+                cv2.rectangle(setup_frame, (24, 125), (w - 24, 290), (80, 75, 70), 1)
+                cv2.putText(setup_frame, "DEVICE ID (CPU SERIAL):", (44, 165), _FONT, 0.52, CLR_GREY, 1, cv2.LINE_AA)
+                cv2.putText(setup_frame, DEVICE_ID, (44, 215), _FONT, 1.0, (50, 220, 80), 2, cv2.LINE_AA)
+                cv2.putText(setup_frame, f"IP: {LOCAL_IP}   |   WiFi: {_get_wifi_ssid()}", (44, 265), _FONT, 0.48, CLR_WHITE, 1, cv2.LINE_AA)
+
+                cv2.putText(setup_frame, "1. Open DrowsySync mobile app -> Settings -> Pair Device", (24, 340), _FONT, 0.50, CLR_WHITE, 1, cv2.LINE_AA)
+                cv2.putText(setup_frame, "2. Enter the Device ID shown above and tap 'Pair Device'", (24, 375), _FONT, 0.50, CLR_WHITE, 1, cv2.LINE_AA)
+                cv2.putText(setup_frame, "Waiting for phone pairing signal...", (24, h - 25), _FONT, 0.52, (0, 180, 255), 1, cv2.LINE_AA)
+
+                cv2.imshow("DrowsySync - Pi Camera", setup_frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    print("\n[INFO] 'q' pressed. Exiting...")
+                    break
+                time.sleep(0.08)
+                continue
+
+            # Handle monitoring transitions
             if new_monitoring != is_monitoring:
                 is_monitoring = new_monitoring
                 if is_monitoring:
@@ -678,16 +712,18 @@ def main() -> None:
                     print("\n[STANDBY] Session ended — detection paused.")
                     state.full_reset()
 
-            # Standby mode — display clean standby frame
+            # State 2: Device is PAIRED, but user has NOT clicked "Start Monitoring"
             if not is_monitoring:
                 standby_frame = frame.copy()
                 overlay = np.zeros_like(standby_frame)
-                cv2.addWeighted(standby_frame, 0.45, overlay, 0.55, 0, standby_frame)
-                cv2.putText(standby_frame, "STANDBY", (24, 60), _FONT, 1.2, CLR_WHITE, 3, cv2.LINE_AA)
+                cv2.addWeighted(standby_frame, 0.35, overlay, 0.65, 0, standby_frame)
+                cv2.putText(standby_frame, "STANDBY", (24, 55), _FONT, 1.2, CLR_WHITE, 3, cv2.LINE_AA)
+                paired_label = f"Paired with: {user_name}" if user_name else "Device Paired"
+                cv2.putText(standby_frame, paired_label, (24, 100), _FONT, 0.65, (50, 220, 80), 2, cv2.LINE_AA)
                 cv2.putText(
                     standby_frame,
-                    "Waiting for mobile app to start session...",
-                    (24, 110), _FONT, 0.65, CLR_WHITE, 1, cv2.LINE_AA
+                    "Press 'Start Monitoring' in the mobile app to begin trip...",
+                    (24, 145), _FONT, 0.55, CLR_WHITE, 1, cv2.LINE_AA
                 )
                 cv2.putText(
                     standby_frame,

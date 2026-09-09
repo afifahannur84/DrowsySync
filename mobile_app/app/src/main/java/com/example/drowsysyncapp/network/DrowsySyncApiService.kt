@@ -87,5 +87,11 @@ interface DrowsySyncApiService {
     suspend fun getDeviceStatus(
         @Path("deviceId") deviceId: String
     ): Response<DeviceStatusResponse>
+
+    @POST("api/devices/{deviceId}/session")
+    suspend fun setDeviceSession(
+        @Path("deviceId") deviceId: String,
+        @Body request: DeviceSessionRequest
+    ): Response<DeviceSessionResponse>
 }
 
