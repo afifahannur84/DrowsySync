@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const deviceSchema = new mongoose.Schema({
   deviceId: { type: String, required: true, unique: true }, // Pi CPU serial
   pairedUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  sessionActive: { type: Boolean, default: false },
   // WiFi status — reported by Pi on every heartbeat
   currentWifi: { type: String, default: null },             // e.g. "Afifah's iPhone"
   localIp: { type: String, default: null },                 // e.g. "192.168.43.105"

@@ -22,6 +22,7 @@ import com.example.drowsysyncapp.network.GuestModeRequest
 import com.example.drowsysyncapp.network.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import android.widget.Toast
 
 class MainActivity : AppCompatActivity() {
@@ -269,14 +270,22 @@ class MainActivity : AppCompatActivity() {
 
         // Notify backend and Pi that monitoring session has officially started
         val userId = prefs.getString("user_id", null)
+        val cleanDeviceId = pairedDeviceId.trim().uppercase()
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                RetrofitClient.instance.setDeviceSession(
-                    pairedDeviceId,
+                val resp = RetrofitClient.instance.setDeviceSession(
+                    cleanDeviceId,
                     DeviceSessionRequest(sessionActive = true, userId = userId)
                 )
+                if (!resp.isSuccessful) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@MainActivity, "⚠️ Could not sync session with Pi (${resp.code()})", Toast.LENGTH_SHORT).show()
+                    }
+                }
             } catch (e: Exception) {
-                // Non-fatal network glitch; Pi polling will catch up
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity, "⚠️ Network sync error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -344,10 +353,11 @@ class MainActivity : AppCompatActivity() {
         val pairedDeviceId = prefs.getString("paired_device_id", null)
         val userId = prefs.getString("user_id", null)
         if (!pairedDeviceId.isNullOrEmpty()) {
+            val cleanDeviceId = pairedDeviceId.trim().uppercase()
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
                     RetrofitClient.instance.setDeviceSession(
-                        pairedDeviceId,
+                        cleanDeviceId,
                         DeviceSessionRequest(sessionActive = false, userId = userId)
                     )
                 } catch (e: Exception) {

@@ -640,7 +640,8 @@ def main() -> None:
     is_monitoring = False
     last_heartbeat = 0.0  # tracks last heartbeat send time
 
-    # Start non-blocking session polling in background thread
+    # Start non-blocking session polling in background thread and announce device immediately
+    threading.Thread(target=_send_heartbeat, daemon=True).start()
     threading.Thread(target=_session_polling_worker, daemon=True).start()
 
     print("[STANDBY] Waiting for mobile app to start monitoring...\n")

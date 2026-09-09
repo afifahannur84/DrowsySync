@@ -916,14 +916,18 @@ app.post('/api/devices/:deviceId/heartbeat', async (req, res) => {
   try {
     const { deviceId } = req.params;
     const { currentWifi, localIp } = req.body;
+    const cleanDeviceId = deviceId ? deviceId.trim().toUpperCase() : '';
 
     const device = await Device.findOneAndUpdate(
-      { deviceId },
+      { deviceId: { $regex: new RegExp("^" + cleanDeviceId + "$", "i") } },
       {
-        currentWifi: currentWifi || null,
-        localIp: localIp || null,
-        lastSeen: new Date(),
-        isOnline: true,
+        $set: {
+          deviceId: cleanDeviceId,
+          currentWifi: currentWifi || null,
+          localIp: localIp || null,
+          lastSeen: new Date(),
+          isOnline: true,
+        }
       },
       { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
     );
@@ -975,7 +979,7 @@ app.get('/api/devices/:deviceId/session', async (req, res) => {
     res.status(200).json({
       isPaired:          true,
       userName:          user.name || null,
-      sessionActive:     Boolean(user.sessionState.sessionActive),
+      sessionActive:     (device.sessionActive !== undefined && device.sessionActive !== null) ? Boolean(device.sessionActive) : Boolean(user?.sessionState?.sessionActive),
       resetCounters:     shouldReset,
       dismissAlarm:      Boolean(user.sessionState.alarmDismissed),
       userId:            user._id.toString(),
@@ -996,19 +1000,19 @@ app.post('/api/devices/:deviceId/session', async (req, res) => {
     const { sessionActive, userId } = req.body;
     const cleanId = deviceId ? deviceId.trim().toUpperCase() : '';
 
-    let device = await Device.findOne({
+    const device = await Device.findOne({
       deviceId: { $regex: new RegExp("^" + cleanId + "$", "i") }
     });
 
-    if (!device && userId) {
-      device = await Device.findOneAndUpdate(
-        { deviceId: cleanId },
-        { pairedUserId: userId, lastSeen: new Date() },
-        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
-      );
+    if (!device) {
+      return res.status(404).json({ error: 'Device not found' });
     }
 
-    const targetUserId = userId || (device && device.pairedUserId);
+    // Set sessionActive directly on device record
+    device.sessionActive = Boolean(sessionActive);
+    await device.save();
+
+    const targetUserId = userId || device.pairedUserId;
     if (targetUserId) {
       const user = await User.findById(targetUserId);
       if (user) {
@@ -1074,12 +1078,30 @@ app.post('/api/devices/pair', async (req, res) => {
       return res.status(400).json({ error: 'userId and deviceId are required' });
     }
 
-    // Upsert the device document
-    const device = await Device.findOneAndUpdate(
-      { deviceId },
-      { pairedUserId: userId, lastSeen: new Date() },
-      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
-    );
+    const cleanDeviceId = deviceId.trim().toUpperCase();
+
+    // Verify that this device exists in the system (registered via heartbeat)
+    const device = await Device.findOne({
+      deviceId: { $regex: new RegExp("^" + cleanDeviceId + "$", "i") }
+    });
+
+    if (!device) {
+      return res.status(404).json({
+        error: `Pi device "${cleanDeviceId}" not found. Please ensure drowsiness_detector_pi.py is running on your Pi so it can connect to the server first.`
+      });
+    }
+
+    // Check if the device is already paired to another user
+    if (device.pairedUserId && String(device.pairedUserId) !== String(userId)) {
+      return res.status(409).json({
+        error: 'This device is already paired to another account. Please unpair it first.'
+      });
+    }
+
+    device.pairedUserId = userId;
+    device.sessionActive = false;
+    device.lastSeen = new Date();
+    await device.save();
 
     // Initialise user session to standby (not actively monitoring until driver starts trip)
     await User.findByIdAndUpdate(userId, {
@@ -1106,12 +1128,17 @@ app.post('/api/devices/unpair', async (req, res) => {
       return res.status(400).json({ error: 'userId and deviceId are required' });
     }
 
-    const device = await Device.findOne({ deviceId });
+    const cleanDeviceId = deviceId.trim().toUpperCase();
+    const device = await Device.findOne({
+      deviceId: { $regex: new RegExp("^" + cleanDeviceId + "$", "i") }
+    });
+
     if (!device || String(device.pairedUserId) !== String(userId)) {
       return res.status(404).json({ error: 'Device not found or not paired to this user' });
     }
 
     device.pairedUserId = null;
+    device.sessionActive = false;
     await device.save();
 
     // Turn off session on unpair

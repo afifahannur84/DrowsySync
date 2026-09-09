@@ -98,7 +98,13 @@ class PairingActivity : AppCompatActivity() {
                     setResult(RESULT_OK)
                     finish()
                 } else {
-                    tvStatus.text = "❌ Pairing failed — serial not recognised. Check the label on your Pi."
+                    val errorMsg = try {
+                        val body = response.errorBody()?.string()
+                        if (!body.isNullOrEmpty() && body.contains("error")) {
+                            org.json.JSONObject(body).optString("error", null)
+                        } else null
+                    } catch (e: Exception) { null }
+                    tvStatus.text = errorMsg ?: "❌ Pairing failed — serial not recognised. Check the label on your Pi."
                     tvStatus.visibility = View.VISIBLE
                 }
             } catch (e: Exception) {
