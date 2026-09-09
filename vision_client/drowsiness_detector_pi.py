@@ -62,8 +62,8 @@ except ImportError:
 # ── Camera & Network ──────────────────────────────────────────────────────────
 SERVER_BASE_URL = "https://drowsysync.onrender.com"
 CAMERA_INDEX = 0
-FRAME_WIDTH = 320      # Keep at 320×240 for best Pi 3B performance
-FRAME_HEIGHT = 240
+FRAME_WIDTH = 640      # 640×480 standard resolution (crisp display & fills window)
+FRAME_HEIGHT = 480
 TARGET_FPS = 20        # Target camera capture FPS
 FRAME_SKIP = 2         # Run MediaPipe every Nth frame; hold state on rest
 STREAM_PORT = 8080     # MJPEG stream port — open http://<Pi-IP>:8080 on laptop
@@ -395,34 +395,62 @@ def draw_overlay(
 ) -> None:
     colour = STAGE_COLORS[state.stage]
 
-    # Semi-transparent status banner (top 36 px)
+    # Semi-transparent status banner at top (height 44 px)
+    banner = frame[0:44, 0:w]
+    banner_bg = np.full_like(banner, (20, 20, 20))
     if state.stage > 0:
-        roi = frame[0:36, 0:w]
-        overlay = roi.copy()
-        cv2.rectangle(overlay, (0, 0), (w, 36), colour, -1)
-        cv2.addWeighted(overlay, 0.35, roi, 0.65, 0, roi)
+        banner_bg[:] = colour
+        cv2.addWeighted(banner_bg, 0.40, banner, 0.60, 0, banner)
+    else:
+        cv2.addWeighted(banner_bg, 0.30, banner, 0.70, 0, banner)
 
-    # Status label (top-left)
-    cv2.putText(frame, state.status, (6, 26), _FONT, 0.55, colour, 2, cv2.LINE_AA)
+    # Status label (top-left) - crisp, large font
+    cv2.putText(frame, state.status, (12, 32), _FONT, 0.85, colour, 2, cv2.LINE_AA)
 
-    # Bottom strip metrics (compact text)
+    # Bottom strip background (semi-transparent black for high contrast readability)
+    bottom_bar = frame[h - 40:h, 0:w]
+    black_bar = np.zeros_like(bottom_bar)
+    cv2.addWeighted(black_bar, 0.65, bottom_bar, 0.35, 0, bottom_bar)
+
+    # Bottom strip metrics (clean, sharp, readable)
+    metrics_text = (
+        f"EAR: {state.ear:.2f}  |  MAR: {state.mar:.2f}  |  "
+        f"PERCLOS: {state.perclos:.1f}%  |  YAWNS: {state.recent_yawn_count}  |  "
+        f"FPS: {fps:.0f}"
+    )
     cv2.putText(
         frame,
-        f"EAR:{state.ear:.2f} MAR:{state.mar:.2f} PERCLOS:{state.perclos:.1f}% Y:{state.recent_yawn_count} FPS:{fps:.0f}",
-        (6, h - 8),
+        metrics_text,
+        (12, h - 14),
         _FONT,
-        0.35,
+        0.52,
         CLR_WHITE,
         1,
         cv2.LINE_AA,
     )
 
 
-def draw_no_face(frame: np.ndarray, fps: float, h: int) -> None:
-    cv2.putText(frame, "NO FACE DETECTED", (6, 26), _FONT, 0.55, CLR_GREY, 2, cv2.LINE_AA)
+def draw_no_face(frame: np.ndarray, fps: float, w: int, h: int) -> None:
+    # Semi-transparent top banner
+    banner = frame[0:44, 0:w]
+    banner_bg = np.full_like(banner, (20, 20, 20))
+    cv2.addWeighted(banner_bg, 0.30, banner, 0.70, 0, banner)
+    cv2.putText(frame, "NO FACE DETECTED", (12, 32), _FONT, 0.85, CLR_GREY, 2, cv2.LINE_AA)
+
+    # Bottom strip
+    bottom_bar = frame[h - 40:h, 0:w]
+    black_bar = np.zeros_like(bottom_bar)
+    cv2.addWeighted(black_bar, 0.65, bottom_bar, 0.35, 0, bottom_bar)
+
     cv2.putText(
-        frame, f"FPS:{fps:.0f}", (6, h - 8),
-        _FONT, 0.35, CLR_GREY, 1, cv2.LINE_AA,
+        frame,
+        f"FPS: {fps:.0f}  (Searching for driver...)",
+        (12, h - 14),
+        _FONT,
+        0.52,
+        CLR_GREY,
+        1,
+        cv2.LINE_AA,
     )
 
 
@@ -467,14 +495,28 @@ def _send_heartbeat() -> None:
         pass  # heartbeat is best-effort; never crash main loop
 
 
-def poll_session_status() -> dict:
-    try:
-        response = requests.get(SESSION_URL, timeout=3.0)
-        response.raise_for_status()
-        return response.json()
-    except Exception as e:
-        print(f"\n[WARNING] Session poll failed: {e}")
-        return {"sessionActive": False, "resetCounters": False}
+# Shared session state polled in background thread to eliminate video stutter
+_session_lock = threading.Lock()
+_shared_session_active = False
+_shared_reset_counters = False
+_shared_poll_running = True
+
+
+def _session_polling_worker() -> None:
+    """Background daemon thread: continuously polls session state without blocking OpenCV loop."""
+    global _shared_session_active, _shared_reset_counters
+    while _shared_poll_running:
+        try:
+            response = requests.get(SESSION_URL, timeout=3.0)
+            if response.status_code == 200:
+                data = response.json()
+                with _session_lock:
+                    _shared_session_active = data.get("sessionActive", False)
+                    if data.get("resetCounters"):
+                        _shared_reset_counters = True
+        except Exception:
+            pass  # network hiccups handled silently in background
+        time.sleep(1.5)
 
 
 def on_status_change(state: DetectionState) -> None:
@@ -497,14 +539,17 @@ def on_status_change(state: DetectionState) -> None:
 # =============================================================================
 
 def main() -> None:
-    global _HAS_PICAMERA2
+    global _HAS_PICAMERA2, _shared_poll_running
     print("=" * 64)
-    print("  DrowsySync — Raspberry Pi 3B Vision Client (Headless)")
+    print("  DrowsySync — Raspberry Pi 3B Vision Client (Local Display)")
     print(f"  Device ID  : {DEVICE_ID}")
     print(f"  Local IP   : {LOCAL_IP}")
-    print(f"  Stream URL : http://{LOCAL_IP}:{STREAM_PORT}")
     print(f"  Resolution : {FRAME_WIDTH}×{FRAME_HEIGHT}  |  Skip : every {FRAME_SKIP} frames")
     print("=" * 64)
+
+    # OpenCV Window Setup (explicit window sizing to prevent toolbar clipping/black borders)
+    cv2.namedWindow("DrowsySync - Pi Camera", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("DrowsySync - Pi Camera", FRAME_WIDTH, FRAME_HEIGHT)
 
     # Camera setup
     if _HAS_PICAMERA2:
@@ -556,9 +601,10 @@ def main() -> None:
 
     # Session monitoring state
     is_monitoring = False
-    last_session_poll = 0.0
-    SESSION_POLL_INTERVAL = 1.5
     last_heartbeat = 0.0  # tracks last heartbeat send time
+
+    # Start non-blocking session polling in background thread
+    threading.Thread(target=_session_polling_worker, daemon=True).start()
 
     print("[STANDBY] Waiting for mobile app to start monitoring...\n")
 
@@ -586,46 +632,56 @@ def main() -> None:
                 continue
             consecutive_failures = 0
 
-            # Force contiguous array with standard strides to prevent MediaPipe C++ memory/padding crashes
-            frame = cv2.resize(frame, (320, 240))
+            # Ensure contiguous array matching 640x480 resolution
+            if frame.shape[1] != FRAME_WIDTH or frame.shape[0] != FRAME_HEIGHT:
+                frame = cv2.resize(frame, (FRAME_WIDTH, FRAME_HEIGHT))
+            frame = np.ascontiguousarray(frame)
 
-            # Poll session status from backend every 1.5s
             now = time.time()
 
-            # Send heartbeat every 5s (separate from session poll)
+            # Send heartbeat every 5s in background
             if now - last_heartbeat >= _HEARTBEAT_INTERVAL:
                 last_heartbeat = now
                 threading.Thread(target=_send_heartbeat, daemon=True).start()
 
-            if now - last_session_poll >= SESSION_POLL_INTERVAL:
-                last_session_poll = now
-                session = poll_session_status()
+            # Non-blocking session check (0ms latency, zero frame lag)
+            with _session_lock:
+                new_monitoring = _shared_session_active
+                do_reset = _shared_reset_counters
+                _shared_reset_counters = False
 
-                # Handle counter reset
-                if session.get("resetCounters"):
+            if do_reset:
+                state.full_reset()
+
+            if new_monitoring != is_monitoring:
+                is_monitoring = new_monitoring
+                if is_monitoring:
+                    print("\n[MONITORING] Session started — detection active.")
+                else:
+                    print("\n[STANDBY] Session ended — detection paused.")
                     state.full_reset()
 
-                # Handle monitoring transitions
-                new_monitoring = session.get("sessionActive", False)
-                if new_monitoring != is_monitoring:
-                    is_monitoring = new_monitoring
-                    if is_monitoring:
-                        print("\n[MONITORING] Session started — detection active.")
-                    else:
-                        print("\n[STANDBY] Session ended — detection paused.")
-                        state.full_reset()
-
-            # Standby mode — push a labelled frame to the stream
+            # Standby mode — display clean standby frame
             if not is_monitoring:
                 standby_frame = frame.copy()
-                cv2.putText(standby_frame, "STANDBY", (6, 26), _FONT, 0.75, CLR_GREY, 2, cv2.LINE_AA)
+                overlay = np.zeros_like(standby_frame)
+                cv2.addWeighted(standby_frame, 0.45, overlay, 0.55, 0, standby_frame)
+                cv2.putText(standby_frame, "STANDBY", (24, 60), _FONT, 1.2, CLR_WHITE, 3, cv2.LINE_AA)
                 cv2.putText(
                     standby_frame,
-                    "Waiting for app to start session...",
-                    (6, 50), _FONT, 0.40, CLR_GREY, 1, cv2.LINE_AA
+                    "Waiting for mobile app to start session...",
+                    (24, 110), _FONT, 0.65, CLR_WHITE, 1, cv2.LINE_AA
                 )
-                _push_frame(standby_frame)
-                time.sleep(0.05)  # ~20 FPS idle pace — no detection work
+                cv2.putText(
+                    standby_frame,
+                    f"Device ID: {DEVICE_ID}  |  IP: {LOCAL_IP}",
+                    (24, h - 24), _FONT, 0.50, CLR_GREY, 1, cv2.LINE_AA
+                )
+                cv2.imshow("DrowsySync - Pi Camera", standby_frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    print("\n[INFO] 'q' pressed during standby. Exiting...")
+                    break
+                time.sleep(0.05)
                 continue
 
             frame_idx += 1
@@ -640,7 +696,9 @@ def main() -> None:
                 fps_cnt = 0
 
             if process_now:
-                rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # Downscale strictly for MediaPipe processing to keep Pi 3B CPU fast & cool
+                small_frame = cv2.resize(frame, (320, 240))
+                rgb = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
                 rgb.flags.writeable = False
                 results = face_mesh.process(rgb)
 
@@ -665,11 +723,11 @@ def main() -> None:
                     if state.changed:
                         on_status_change(state)
 
-            # Draw HUD then push to MJPEG stream
+            # Draw HUD overlay on full 640x480 frame
             if face_visible:
                 draw_overlay(frame, state, fps_val, w, h)
             else:
-                draw_no_face(frame, fps_val, h)
+                draw_no_face(frame, fps_val, w, h)
 
             cv2.imshow("DrowsySync - Pi Camera", frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -678,6 +736,7 @@ def main() -> None:
     except KeyboardInterrupt:
         print("\n[INFO] Interrupted by user (Ctrl+C).")
     finally:
+        _shared_poll_running = False
         print("[INFO] Releasing resources...")
         if _HAS_PICAMERA2:
             try:

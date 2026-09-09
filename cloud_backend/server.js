@@ -244,7 +244,7 @@ app.put('/api/users/guest-mode/:userId', async (req, res) => {
     const user = await User.findByIdAndUpdate(
       userId,
       { $set: { 'sessionState.isGuestModeActive': isGuestModeActive } },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!user) {
@@ -924,7 +924,7 @@ app.post('/api/devices/:deviceId/heartbeat', async (req, res) => {
         lastSeen: new Date(),
         isOnline: true,
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
     );
 
     res.status(200).json({ ok: true, pairedUserId: device.pairedUserId });
@@ -1019,7 +1019,7 @@ app.post('/api/devices/pair', async (req, res) => {
     const device = await Device.findOneAndUpdate(
       { deviceId },
       { pairedUserId: userId, lastSeen: new Date() },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
     );
 
     // Note: pairedDeviceId is no longer stored on the User document.
@@ -1128,7 +1128,7 @@ app.patch('/api/logs/:logId/location', async (req, res) => {
     const updated = await FatigueLog.findByIdAndUpdate(
       logId,
       { 'location.lat': lat, 'location.lng': lng, 'location.name': locationName },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!updated) {
