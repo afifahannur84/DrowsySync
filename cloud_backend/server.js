@@ -940,9 +940,13 @@ app.post('/api/devices/:deviceId/heartbeat', async (req, res) => {
 app.get('/api/devices/:deviceId/session', async (req, res) => {
   try {
     const { deviceId } = req.params;
+    const cleanId = deviceId ? deviceId.trim().toUpperCase() : '';
 
-    // Find the user paired to this device
-    const device = await Device.findOne({ deviceId });
+    // Find the user paired to this device (case-insensitive)
+    const device = await Device.findOne({
+      deviceId: { $regex: new RegExp("^" + cleanId + "$", "i") }
+    });
+
     if (!device || !device.pairedUserId) {
       // Device not paired yet — stay in SETUP / NOT PAIRED mode
       return res.status(200).json({
@@ -963,7 +967,7 @@ app.get('/api/devices/:deviceId/session', async (req, res) => {
       });
     }
 
-    const shouldReset = user.sessionState.sessionResetPending;
+    const shouldReset = Boolean(user.sessionState.sessionResetPending);
     if (shouldReset) {
       await User.findByIdAndUpdate(user._id, { 'sessionState.sessionResetPending': false });
     }
@@ -972,7 +976,7 @@ app.get('/api/devices/:deviceId/session', async (req, res) => {
       isPaired:          true,
       userName:          user.name || null,
       sessionActive:     Boolean(user.sessionState.sessionActive),
-      resetCounters:     Boolean(shouldReset),
+      resetCounters:     shouldReset,
       dismissAlarm:      Boolean(user.sessionState.alarmDismissed),
       userId:            user._id.toString(),
       isGuestModeActive: Boolean(user.sessionState.isGuestModeActive),
@@ -990,13 +994,21 @@ app.post('/api/devices/:deviceId/session', async (req, res) => {
   try {
     const { deviceId } = req.params;
     const { sessionActive, userId } = req.body;
+    const cleanId = deviceId ? deviceId.trim().toUpperCase() : '';
 
-    const device = await Device.findOne({ deviceId });
-    if (!device) {
-      return res.status(404).json({ error: 'Device not found' });
+    let device = await Device.findOne({
+      deviceId: { $regex: new RegExp("^" + cleanId + "$", "i") }
+    });
+
+    if (!device && userId) {
+      device = await Device.findOneAndUpdate(
+        { deviceId: cleanId },
+        { pairedUserId: userId, lastSeen: new Date() },
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+      );
     }
 
-    const targetUserId = userId || device.pairedUserId;
+    const targetUserId = userId || (device && device.pairedUserId);
     if (targetUserId) {
       const user = await User.findById(targetUserId);
       if (user) {
@@ -1008,6 +1020,7 @@ app.post('/api/devices/:deviceId/session', async (req, res) => {
           user.sessionState.isCurrentlyDriving = false;
         }
         await user.save();
+        console.log(`📡 [SESSION] Set sessionActive=${Boolean(sessionActive)} for User: ${user.email} (Device: ${cleanId})`);
       }
     }
 

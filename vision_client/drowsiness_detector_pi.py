@@ -513,15 +513,28 @@ _shared_session = SharedSessionState()
 
 def _session_polling_worker() -> None:
     """Background daemon thread: continuously polls session state without blocking OpenCV loop."""
+    prev_active = None
+    prev_paired = None
     while _shared_session.running:
         try:
             response = requests.get(SESSION_URL, timeout=3.0)
             if response.status_code == 200:
                 data = response.json()
+                is_paired = data.get("isPaired", False)
+                user_name = data.get("userName")
+                session_active = data.get("sessionActive", False)
+
+                if prev_paired is None or is_paired != prev_paired or session_active != prev_active:
+                    prev_paired = is_paired
+                    prev_active = session_active
+                    status_text = "MONITORING ACTIVE" if session_active else "STANDBY"
+                    paired_text = f"Paired ({user_name})" if is_paired else "NOT PAIRED"
+                    print(f"\n[NETWORK] Cloud Sync: {paired_text} | Mode: {status_text}")
+
                 with _shared_session.lock:
-                    _shared_session.is_paired = data.get("isPaired", False)
-                    _shared_session.user_name = data.get("userName")
-                    _shared_session.session_active = data.get("sessionActive", False)
+                    _shared_session.is_paired = is_paired
+                    _shared_session.user_name = user_name
+                    _shared_session.session_active = session_active
                     if data.get("resetCounters"):
                         _shared_session.reset_counters = True
         except Exception:
