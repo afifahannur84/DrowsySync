@@ -947,26 +947,26 @@ app.get('/api/logs/latest/vehicle/:vehicleId', async (req, res) => {
 const handleLogIngestion = async (req, res) => {
   try {
     const fatigueData = req.body;
-    const { vehicleId } = fatigueData;
+    const { deviceId } = fatigueData;
 
-    if (!vehicleId) {
-      return res.status(400).json({ error: 'vehicleId is required' });
+    if (!deviceId) {
+      return res.status(400).json({ error: 'deviceId is required' });
     }
 
-    // Look up the active owner via VehicleOwnership
+    // Look up the active owner via Device pairing
     let matchedUser = null;
-    const activeOwnership = await VehicleOwnership.findOne({ vehicleId, isActive: true });
-    if (activeOwnership) {
-      matchedUser = await User.findById(activeOwnership.userId);
+    const device = await Device.findOne({ deviceId });
+    if (device && device.pairedUserId) {
+      matchedUser = await User.findById(device.pairedUserId);
     }
 
-    // Fallback: find whoever is currently driving this vehicle
+    // Fallback: find whoever is currently driving
     if (!matchedUser) {
       matchedUser = await User.findOne({ 'sessionState.isCurrentlyDriving': true });
     }
 
     if (!matchedUser) {
-      return res.status(404).json({ error: 'No user found for this Car Plate Number.' });
+      return res.status(404).json({ error: 'No user found for this Device ID.' });
     }
 
     if (matchedUser.sessionState.isGuestModeActive) {

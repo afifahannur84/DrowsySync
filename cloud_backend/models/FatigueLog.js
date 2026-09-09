@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 
 const fatigueLogSchema = new mongoose.Schema({
   userId:   { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  vehicleId: { type: String, required: true },
-  deviceId:  { type: String, default: null },          // Pi CPU serial (DEVICE_ID)
+  vehicleId: { type: String, default: null },
+  deviceId:  { type: String, required: true },          // Pi CPU serial (DEVICE_ID)
   stage:     { type: Number, required: true },
   status:    { type: String, required: true },
   perclos:   { type: Number, required: true },
